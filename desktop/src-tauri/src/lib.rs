@@ -50,6 +50,18 @@ fn cmd_hide_settings(app: AppHandle) {
 }
 
 #[tauri::command]
+fn cmd_show_app(app: AppHandle) {
+    show_app_window(&app);
+}
+
+pub(crate) fn show_app_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("app") {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+#[tauri::command]
 fn cmd_trigger_now(app: AppHandle) {
     hotkey::run_impressions_flow(app);
 }
@@ -89,6 +101,7 @@ pub fn run() {
             cmd_test_api,
             cmd_hide_settings,
             cmd_trigger_now,
+            cmd_show_app,
         ])
         .setup(|app| {
             tray::build(app)?;
@@ -104,6 +117,32 @@ pub fn run() {
                     }
                 });
             }
+
+            // Build the full-app window (loads the RadSpeed web app in WebView2).
+            // Hidden until the user clicks "Open RadSpeed" in the tray menu.
+            let api_base = settings::load(app.handle()).api_base;
+            let app_url = url::Url::parse(&api_base)
+                .unwrap_or_else(|_| url::Url::parse("https://dictation.markbekhit.com").unwrap());
+            let app_window = tauri::WebviewWindowBuilder::new(
+                app,
+                "app",
+                tauri::WebviewUrl::External(app_url),
+            )
+            .title("RadSpeed")
+            .inner_size(1400.0, 900.0)
+            .min_inner_size(900.0, 600.0)
+            .center()
+            .visible(false)
+            .build()?;
+
+            // Close button hides; tray menu is the exit path.
+            let win = app_window.clone();
+            app_window.on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let _ = win.hide();
+                }
+            });
 
             // Register the configured hotkey at boot.
             let cfg = settings::load(app.handle());
