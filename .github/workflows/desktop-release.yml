@@ -66,6 +66,26 @@ jobs:
           cargo build --release
         shell: pwsh
 
+      - name: Write signing key to file
+        id: signing
+        shell: pwsh
+        run: |
+          $keyContent = $env:KEY_CONTENT
+          if ($keyContent -and $keyContent.Trim() -ne "") {
+            $keyPath = Join-Path $env:RUNNER_TEMP "tauri_signing.key"
+            # Normalise to LF so minisign parser is happy regardless of how
+            # GitHub stored the secret (CRLF vs LF).
+            $normalised = $keyContent.Replace("`r`n", "`n").Replace("`r", "`n")
+            [System.IO.File]::WriteAllText($keyPath, $normalised)
+            "KEY_PATH=$keyPath" | Out-File -Append $env:GITHUB_OUTPUT
+            Write-Host "Signing key written ($($normalised.Length) chars)"
+          } else {
+            Write-Warning "TAURI_SIGNING_PRIVATE_KEY secret is not set — updater artifacts will not be signed"
+            "KEY_PATH=" | Out-File -Append $env:GITHUB_OUTPUT
+          }
+        env:
+          KEY_CONTENT: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+
       - name: Bundle (NSIS + MSI + update bundle)
         run: |
           cd src-tauri
@@ -73,7 +93,7 @@ jobs:
           cargo tauri build
         shell: pwsh
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ steps.signing.outputs.KEY_PATH }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
 
       - name: Collect installers and update bundle

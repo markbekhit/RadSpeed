@@ -50,6 +50,11 @@ fn cmd_hide_settings(app: AppHandle) {
 }
 
 #[tauri::command]
+fn cmd_get_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
+}
+
+#[tauri::command]
 fn cmd_show_app(app: AppHandle) {
     show_app_window(&app);
 }
@@ -102,6 +107,7 @@ pub fn run() {
             cmd_hide_settings,
             cmd_trigger_now,
             cmd_show_app,
+            cmd_get_version,
         ])
         .setup(|app| {
             tray::build(app)?;

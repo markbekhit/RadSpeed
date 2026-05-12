@@ -91,4 +91,8 @@ window.addEventListener("DOMContentLoaded", () => {
   $("btn-trigger").addEventListener("click", triggerNow);
   $("paste-mode").addEventListener("change", updateJumpKeysVisibility);
   load();
+  invoke("cmd_get_version").then((v) => {
+    const el = $("app-subtitle");
+    if (el) el.textContent = `Windows desktop companion · v${v}`;
+  }).catch(() => {});
 });
