@@ -65,29 +65,53 @@ jobs:
         with:
           workspaces: desktop/src-tauri -> target
 
-      - name: Build (release)
-        run: |
-          cd src-tauri
-          cargo build --release
+      - name: Install tauri-cli
         shell: pwsh
-
-      - name: Bundle (NSIS + MSI + update bundle)
         run: |
-          cd src-tauri
+          Set-Location src-tauri
           cargo install tauri-cli --version "^2" --locked --quiet
-          cargo tauri build
+          $ver = cargo tauri --version 2>&1
+          Write-Host "tauri-cli: $ver"
+
+      - name: Verify frontend assets
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "src/index.html")) {
+            throw "Frontend src/index.html not found — bundle will fail"
+          }
+          Write-Host "Frontend OK: $(Get-ChildItem src | Select-Object -ExpandProperty Name)"
+
+      - name: Signing smoke test
         shell: pwsh
         env:
-          # Tauri-generated passwordless key (rsign format with scrypt
-          # KDF + empty password — Tauri requires this format; truly
-          # passwordless minisign keys are NOT accepted). Embedded
-          # inline because this is a private repo. The matching pubkey
-          # is in tauri.conf.json. To rotate: regenerate with
-          # `cargo tauri signer generate --ci -p ""`, replace this
-          # string with the contents of the new tauri.key file, replace
-          # tauri.conf.json pubkey with contents of tauri.key.pub.
           TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5a2pxdmZxcXkwQVBXRmd2ZDVETE40bDB0MEhlVE44MUV2VDBDaE44OWFHY0FBQkFBQUFBQUFBQUFBQUlBQUFBQWc0bUlwQUFNZXFRdG1RcXN6K2xjWVdBT3lHd1p2ZHhrdnloWW9pTmxFb3RycHowc28xbUdvUzNNY0hLL01Nemk1Sk5Gck9nZHdDT015ZXdFcWJXbnkwaHE3cnlVSkFtRU40d0RyMmt6dU1VMFlIam5jdHk2V00zU3NvMVNBV1daTEZ0RmYrZ3pmOGs9Cg=="
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: |
+          Write-Host "Key length: $($env:TAURI_SIGNING_PRIVATE_KEY.Length) chars"
+          $tmp = [System.IO.Path]::GetTempFileName()
+          Set-Content -Path $tmp -Value "smoke-test-content"
+          Set-Location src-tauri
+          $output = & cargo tauri signer sign $tmp 2>&1
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) {
+            throw "Signing smoke test FAILED (exit $LASTEXITCODE). Key may be wrong format."
+          }
+          Write-Host "Signing smoke test PASSED"
+
+      - name: Build (release)
+        shell: pwsh
+        run: |
+          Set-Location src-tauri
+          cargo build --release
+
+      - name: Bundle (NSIS + MSI + update bundle)
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5a2pxdmZxcXkwQVBXRmd2ZDVETE40bDB0MEhlVE44MUV2VDBDaE44OWFHY0FBQkFBQUFBQUFBQUFBQUlBQUFBQWc0bUlwQUFNZXFRdG1RcXN6K2xjWVdBT3lHd1p2ZHhrdnloWW9pTmxFb3RycHowc28xbUdvUzNNY0hLL01Nemk1Sk5Gck9nZHdDT015ZXdFcWJXbnkwaHE3cnlVSkFtRU40d0RyMmt6dU1VMFlIam5jdHk2V00zU3NvMVNBV1daTEZ0RmYrZ3pmOGs9Cg=="
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: |
+          Set-Location src-tauri
+          cargo tauri build
 
       - name: Verify updater bundle was produced
         shell: pwsh
@@ -174,3 +198,52 @@ jobs:
           generate_release_notes: true
           files: desktop/release-artifacts/*
           fail_on_unmatched_files: true
+
+      - name: Commit diagnostics on failure
+        if: failure()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5a2pxdmZxcXkwQVBXRmd2ZDVETE40bDB0MEhlVE44MUV2VDBDaE44OWFHY0FBQkFBQUFBQUFBQUFBQUlBQUFBQWc0bUlwQUFNZXFRdG1RcXN6K2xjWVdBT3lHd1p2ZHhrdnloWW9pTmxFb3RycHowc28xbUdvUzNNY0hLL01Nemk1Sk5Gck9nZHdDT015ZXdFcWJXbnkwaHE3cnlVSkFtRU40d0RyMmt6dU1VMFlIam5jdHk2V00zU3NvMVNBV1daTEZ0RmYrZ3pmOGs9Cg=="
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: |
+          $lines = @()
+          $lines += "# CI Diagnostics - $(Get-Date -UTC -Format 'u')"
+          $lines += "Version: ${{ steps.ver.outputs.VERSION }}"
+          $lines += ""
+          $lines += "## tauri-cli version"
+          try { $lines += (cargo tauri --version 2>&1 | Out-String).Trim() } catch { $lines += "(not available)" }
+          $lines += ""
+          $lines += "## TAURI_SIGNING_PRIVATE_KEY length"
+          $lines += "$($env:TAURI_SIGNING_PRIVATE_KEY.Length) chars"
+          $lines += ""
+          $lines += "## Bundle directory (src-tauri/target/release/bundle)"
+          $bd = "src-tauri/target/release/bundle"
+          if (Test-Path $bd) {
+            Get-ChildItem -Recurse $bd | ForEach-Object { $lines += "  $($_.FullName) [$($_.Length)]"
+            }
+          } else {
+            $lines += "  (does not exist)"
+          }
+          $lines += ""
+          $lines += "## src-tauri/target/release top-level entries"
+          $rd = "src-tauri/target/release"
+          if (Test-Path $rd) {
+            Get-ChildItem $rd | Select-Object -First 20 | ForEach-Object { $lines += "  $($_.Name)" }
+          } else {
+            $lines += "  (does not exist)"
+          }
+          $text = $lines -join "`n"
+          $b64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($text))
+          $api = "https://api.github.com/repos/markbekhit/VoxRad"
+          $h = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = "application/vnd.github+json"; "X-GitHub-Api-Version" = "2022-11-28" }
+          try {
+            $ref = Invoke-RestMethod "$api/git/ref/heads/main" -Headers $h
+            Invoke-RestMethod -Method POST "$api/git/refs" -Headers $h -ContentType "application/json" -Body (@{ref="refs/heads/ci-diagnostics";sha=$ref.object.sha}|ConvertTo-Json) -EA SilentlyContinue | Out-Null
+          } catch {}
+          $existing = $null
+          try { $existing = Invoke-RestMethod "$api/contents/ci-diag.md?ref=ci-diagnostics" -Headers $h -EA SilentlyContinue } catch {}
+          $body = @{ message="ci: failure diagnostics v${{ steps.ver.outputs.VERSION }}"; content=$b64; branch="ci-diagnostics" }
+          if ($existing -and $existing.sha) { $body.sha = $existing.sha }
+          Invoke-RestMethod -Method PUT "$api/contents/ci-diag.md" -Headers $h -ContentType "application/json" -Body ($body|ConvertTo-Json -Depth 5) | Out-Null
+          Write-Host "Diagnostics committed to ci-diagnostics branch at ci-diag.md"
