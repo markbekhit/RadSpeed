@@ -2,8 +2,13 @@
 
 | Run ID | Workflow | Conclusion | Status | SHA | Created |
 |--------|----------|-----------|--------|-----|---------|
-| 25775382767 | Diag fetch (logs of recent failed runs) |  | in_progress | 3829bbf | 2026-05-13T02:54:49Z |
-| 25775382745 | Deploy to Fly.io |  | in_progress | 3829bbf | 2026-05-13T02:54:49Z |
+| 25776767717 | Diag fetch (logs of recent failed runs) |  | in_progress | 6b0f657 | 2026-05-13T03:38:52Z |
+| 25776767714 | Deploy to Fly.io |  | in_progress | 6b0f657 | 2026-05-13T03:38:52Z |
+| 25775554251 | Desktop CI (Windows) | success | completed | 98d2247 | 2026-05-13T03:00:06Z |
+| 25775554246 | Desktop release (Windows) | failure | completed | 98d2247 | 2026-05-13T03:00:06Z |
+| 25775554242 | Deploy to Fly.io | success | completed | 98d2247 | 2026-05-13T03:00:06Z |
+| 25775382767 | Diag fetch (logs of recent failed runs) | success | completed | 3829bbf | 2026-05-13T02:54:49Z |
+| 25775382745 | Deploy to Fly.io | success | completed | 3829bbf | 2026-05-13T02:54:49Z |
 | 25774641428 | Deploy to Fly.io | success | completed | 6dd670f | 2026-05-13T02:32:35Z |
 | 25774641415 | Desktop CI (Windows) | success | completed | 6dd670f | 2026-05-13T02:32:35Z |
 | 25774641410 | Desktop release (Windows) | failure | completed | 6dd670f | 2026-05-13T02:32:35Z |
@@ -37,8 +42,3 @@
 | 25720371964 | .github/workflows/desktop-release.yml | failure | completed | d6e036c | 2026-05-12T07:35:36Z |
 | 25720371731 | .github/workflows/desktop-ci.yml | failure | completed | d6e036c | 2026-05-12T07:35:36Z |
 | 25719749356 | Desktop release (Windows) | success | completed | 9cb2ee0 | 2026-05-12T07:21:23Z |
-| 25719749325 | Deploy to Fly.io | success | completed | 9cb2ee0 | 2026-05-12T07:21:23Z |
-| 25719749312 | Desktop CI (Windows) | success | completed | 9cb2ee0 | 2026-05-12T07:21:23Z |
-| 25708058023 | Desktop release (Windows) | success | completed | 264ea0c | 2026-05-12T01:41:52Z |
-| 25708057972 | Deploy to Fly.io | success | completed | 264ea0c | 2026-05-12T01:41:52Z |
-| 25708057957 | Desktop CI (Windows) | success | completed | 264ea0c | 2026-05-12T01:41:52Z |
