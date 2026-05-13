@@ -1,0 +1,7 @@
+
+X main .github/workflows/desktop-release.yml · 25774143705
+Triggered via push about 10 minutes ago
+
+X This run likely failed because of a workflow file issue.
+
+For more information, see: https://github.com/markbekhit/VoxRad/actions/runs/25774143705
