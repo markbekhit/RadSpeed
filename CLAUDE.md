@@ -43,6 +43,34 @@ explicitly asks for one.
 - The active product roadmap is `docs/ROADMAP.md`. Update it whenever you
   ship a phase or change strategy.
 
+## Sandbox network & access strategy (READ FIRST)
+
+The owner is **not a developer** and will not copy-paste logs from a browser. Claude is responsible for closing its own feedback loop. **Never** stop at "blocked by sandbox" without trying the alternatives below.
+
+### What is reachable from this sandbox
+- `api.github.com`, `github.com`, `raw.githubusercontent.com` — **directly reachable via curl/wget** (HTTP 200). Unauthenticated calls are rate-limited (60/hr); authenticated calls are 5000/hr.
+- `crates.io` and the local git proxy at `127.0.0.1:38379/git/markbekhit/VoxRad` (for git push/fetch only).
+- `flyctl` works with the saved `FLY_API_TOKEN`.
+
+### What is BLOCKED
+- `cdn.playwright.dev`, `playwright.download.prss.microsoft.com` (Playwright browser downloads — HTTP 403 host_not_allowed)
+- `download.mozilla.org`, `storage.googleapis.com/chromium-browser-snapshots`
+- No system browsers (chromium/firefox), no apt sudo, no snap/flatpak
+- Most third-party CDNs
+
+### How to actually see GitHub Actions failures (no user copy-paste required)
+1. **MCP github tools** (`mcp__github__*`) handle auth server-side — use these first for repos/PRs/issues/releases/file contents/branches. **NO workflow-run/log tools exist** in this MCP surface.
+2. **Workflow self-reporting** is the canonical pattern: the workflow itself must commit diagnostics to a branch Claude can read via MCP. Use **`git clone` + `git push` with `https://x-access-token:${GITHUB_TOKEN}@github.com/...`** — NEVER use `Invoke-RestMethod` against the Contents API (it silently fails in the runner). The diagnostics branch should be `ci-diagnostics` and the file should be `ci-diag.md` so Claude reads it with one MCP call.
+3. **`gh` CLI is pre-installed on GitHub-hosted runners** and auto-authenticates with `GITHUB_TOKEN`. Use it for any GitHub-API operation from inside a workflow — far more reliable than raw REST.
+4. **Always upload `actions/upload-artifact@v4` with `if: always()`** including build logs (`tee` stdout/stderr into a file). User can download these directly if MCP-readable paths fail.
+5. **Issues are DISABLED on this repo** — do not try to write diagnostics via `gh issue create`.
+
+### Tauri 2.x updater format (key gotcha for this repo)
+- `createUpdaterArtifacts: true` (boolean) = **v2 mode**. On Windows, NSIS is a "self-contained updater" — Tauri **does NOT create a `.nsis.zip` wrapper**. The `.exe` itself is the updater artifact and is signed directly to `RadSpeed_X.Y.Z_x64-setup.exe.sig`. `update.json` must reference the `.exe` URL.
+- `createUpdaterArtifacts: "v1Compatible"` = legacy v1 mode. Tauri wraps NSIS into `.nsis.zip` + `.nsis.zip.sig`.
+- The signing key must be **rsign** format (scrypt KDF), generated with `cargo tauri signer generate --ci -p ""`. The minisign `--no-password` format (`RWQ...` prefix) is rejected by Tauri.
+- `TAURI_SIGNING_PRIVATE_KEY` env var contains the base64-encoded contents of the `.key` file (header + key body), NOT a file path or just the raw key line.
+
 ## Deployment & infrastructure
 
 The owner is **not a developer** and does not use the terminal. All infrastructure operations are Claude's responsibility — never ask the owner to run terminal commands.

@@ -1,13 +1,19 @@
 name: Desktop release (Windows)
 
-# Builds the RadSpeed Windows desktop companion (Tauri) and uploads the
-# NSIS .exe, MSI, and auto-update bundle (.nsis.zip) to a GitHub Release.
+# Builds the RadSpeed Windows desktop companion (Tauri) and publishes a
+# GitHub Release with the NSIS .exe installer, MSI installer, and the
+# Tauri v2 updater artifacts (.exe + .exe.sig + update.json).
 #
 # Triggers on push to main that changes desktop/.trigger-release.
 #
 # Signing key: rsign format (scrypt KDF, empty password), embedded in the
 # Bundle step env. Generated with `cargo tauri signer generate --ci -p ""`.
 # The matching pubkey is in desktop/src-tauri/tauri.conf.json.
+#
+# IMPORTANT (Tauri 2.x v2 mode): NSIS is a "self-contained updater" — the
+# .exe IS the updater artifact and is signed directly to .exe.sig.
+# Tauri does NOT create a .nsis.zip wrapper in v2 mode. update.json must
+# reference the .exe URL.
 
 on:
   push:
@@ -18,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g. 0.2.13). Leave blank to auto-read."
+        description: "Version to release (e.g. 0.2.14). Leave blank to auto-read."
         required: false
         default: ""
 
@@ -67,7 +73,7 @@ jobs:
           if (-not (Test-Path "src/index.html")) { throw "src/index.html not found" }
           Write-Host "Frontend assets OK"
 
-      - name: Bundle (NSIS + MSI + updater .nsis.zip)
+      - name: Bundle (NSIS + MSI + updater artifacts)
         id: bundle
         shell: pwsh
         env:
@@ -76,23 +82,24 @@ jobs:
         run: |
           Write-Host "TAURI_SIGNING_PRIVATE_KEY length: $($env:TAURI_SIGNING_PRIVATE_KEY.Length)"
           Set-Location src-tauri
-          cargo tauri build --verbose 2>&1
+          $logFile = "$env:RUNNER_TEMP\tauri-build.log"
+          cargo tauri build --verbose 2>&1 | Tee-Object -FilePath $logFile
           $exit = $LASTEXITCODE
           Write-Host "cargo tauri build exit=$exit"
           if ($exit -ne 0) { exit $exit }
 
-      - name: Verify updater artifacts
+      - name: Verify updater artifacts (v2 mode: .exe + .exe.sig)
         id: verify
         shell: pwsh
         run: |
           $bundle = "src-tauri/target/release/bundle"
-          $sig = Get-ChildItem -Recurse -Path $bundle -Filter "*.nsis.zip.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
-          $zip = Get-ChildItem -Recurse -Path $bundle -Filter "*.nsis.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($sig -and $zip) {
-            Write-Host "UPDATER OK: $($zip.Name) + $($sig.Name)"
+          $exe = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $sig = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($exe -and $sig) {
+            Write-Host "UPDATER OK: $($exe.Name) + $($sig.Name)"
             "HAVE_UPDATER=true" >> $env:GITHUB_OUTPUT
           } else {
-            Write-Host "WARNING: updater artifacts missing"
+            Write-Host "WARNING: updater artifacts missing - release will not support auto-update"
             Write-Host "Bundle contents:"
             if (Test-Path $bundle) { Get-ChildItem -Recurse $bundle | Select-Object FullName, Length }
             "HAVE_UPDATER=false" >> $env:GITHUB_OUTPUT
@@ -105,11 +112,16 @@ jobs:
           $bundle = "src-tauri/target/release/bundle"
           $out = "release-artifacts"
           New-Item -ItemType Directory -Force -Path $out | Out-Null
-          Get-ChildItem -Recurse -Path $bundle -Include *.exe,*.msi | ForEach-Object { Copy-Item $_.FullName $out }
-          Get-ChildItem -Recurse -Path $bundle -Include *.nsis.zip,*.nsis.zip.sig | ForEach-Object { Copy-Item $_.FullName $out }
-          Write-Host "Collected: $(Get-ChildItem $out | Select-Object -ExpandProperty Name)"
+          # Installers (for fresh installs)
+          Get-ChildItem -Recurse -Path $bundle -Include *.exe,*.msi | ForEach-Object { Copy-Item $_.FullName $out -Force }
+          # Tauri v2 updater signatures (.exe.sig, .msi.sig live next to the installer)
+          Get-ChildItem -Recurse -Path $bundle -Include *.exe.sig,*.msi.sig | ForEach-Object { Copy-Item $_.FullName $out -Force }
+          # v1Compatible artifacts, in case we ever switch back
+          Get-ChildItem -Recurse -Path $bundle -Include *.nsis.zip,*.nsis.zip.sig | ForEach-Object { Copy-Item $_.FullName $out -Force }
+          Write-Host "Collected:"
+          Get-ChildItem $out | Format-Table Name, Length
 
-      - name: Generate update.json
+      - name: Generate update.json (v2: points at .exe)
         if: steps.verify.outputs.HAVE_UPDATER == 'true'
         shell: pwsh
         run: |
@@ -117,10 +129,12 @@ jobs:
           $tag = "${{ steps.ver.outputs.TAG }}"
           $out = "release-artifacts"
           $repo = "${{ github.repository }}"
-          $sigFile = Get-ChildItem $out -Filter "*.nsis.zip.sig" | Select-Object -First 1
+          # In v2 mode the .exe IS the updater artifact
+          $sigFile = Get-ChildItem $out -Filter "*-setup.exe.sig" | Select-Object -First 1
+          $exeFile = Get-ChildItem $out -Filter "*-setup.exe" | Select-Object -First 1
+          if (-not $sigFile -or -not $exeFile) { throw "Missing .exe or .exe.sig in release-artifacts" }
           $signature = (Get-Content $sigFile.FullName -Raw).Trim()
-          $zipFile = Get-ChildItem $out -Filter "*.nsis.zip" | Select-Object -First 1
-          $url = "https://github.com/$repo/releases/download/$tag/$($zipFile.Name)"
+          $url = "https://github.com/$repo/releases/download/$tag/$($exeFile.Name)"
           $manifest = [ordered]@{
             version = $version
             notes = "See release notes: https://github.com/$repo/releases/tag/$tag"
@@ -141,7 +155,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: radspeed-windows-${{ steps.ver.outputs.VERSION }}
-          path: desktop/release-artifacts/
+          path: |
+            desktop/release-artifacts/
+          if-no-files-found: warn
+
+      - name: Upload tauri-build.log (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-build-log-${{ steps.ver.outputs.VERSION }}
+          path: ${{ runner.temp }}/tauri-build.log
           if-no-files-found: warn
 
       - name: Create GitHub Release
@@ -168,7 +191,9 @@ jobs:
           $lines.Add("|-----|-------|")
           $lines.Add("| Run ID | ${{ github.run_id }} |")
           $lines.Add("| SHA | ${{ github.sha }} |")
+          $lines.Add("| Version | ${{ steps.ver.outputs.VERSION }} |")
           $lines.Add("| Job status | ${{ job.status }} |")
+          $lines.Add("| HAVE_UPDATER | ${{ steps.verify.outputs.HAVE_UPDATER }} |")
           $lines.Add("| Time | $(Get-Date -UTC -Format 'u') |")
           $lines.Add("| tauri-cli | $(cargo tauri --version 2>&1) |")
           $lines.Add("")
@@ -176,7 +201,7 @@ jobs:
           $bd = "src-tauri/target/release/bundle"
           if (Test-Path $bd) {
             foreach ($f in (Get-ChildItem -Recurse $bd)) {
-              $lines.Add("- ``$($f.Name)`` ($($f.Length) bytes)")
+              $lines.Add("- ``$($f.FullName.Substring((Resolve-Path $bd).Path.Length))`` ($($f.Length) bytes)")
             }
           } else {
             $lines.Add("(does not exist)")
@@ -190,6 +215,16 @@ jobs:
           } else {
             $lines.Add("(none)")
           }
+          $lines.Add("")
+          $lines.Add("## Build log tail (last 80 lines)")
+          $logFile = "$env:RUNNER_TEMP\tauri-build.log"
+          if (Test-Path $logFile) {
+            $lines.Add('```')
+            foreach ($l in (Get-Content $logFile -Tail 80)) { $lines.Add($l) }
+            $lines.Add('```')
+          } else {
+            $lines.Add("(no build log file at $logFile)")
+          }
           $diagText = $lines -join "`n"
           Write-Host "=== DIAG ==="
           Write-Host $diagText
@@ -202,22 +237,33 @@ jobs:
           git config --global user.name "github-actions[bot]"
           $repoUrl = "https://x-access-token:$env:GITHUB_TOKEN@github.com/${{ github.repository }}.git"
 
-          git clone --branch ci-diagnostics --depth 1 $repoUrl "$env:RUNNER_TEMP\ci-diag-clone" 2>&1
+          $cloneDir = "$env:RUNNER_TEMP\ci-diag-clone"
+          if (Test-Path $cloneDir) { Remove-Item -Recurse -Force $cloneDir }
+          git clone --branch ci-diagnostics --depth 1 $repoUrl $cloneDir 2>&1
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "ci-diagnostics branch not found, cloning main and creating branch"
-            git clone --depth 1 $repoUrl "$env:RUNNER_TEMP\ci-diag-clone" 2>&1
-            Set-Location "$env:RUNNER_TEMP\ci-diag-clone"
+            Write-Host "ci-diagnostics branch not found, creating from main"
+            git clone --depth 1 $repoUrl $cloneDir 2>&1
+            Set-Location $cloneDir
             git checkout -b ci-diagnostics 2>&1
           } else {
-            Set-Location "$env:RUNNER_TEMP\ci-diag-clone"
+            Set-Location $cloneDir
           }
 
-          Copy-Item $diagFile ci-diag.md
+          Copy-Item $diagFile ci-diag.md -Force
           git add ci-diag.md
-          git commit -m "ci: diag run=${{ github.run_id }} status=${{ job.status }}"
-          git push origin ci-diagnostics 2>&1
+          git commit -m "ci: diag run=${{ github.run_id }} status=${{ job.status }} v=${{ steps.ver.outputs.VERSION }}"
+          $pushOut = git push origin ci-diagnostics 2>&1
+          Write-Host $pushOut
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Diagnostics pushed to ci-diagnostics branch"
+            Write-Host "✓ Diagnostics pushed to ci-diagnostics"
           } else {
-            Write-Host "Git push to ci-diagnostics failed (exit $LASTEXITCODE)"
+            Write-Host "✗ Git push to ci-diagnostics failed (exit $LASTEXITCODE)"
           }
+
+      - name: Upload ci-diag as artifact (fallback if git push failed)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-diag-${{ steps.ver.outputs.VERSION }}
+          path: ${{ runner.temp }}/ci-diag.md
+          if-no-files-found: warn

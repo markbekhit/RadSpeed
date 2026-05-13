@@ -57,7 +57,6 @@ jobs:
         shell: pwsh
 
   bundle:
-    # Only run the (slow) bundler step when something likely affects bundling.
     runs-on: windows-latest
     needs: check
     defaults:
@@ -74,37 +73,31 @@ jobs:
         with:
           workspaces: desktop/src-tauri -> target
 
-      - name: Build (release)
-        run: |
-          cd src-tauri
-          cargo build --release
+      - name: Install tauri-cli
         shell: pwsh
+        run: cargo install tauri-cli --version "^2" --force 2>&1
 
-      - name: Bundle (NSIS + MSI + update bundle)
+      - name: Bundle (NSIS + MSI + updater artifacts)
         run: |
           cd src-tauri
-          cargo install tauri-cli --version "^2" --locked --quiet
           cargo tauri build
         shell: pwsh
         env:
           # Same Tauri-format passwordless signing key as desktop-release.yml.
-          # Embedded inline because this is a private repo. Keeps CI
-          # exercising the full updater-bundle path so signing regressions
-          # are caught before a tagged release.
           TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5a2pxdmZxcXkwQVBXRmd2ZDVETE40bDB0MEhlVE44MUV2VDBDaE44OWFHY0FBQkFBQUFBQUFBQUFBQUlBQUFBQWc0bUlwQUFNZXFRdG1RcXN6K2xjWVdBT3lHd1p2ZHhrdnloWW9pTmxFb3RycHowc28xbUdvUzNNY0hLL01Nemk1Sk5Gck9nZHdDT015ZXdFcWJXbnkwaHE3cnlVSkFtRU40d0RyMmt6dU1VMFlIam5jdHk2V00zU3NvMVNBV1daTEZ0RmYrZ3pmOGs9Cg=="
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
 
-      - name: Verify updater bundle was produced (CI)
+      - name: Verify updater artifacts produced (v2 mode: .exe + .exe.sig)
         shell: pwsh
         run: |
           $bundle = "src-tauri/target/release/bundle"
-          $sig = Get-ChildItem -Recurse -Path $bundle -Filter "*.nsis.zip.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
-          $zip = Get-ChildItem -Recurse -Path $bundle -Filter "*.nsis.zip"     -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $sig -or -not $zip) {
+          $exe = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $sig = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $exe -or -not $sig) {
             if (Test-Path $bundle) { Get-ChildItem -Recurse $bundle | Select-Object FullName, Length | Format-Table -AutoSize -Wrap }
-            throw "Updater artifacts missing in CI bundle. Signing is broken."
+            throw "Updater artifacts missing in CI bundle. Signing is broken. (Tauri v2 NSIS expects .exe + .exe.sig)"
           }
-          Write-Host "Updater bundle OK: $($zip.Name), sig: $($sig.Name)"
+          Write-Host "Updater bundle OK: $($exe.Name) + $($sig.Name)"
 
       - name: Upload bundler output (debug aid)
         if: always()
@@ -113,6 +106,8 @@ jobs:
           name: radspeed-windows-ci
           path: |
             desktop/src-tauri/target/release/bundle/**/*.exe
+            desktop/src-tauri/target/release/bundle/**/*.exe.sig
             desktop/src-tauri/target/release/bundle/**/*.msi
+            desktop/src-tauri/target/release/bundle/**/*.msi.sig
           if-no-files-found: warn
           retention-days: 7
