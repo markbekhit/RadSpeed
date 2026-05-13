@@ -24,7 +24,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g. 0.2.14). Leave blank to auto-read."
+        description: "Version to release (e.g. 0.2.16). Leave blank to auto-read."
         required: false
         default: ""
 
@@ -93,15 +93,16 @@ jobs:
         shell: pwsh
         run: |
           $bundle = "src-tauri/target/release/bundle"
-          $exe = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          $sig = Get-ChildItem -Recurse -Path $bundle -Filter "*-setup.exe.sig" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $all = Get-ChildItem -Recurse -Path $bundle -File
+          $exe = $all | Where-Object { $_.Name -like "*-setup.exe" } | Select-Object -First 1
+          $sig = $all | Where-Object { $_.Name -like "*-setup.exe.sig" } | Select-Object -First 1
           if ($exe -and $sig) {
             Write-Host "UPDATER OK: $($exe.Name) + $($sig.Name)"
             "HAVE_UPDATER=true" >> $env:GITHUB_OUTPUT
           } else {
             Write-Host "WARNING: updater artifacts missing - release will not support auto-update"
             Write-Host "Bundle contents:"
-            if (Test-Path $bundle) { Get-ChildItem -Recurse $bundle | Select-Object FullName, Length }
+            $all | Select-Object FullName, Length | Format-Table -AutoSize
             "HAVE_UPDATER=false" >> $env:GITHUB_OUTPUT
           }
 
@@ -112,9 +113,15 @@ jobs:
           $bundle = "src-tauri/target/release/bundle"
           $out = "release-artifacts"
           New-Item -ItemType Directory -Force -Path $out | Out-Null
-          Get-ChildItem -Recurse -Path $bundle -Include *.exe,*.msi | ForEach-Object { Copy-Item $_.FullName $out -Force }
-          Get-ChildItem -Recurse -Path $bundle -Include *.exe.sig,*.msi.sig | ForEach-Object { Copy-Item $_.FullName $out -Force }
-          Get-ChildItem -Recurse -Path $bundle -Include *.nsis.zip,*.nsis.zip.sig | ForEach-Object { Copy-Item $_.FullName $out -Force }
+          # Enumerate everything, then copy explicitly by Name pattern so we
+          # don't depend on Get-ChildItem -Filter / -Include quirks on Windows.
+          $all = Get-ChildItem -Recurse -Path $bundle -File
+          Write-Host "All files in $bundle :"
+          $all | ForEach-Object { Write-Host "  $($_.FullName) ($($_.Length))" }
+          $patterns = @("*-setup.exe", "*-setup.exe.sig", "*_en-US.msi", "*_en-US.msi.sig", "*.nsis.zip", "*.nsis.zip.sig")
+          foreach ($p in $patterns) {
+            $all | Where-Object { $_.Name -like $p } | ForEach-Object { Copy-Item $_.FullName $out -Force; Write-Host "copied: $($_.Name)" }
+          }
           Write-Host "Collected:"
           Get-ChildItem $out | Format-Table Name, Length
 
@@ -126,9 +133,18 @@ jobs:
           $tag = "${{ steps.ver.outputs.TAG }}"
           $out = "release-artifacts"
           $repo = "${{ github.repository }}"
-          $sigFile = Get-ChildItem $out -Filter "*-setup.exe.sig" | Select-Object -First 1
-          $exeFile = Get-ChildItem $out -Filter "*-setup.exe" | Select-Object -First 1
-          if (-not $sigFile -or -not $exeFile) { throw "Missing .exe or .exe.sig in release-artifacts" }
+          Write-Host "Contents of $out :"
+          $allFiles = Get-ChildItem $out
+          $allFiles | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
+          # In v2 mode the .exe IS the updater artifact. Get-ChildItem -Filter
+          # uses legacy Win32 FindFirstFile which can match more than intended
+          # (e.g. *-setup.exe matching *-setup.exe.sig); -like on the Name is exact.
+          $sigFile = $allFiles | Where-Object { $_.Name -like "*-setup.exe.sig" } | Select-Object -First 1
+          $exeFile = $allFiles | Where-Object { $_.Name -like "*-setup.exe" } | Select-Object -First 1
+          if (-not $sigFile) { throw "No *-setup.exe.sig found in $out (have: $($allFiles.Name -join ', '))" }
+          if (-not $exeFile) { throw "No *-setup.exe found in $out (have: $($allFiles.Name -join ', '))" }
+          Write-Host "exe : $($exeFile.Name)"
+          Write-Host "sig : $($sigFile.Name)"
           $signature = (Get-Content $sigFile.FullName -Raw).Trim()
           $url = "https://github.com/$repo/releases/download/$tag/$($exeFile.Name)"
           $manifest = [ordered]@{
@@ -251,9 +267,9 @@ jobs:
           $pushOut = git push origin ci-diagnostics 2>&1
           Write-Host $pushOut
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "✓ Diagnostics pushed to ci-diagnostics"
+            Write-Host "Diagnostics pushed to ci-diagnostics"
           } else {
-            Write-Host "✗ Git push to ci-diagnostics failed (exit $LASTEXITCODE)"
+            Write-Host "Git push to ci-diagnostics failed (exit $LASTEXITCODE)"
           }
 
       - name: Upload ci-diag as artifact (fallback if git push failed)
