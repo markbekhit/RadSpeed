@@ -1,6 +1,6 @@
 [package]
 name = "radspeed"
-version = "0.2.23"
+version = "0.2.24"
 description = "RadSpeed Windows desktop companion"
 authors = ["Mark Bekhit"]
 edition = "2021"

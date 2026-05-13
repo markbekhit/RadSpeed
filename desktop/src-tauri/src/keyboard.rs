@@ -24,13 +24,18 @@ fn new_enigo() -> Result<Enigo, String> {
 }
 
 /// Save the current clipboard, simulate Ctrl+C to grab the active selection,
-/// read the resulting clipboard, restore the previous clipboard.
-/// Returns the captured selection (may be empty if the host had no selection).
+/// read the resulting clipboard, then restore the previous clipboard.
+///
+/// If Ctrl+C is blocked by UIPI (the target window runs at a higher integrity
+/// level than RadSpeed, which is common for medical software like PowerScribe
+/// One), the clipboard will be empty after our attempt. In that case we fall
+/// back to whatever the user had pre-copied manually so the caller can still
+/// work with the text.
 pub fn capture_selection() -> Result<String, String> {
-    // Snapshot existing clipboard (best-effort — empty is fine)
+    // Snapshot existing clipboard before we clear it.
     let saved = Clipboard::new().ok().and_then(|mut c| c.get_text().ok());
 
-    // Clear so we can detect "nothing selected" reliably
+    // Clear so we can detect "nothing was selected / Ctrl+C was blocked".
     if let Ok(mut c) = Clipboard::new() {
         let _ = c.set_text("");
     }
@@ -54,13 +59,35 @@ pub fn capture_selection() -> Result<String, String> {
         .and_then(|mut c| c.get_text().ok())
         .unwrap_or_default();
 
-    // Restore the saved clipboard so we don't pollute the user's Ctrl+V.
-    if let Some(orig) = saved {
-        if let Ok(mut c) = Clipboard::new() {
-            let _ = c.set_text(orig);
+    if !captured.is_empty() {
+        // Ctrl+C captured a live selection. Restore original clipboard and
+        // return the captured text.
+        if let Some(orig) = saved {
+            if let Ok(mut c) = Clipboard::new() {
+                let _ = c.set_text(orig);
+            }
         }
+        return Ok(captured);
     }
-    Ok(captured)
+
+    // Ctrl+C produced nothing — either UIPI blocked it or nothing was
+    // selected. Restore the saved clipboard and return it as a fallback so
+    // the caller can use text the user pre-copied manually.
+    let fallback = saved.unwrap_or_default();
+    if let Ok(mut c) = Clipboard::new() {
+        let _ = c.set_text(&fallback);
+    }
+    Ok(fallback)
+}
+
+/// Write text to the clipboard without simulating any keystrokes.
+/// Use this when the paste target may be running at a higher privilege level
+/// (UIPI blocks SendInput but clipboard writes are cross-integrity).
+pub fn set_clipboard(text: &str) -> Result<(), String> {
+    Clipboard::new()
+        .map_err(|e| format!("clipboard init: {e}"))?
+        .set_text(text)
+        .map_err(|e| format!("clipboard set: {e}"))
 }
 
 /// Send a sequence like "tab", "tab tab", or "down enter" — space-separated

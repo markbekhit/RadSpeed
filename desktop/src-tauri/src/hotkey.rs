@@ -173,17 +173,30 @@ pub fn run_impressions_flow(app: AppHandle) {
 }
 
 async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, String> {
-    tray::set_status(app, &format!("v{}: capturing FINDINGS…", env!("CARGO_PKG_VERSION")));
+    tray::set_status(
+        app,
+        &format!("v{}: capturing FINDINGS…", env!("CARGO_PKG_VERSION")),
+    );
     let findings = keyboard::capture_selection()
         .map_err(|e| format!("capture_selection: {e}"))?;
     let findings_len = findings.len();
     if findings.trim().is_empty() {
-        return Err("no text selected (clipboard empty after Ctrl+C — PS1 may be elevated and blocking SendInput; try Run as administrator)".to_string());
+        return Err(if settings.paste_mode == "goto_impression" {
+            // Ctrl+C was either blocked by UIPI (PS1 runs elevated) or
+            // nothing was pre-copied. Guide the user.
+            "clipboard empty — in PS1: select FINDINGS text, Ctrl+C, then press the hotkey"
+                .to_string()
+        } else {
+            "no text selected".to_string()
+        });
     }
 
     tray::set_status(
         app,
-        &format!("v{}: captured {findings_len} chars, fetching impression…", env!("CARGO_PKG_VERSION")),
+        &format!(
+            "v{}: captured {findings_len} chars, fetching impression…",
+            env!("CARGO_PKG_VERSION")
+        ),
     );
     let impression = api::fetch_impression(
         &settings.api_base,
@@ -194,38 +207,31 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
     .await
     .map_err(|e| format!("fetch_impression: {e}"))?;
 
-    if settings.paste_mode == "goto_impression" && !settings.jump_keys.trim().is_empty() {
-        // Send the jump keys (default: "tab") directly while the FINDINGS
-        // placeholder is still selected from capture_selection's Ctrl+C.
-        // PowerScribe One only navigates to the next template field when
-        // Tab is pressed in the "placeholder-selected" state — sending any
-        // deselect key (right/end) first breaks that navigation. For non-PS1
-        // editors like Notepad, use paste_mode = "after_selection" instead.
-        tray::set_status(
-            app,
-            &format!("v{}: sending jump_keys '{}'…", env!("CARGO_PKG_VERSION"), settings.jump_keys),
-        );
-        keyboard::send_keys(&settings.jump_keys)
-            .map_err(|e| format!("send_keys jump: {e}"))?;
-    } else if settings.paste_mode == "after_selection" {
-        // Move cursor to the end of the captured selection so the appended
-        // IMPRESSION block doesn't overwrite the user's text.
-        tray::set_status(
-            app,
-            &format!("v{}: deselecting (right)…", env!("CARGO_PKG_VERSION")),
-        );
-        keyboard::send_keys("right")
-            .map_err(|e| format!("send_keys right: {e}"))?;
+    if settings.paste_mode == "goto_impression" {
+        // PowerScribe One runs elevated; UIPI blocks all synthetic keystrokes
+        // (Tab, Shift+Insert) from a non-elevated RadSpeed process. Clipboard
+        // writes are cross-integrity, so we put the impression on the clipboard
+        // and instruct the user to paste manually.
+        let payload = impression.trim_end().to_string();
+        let payload_len = payload.len();
+        keyboard::set_clipboard(&payload)
+            .map_err(|e| format!("set_clipboard: {e}"))?;
+        return Ok(format!(
+            "impression in clipboard ({payload_len} chars) — Tab to IMPRESSION field, Ctrl+V"
+        ));
     }
 
-    let payload = if settings.paste_mode == "after_selection" {
-        format!("\r\n\r\nIMPRESSION:\r\n{}", impression.trim_end())
-    } else {
-        // goto_impression: jumped to the conclusion field, so paste raw
-        impression.trim_end().to_string()
-    };
-    let payload_len = payload.len();
+    // after_selection mode: target app is not elevated, full SendInput works.
+    // Move cursor to end of selection so the appended block doesn't overwrite.
+    tray::set_status(
+        app,
+        &format!("v{}: deselecting…", env!("CARGO_PKG_VERSION")),
+    );
+    keyboard::send_keys("right")
+        .map_err(|e| format!("send_keys right: {e}"))?;
 
+    let payload = format!("\r\n\r\nIMPRESSION:\r\n{}", impression.trim_end());
+    let payload_len = payload.len();
     tray::set_status(
         app,
         &format!("v{}: pasting {payload_len} chars…", env!("CARGO_PKG_VERSION")),
@@ -233,7 +239,6 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
     keyboard::paste_block(&payload).map_err(|e| format!("paste_block: {e}"))?;
 
     Ok(format!(
-        "captured {findings_len} chars, pasted {payload_len} chars (mode={}, jump_keys='{}')",
-        settings.paste_mode, settings.jump_keys
+        "captured {findings_len} chars, pasted {payload_len} chars"
     ))
 }
