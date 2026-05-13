@@ -1,0 +1,124 @@
+name: Diag fetch (logs of recent failed runs)
+
+# Self-service log retrieval. When Claude needs to debug a failed workflow run
+# in this sandbox, it cannot hit the GitHub Actions API directly (no workflow
+# log tools in MCP, rate-limited unauthenticated). This workflow runs `gh run
+# view --log-failed` for recent failed runs and commits the output to the
+# ci-diagnostics branch as logs/<run-id>.txt — readable via mcp__github__get_file_contents.
+#
+# Trigger:
+#   - push that changes .ci-trigger-diag (Claude bumps this file)
+#   - manual workflow_dispatch with optional max_runs input
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".ci-trigger-diag"
+  workflow_dispatch:
+    inputs:
+      max_runs:
+        description: "How many recent failed runs to fetch logs for"
+        required: false
+        default: "5"
+      workflow_name:
+        description: "Workflow name to filter (blank = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch failed workflow run logs via gh CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_RUNS: ${{ inputs.max_runs || '5' }}
+          WORKFLOW_FILTER: ${{ inputs.workflow_name || '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p logs
+
+          # List recent runs (any status), take last MAX_RUNS, filter to non-success in jq
+          if [ -n "$WORKFLOW_FILTER" ]; then
+            gh run list --limit 40 --workflow "$WORKFLOW_FILTER" --json databaseId,name,conclusion,status,headSha,createdAt,displayTitle > runs.json
+          else
+            gh run list --limit 40 --json databaseId,name,conclusion,status,headSha,createdAt,displayTitle > runs.json
+          fi
+
+          # Build summary index
+          {
+            echo "# Recent workflow runs (last 40)"
+            echo
+            echo "| Run ID | Workflow | Conclusion | Status | SHA | Created |"
+            echo "|--------|----------|-----------|--------|-----|---------|"
+            jq -r '.[] | "| \(.databaseId) | \(.name) | \(.conclusion // "-") | \(.status) | \(.headSha[0:7]) | \(.createdAt) |"' runs.json
+          } > logs/index.md
+
+          # Pick failed/cancelled runs
+          jq -r '[.[] | select(.conclusion=="failure" or .conclusion=="cancelled" or .conclusion=="timed_out")] | .[0:('"$MAX_RUNS"' | tonumber)] | .[] | .databaseId' runs.json > failed_ids.txt || true
+
+          echo "Failed runs to fetch:"
+          cat failed_ids.txt || echo "(none)"
+
+          while IFS= read -r run_id; do
+            [ -z "$run_id" ] && continue
+            echo "=== Fetching logs for run $run_id ==="
+            # Full failed-step logs (verbose)
+            gh run view "$run_id" --log-failed > "logs/${run_id}-failed.log" 2>&1 || \
+              echo "(gh run view --log-failed failed for $run_id)" > "logs/${run_id}-failed.log"
+            # Run summary
+            gh run view "$run_id" > "logs/${run_id}-summary.txt" 2>&1 || \
+              echo "(gh run view failed for $run_id)" > "logs/${run_id}-summary.txt"
+            # Truncate giant logs to last 500 lines so they're readable
+            if [ -f "logs/${run_id}-failed.log" ] && [ $(wc -l < "logs/${run_id}-failed.log") -gt 500 ]; then
+              tail -500 "logs/${run_id}-failed.log" > "logs/${run_id}-failed.log.tail"
+              mv "logs/${run_id}-failed.log.tail" "logs/${run_id}-failed.log"
+            fi
+          done < failed_ids.txt
+
+      - name: Push logs to ci-diagnostics branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          repo_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          cd ..
+          rm -rf diag-clone
+          # Try clone ci-diagnostics, fallback to creating it from main
+          if git clone --branch ci-diagnostics --depth 1 "$repo_url" diag-clone 2>/dev/null; then
+            echo "Cloned existing ci-diagnostics"
+          else
+            echo "ci-diagnostics branch missing, creating fresh orphan branch"
+            git clone --depth 1 "$repo_url" diag-clone
+            cd diag-clone
+            git checkout --orphan ci-diagnostics
+            git rm -rf . 2>/dev/null || true
+            cd ..
+          fi
+
+          # Copy logs in
+          mkdir -p diag-clone/logs
+          cp -r "$GITHUB_WORKSPACE/logs/." diag-clone/logs/
+          ls -la diag-clone/logs/
+
+          cd diag-clone
+          git add logs
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "ci: diag-fetch run=${GITHUB_RUN_ID}"
+            git push origin ci-diagnostics
+            echo "Pushed diagnostics"
+          fi
