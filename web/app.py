@@ -81,7 +81,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="VoxRad Web", docs_url=None, redoc_url=None)
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=86400)
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=2592000)  # 30 days
 # auto_error=False so we can return a redirect (not a 401) when OAuth is active
 security = HTTPBasic(auto_error=False)
 
