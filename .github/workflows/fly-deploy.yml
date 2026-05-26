@@ -82,7 +82,10 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Set model secret
-        run: flyctl secrets set VOXRAD_TEXT_MODEL=gpt-4.1-mini -a voxrad-v-hkvq
+        # --stage stores the secret without triggering its own deploy; the
+        # Deploy step below applies it. Without --stage, secrets set kicks off
+        # a second immediate deploy that races/fails (exit 3).
+        run: flyctl secrets set VOXRAD_TEXT_MODEL=gpt-4.1-mini -a voxrad-v-hkvq --stage
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
