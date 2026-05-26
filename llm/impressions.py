@@ -158,6 +158,15 @@ SYNTHESIS — this is the most important rule:
   anatomical order in the findings. If there is ONE significant finding
   amongst otherwise-normal anatomy, often the whole impression is just
   that finding plus a one-line "Otherwise unremarkable [study]" closer.
+- When ONE member of a group is abnormal and the rest are normal, state
+  the abnormality and dismiss the normal members in a single phrase —
+  NEVER list each normal member individually.
+  Wrong: "Full-thickness supraspinatus tear. Infraspinatus intact. Teres
+  minor intact. Subscapularis intact."
+  Right: "Full-thickness supraspinatus tear. Remaining rotator cuff
+  intact."
+  This rule applies to any group: tendons, ligaments, disc levels,
+  lymph node stations, vessels, ribs, vertebral levels, etc.
 
 NEVER INCLUDE — these are radiologist-noise. They appear in nearly every
 report, have no management implication, and add no value to the referring
