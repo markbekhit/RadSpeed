@@ -1,0 +1,39 @@
+
+X main Deploy to Fly.io · 26426295883
+Triggered via push about 9 minutes ago
+
+JOBS
+X Deploy in 1m32s (ID 77790487795)
+  ✓ Set up job
+  ✓ Checkout
+  ✓ Set up Docker Buildx
+  ✓ Set up flyctl
+  ✓ Login to Fly.io registry
+  ✓ Build and push image
+  ✓ Ensure persistent volume exists
+  ✓ Destroy legacy machines missing the voxrad_data mount
+  X Set model secret
+  - Deploy
+  ✓ Post Build and push image
+  ✓ Post Login to Fly.io registry
+  ✓ Post Set up Docker Buildx
+  ✓ Post Checkout
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, docker/build-push-action@v6, docker/login-action@v3, docker/setup-buildx-action@v3. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Deploy: .github#2
+
+X Process completed with exit code 3.
+Deploy: .github#54
+
+! SecretsUsedInArgOrEnv: Do not use ARG or ENV instructions for sensitive data (ENV "VOXRAD_WEB_PASSWORD")
+More info: https://docs.docker.com/go/dockerfile/rule/secrets-used-in-arg-or-env/
+Deploy: Dockerfile#22
+
+
+ARTIFACTS
+markbekhit~VoxRad~NT3GIE.dockerbuild
+
+To see what failed, try: gh run view 26426295883 --log-failed
+View this run on GitHub: https://github.com/markbekhit/VoxRad/actions/runs/26426295883
