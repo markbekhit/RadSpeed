@@ -447,6 +447,46 @@ details > summary::-webkit-details-marker { display: none; }
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+/* Two-section editor tabs (Report structure / AI instructions) */
+.tmpl-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tmpl-tab {
+  appearance: none;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+}
+.tmpl-tab:hover { color: var(--text); }
+.tmpl-tab-active {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--border);
+  margin-bottom: -1px;
+}
+.tmpl-split-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted);
+  padding-right: 4px;
+}
+.tmpl-import-hint {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 2px 2px;
+  line-height: 1.4;
+}
 .tmpl-textarea {
   flex: 1;
   resize: none;

@@ -239,11 +239,12 @@
       <div class="tmpl-sidebar-header">
         <span class="card-title" style="margin-bottom:0;">Templates</span>
         <div style="display:flex;gap:4px;">
-          <button id="tmpl-upload" class="btn btn-ghost btn-sm" title="Upload .txt / .md template file">&#8613; Upload</button>
-          <button id="tmpl-new" class="btn btn-ghost btn-sm" title="Create new template">+ New</button>
+          <button id="tmpl-upload" class="btn btn-secondary btn-sm" title="Import a .txt / .md template file from your computer">&#8613; Import</button>
+          <button id="tmpl-new" class="btn btn-ghost btn-sm" title="Create a new blank template">+ New</button>
         </div>
         <input type="file" id="tmpl-upload-input" accept=".txt,.md,text/plain,text/markdown" style="display:none;" />
       </div>
+      <div class="tmpl-import-hint">Import your own report templates with &#8613; Import (.txt or .md).</div>
       <input id="tmpl-search" type="text" class="tmpl-search" placeholder="Search…" autocomplete="off" />
       <ul id="tmpl-list" class="tmpl-list"></ul>
     </div>
@@ -253,7 +254,13 @@
         <span id="tmpl-editor-title" style="font-weight:600;font-size:13px;color:var(--muted);">Select a template</span>
         <button id="tmpl-close" class="btn btn-ghost btn-sm" title="Close (Esc)">&#10005;</button>
       </div>
-      <textarea id="tmpl-content" class="tmpl-textarea" placeholder="Select a template from the list…" spellcheck="false"></textarea>
+      <div id="tmpl-tabs" class="tmpl-tabs" style="display:none;">
+        <button id="tmpl-tab-structure" class="tmpl-tab tmpl-tab-active" data-pane="structure" title="The report skeleton: section headers and default text. This is what you'll usually edit.">Report structure</button>
+        <button id="tmpl-tab-ai" class="tmpl-tab" data-pane="ai" title="Advanced: instructions that tell the AI how to fill in this template. Most users never need to touch this.">AI instructions</button>
+        <span id="tmpl-split-note" class="tmpl-split-note"></span>
+      </div>
+      <textarea id="tmpl-content" class="tmpl-textarea" data-pane="structure" placeholder="Select a template from the list, or click &#8613; Import to add your own .txt / .md file…" spellcheck="false"></textarea>
+      <textarea id="tmpl-content-ai" class="tmpl-textarea" data-pane="ai" style="display:none;" placeholder="Advanced AI instructions for this template (optional)…" spellcheck="false"></textarea>
       <div class="tmpl-actions">
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="tmpl-save" class="btn btn-secondary btn-sm" disabled>&#10003; Save</button>
