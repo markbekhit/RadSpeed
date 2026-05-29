@@ -174,4 +174,2666 @@ def _user_fhir_enabled(user: dict) -> bool:
     return config.fhir_export_enabled
 
 
-PLACEHOLDER
+# ---------------------------------------------------------------------------
+# Session cache  {session_id: {transcription, expires_at}}
+# ---------------------------------------------------------------------------
+
+_sessions: dict[str, dict] = {}
+_SESSION_TTL = 1800  # 30 minutes
+
+
+def _create_session(transcription: str) -> str:
+    sid = str(uuid.uuid4())
+    _sessions[sid] = {
+        "transcription": transcription,
+        "expires_at": time.time() + _SESSION_TTL,
+    }
+    return sid
+
+
+def _get_session(sid: str) -> Optional[str]:
+    s = _sessions.get(sid)
+    if s and s["expires_at"] > time.time():
+        return s["transcription"]
+    _sessions.pop(sid, None)
+    return None
+
+
+def _prune_sessions() -> None:
+    """Remove expired sessions (called lazily on each transcription)."""
+    now = time.time()
+    expired = [k for k, v in _sessions.items() if v["expires_at"] <= now]
+    for k in expired:
+        del _sessions[k]
+
+
+# ---------------------------------------------------------------------------
+# Thread lock for format_text() — protects config.global_md_text_content
+# mutation from concurrent requests.
+# ---------------------------------------------------------------------------
+
+_format_lock = threading.Lock()
+
+
+# ---------------------------------------------------------------------------
+# Helper: list available templates
+# ---------------------------------------------------------------------------
+
+_BUNDLED_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+
+
+def _list_templates() -> list[str]:
+    template_dir = os.path.join(config.save_directory or "", "templates")
+    names: set[str] = set()
+    for d in (template_dir, _BUNDLED_TEMPLATES_DIR):
+        if os.path.isdir(d):
+            names.update(f for f in os.listdir(d) if f.endswith((".txt", ".md")))
+    # Pin Plain_Prose.txt to the top so the unstructured option is discoverable
+    # without scrolling past the alphabetical list of structured templates.
+    ordered = sorted(names)
+    for pinned in ("Plain_Prose.txt",):
+        if pinned in ordered:
+            ordered.remove(pinned)
+            ordered.insert(0, pinned)
+    return ordered
+
+
+def _load_template_content(template_name: str) -> str:
+    if not template_name:
+        return ""
+    for d in (
+        os.path.join(config.save_directory or "", "templates"),
+        _BUNDLED_TEMPLATES_DIR,
+    ):
+        path = os.path.join(d, template_name)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+    return ""
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@app.get("/health", include_in_schema=False)
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return RedirectResponse("/static/favicon.svg", status_code=308)
+
+
+# ---------------------------------------------------------------------------
+# Public Impressions wedge tool — free, no auth, IP rate-limited.
+# ---------------------------------------------------------------------------
+
+# Simple in-memory sliding-window rate limiter keyed by client IP.
+# Process-local; sufficient for the single-instance free tier. Replace with
+# Redis or a CDN/edge limiter when we scale beyond one app server.
+_IMPRESSIONS_RATE_LIMIT = int(os.environ.get("RADSPEED_IMPRESSIONS_HOURLY_LIMIT", "20"))
+_IMPRESSIONS_WINDOW_SEC = 3600
+_impressions_hits: dict[str, list[float]] = {}
+_impressions_lock = threading.Lock()
+
+
+def _impressions_client_ip(request: Request) -> str:
+    # Honour X-Forwarded-For when set (we expect to run behind a reverse proxy).
+    fwd = request.headers.get("x-forwarded-for", "")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _impressions_rate_check(ip: str) -> tuple[bool, int]:
+    """Return (allowed, remaining). Mutates the hit log on allow."""
+    now = time.time()
+    cutoff = now - _IMPRESSIONS_WINDOW_SEC
+    with _impressions_lock:
+        hits = _impressions_hits.get(ip, [])
+        hits = [t for t in hits if t > cutoff]
+        if len(hits) >= _IMPRESSIONS_RATE_LIMIT:
+            _impressions_hits[ip] = hits
+            return False, 0
+        hits.append(now)
+        _impressions_hits[ip] = hits
+        return True, _IMPRESSIONS_RATE_LIMIT - len(hits)
+
+
+@app.get("/impressions", include_in_schema=False)
+def impressions_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "impressions.html",
+        {
+            "request": request,
+            "static_version": _STATIC_VERSION,
+        },
+    )
+
+
+class ImpressionsRequest(BaseModel):
+    findings: str
+    modality: Optional[str] = None
+    with_guidelines: bool = False
+    style: Optional[dict] = None
+
+
+@app.post("/api/impressions/stream")
+def api_impressions_stream(req: ImpressionsRequest, request: Request):
+    """Stream a guideline-aware radiology impression from the supplied findings.
+
+    Public endpoint (no auth) — rate-limited per client IP.
+    SSE frames:
+      data: {"token": "..."}     — text chunk
+      data: {"done": true}       — completion
+      data: {"error": "..."}     — error
+    """
+    findings = (req.findings or "").strip()
+    if not findings:
+        raise HTTPException(status_code=400, detail="Findings are required.")
+    if len(findings) > 8000:
+        raise HTTPException(
+            status_code=413,
+            detail="Findings too long. Please trim to under 8000 characters.",
+        )
+
+    ip = _impressions_client_ip(request)
+    allowed, remaining = _impressions_rate_check(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Hourly limit of {_IMPRESSIONS_RATE_LIMIT} impressions reached. "
+                "Try again later or sign in to RadSpeed for unlimited use."
+            ),
+        )
+
+    if not config.TEXT_API_KEY:
+        def _err():
+            yield 'data: {"error": "Text model is not configured on this server."}\n\n'
+        return StreamingResponse(_err(), media_type="text/event-stream")
+
+    def _generate():
+        try:
+            for chunk in stream_impression(
+                findings=findings,
+                modality=req.modality,
+                style=req.style,
+                with_guidelines=bool(req.with_guidelines),
+            ):
+                if chunk:
+                    yield f'data: {json.dumps({"token": chunk})}\n\n'
+        except Exception as e:
+            logger.error("Impressions stream error: %s", e, exc_info=True)
+            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+            return
+        yield 'data: {"done": true}\n\n'
+
+    return StreamingResponse(
+        _generate(),
+        media_type="text/event-stream",
+        headers={"X-RadSpeed-Remaining": str(remaining)},
+    )
+
+
+@app.post("/api/impressions/text", response_class=PlainTextResponse)
+def api_impressions_text(req: ImpressionsRequest, request: Request):
+    """Non-streaming impression generation — returns plain text.
+
+    Designed for the Windows desktop helper (AutoHotkey / Tauri) where a
+    single HTTP POST with a plain-text body is much simpler than parsing
+    SSE. Same validation and rate limiting as the streaming endpoint.
+    """
+    findings = (req.findings or "").strip()
+    if not findings:
+        raise HTTPException(status_code=400, detail="Findings are required.")
+    if len(findings) > 8000:
+        raise HTTPException(
+            status_code=413,
+            detail="Findings too long. Please trim to under 8000 characters.",
+        )
+
+    ip = _impressions_client_ip(request)
+    allowed, remaining = _impressions_rate_check(ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=(
+                f"Hourly limit of {_IMPRESSIONS_RATE_LIMIT} impressions reached. "
+                "Try again later or sign in to RadSpeed for unlimited use."
+            ),
+        )
+
+    if not config.TEXT_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="Text model is not configured on this server.",
+        )
+
+    try:
+        chunks = list(stream_impression(
+            findings=findings,
+            modality=req.modality,
+            style=req.style,
+            with_guidelines=bool(req.with_guidelines),
+        ))
+    except Exception as e:
+        logger.error("Impressions text generation error: %s", e, exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Generation failed: {e}")
+
+    text = "".join(chunks).strip()
+    return PlainTextResponse(
+        text,
+        headers={"X-RadSpeed-Remaining": str(remaining)},
+    )
+
+
+# ---------------------------------------------------------------------------
+# WebSocket auth helpers
+# ---------------------------------------------------------------------------
+
+def _make_ws_token(username: str) -> str:
+    """Return a base64-encoded token embedding username:password for WS auth."""
+    password = os.environ.get("VOXRAD_WEB_PASSWORD", _DEFAULT_WEB_PASSWORD)
+    return base64.b64encode(f"{username}:{password}".encode()).decode()
+
+
+def _verify_ws_token(token: str) -> Optional[dict]:
+    """Verify a WS auth token; return a minimal user dict on success, None on failure.
+
+    The token is base64(username:password). Returns {"id": None, "name": username}
+    — sufficient to load the shared vocab file in Basic Auth mode. OAuth per-user
+    vocab is not resolved here (the WS protocol doesn't carry the OAuth session).
+    """
+    try:
+        decoded = base64.b64decode(token).decode()
+        username, pw = decoded.split(":", 1)
+        expected = os.environ.get("VOXRAD_WEB_PASSWORD", _DEFAULT_WEB_PASSWORD)
+        if secrets.compare_digest(pw.encode(), expected.encode()):
+            return {"id": None, "name": username, "email": username}
+        return None
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Keyword list builder — used for provider-side vocabulary boosting
+# ---------------------------------------------------------------------------
+
+def _build_keyword_list(template_name: Optional[str], user: Optional[dict] = None) -> list:
+    """Return a list of medical terms for STT keyword boosting.
+
+    Prefers the [correct spellings] block from the selected template;
+    falls back to extracting terms from _RADIOLOGY_PROMPT.
+    User-learned vocab terms are appended at the end.
+    """
+    text = _RADIOLOGY_PROMPT
+    if template_name:
+        content = _load_template_content(template_name)
+        match = re.search(
+            r"\[correct spellings\](.*?)\[correct spellings\]", content, re.DOTALL
+        )
+        if match:
+            text = match.group(1).strip()
+    parts = re.split(r"[,\n.]+", text)
+    keywords = [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
+    if user:
+        user_vocab = _load_user_vocab(user)
+        for term in user_vocab:
+            if term not in keywords:
+                keywords.append(term)
+    return keywords[:200]
+
+
+# Mount mock OpenAI-compatible routes when running without real API keys.
+if os.environ.get("VOXRAD_MOCK_MODE"):
+    from web.mock_routes import router as _mock_router
+    app.include_router(_mock_router)
+    logger.info("[mock] Mock API routes mounted at /mock/v1/...")
+
+
+@app.get("/login")
+def login_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "login.html",
+        {
+            "request": request,
+            "google_enabled": google_enabled(),
+            "microsoft_enabled": microsoft_enabled(),
+            "error": request.query_params.get("error"),
+            "static_version": _STATIC_VERSION,
+        },
+    )
+
+
+@app.get("/auth/google")
+def auth_google(request: Request):
+    if not google_enabled():
+        raise HTTPException(status_code=404)
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    return RedirectResponse(google_auth_url(state))
+
+
+@app.get("/auth/google/callback")
+def auth_google_callback(request: Request, code: str = "", state: str = "", error: str = ""):
+    if error:
+        return RedirectResponse(f"/login?error={error}")
+    expected = request.session.pop("oauth_state", None)
+    if not expected or state != expected:
+        return RedirectResponse("/login?error=invalid_state")
+    try:
+        info = exchange_google_code(code)
+    except Exception as exc:
+        logger.error("Google OAuth error: %s", exc)
+        return RedirectResponse("/login?error=google_auth_failed")
+    if not info.get("email"):
+        return RedirectResponse("/login?error=no_email")
+    db_user = get_or_create_user(info["email"], info["name"], "google")
+    set_session_user(request, db_user)
+    log_event(user_id=db_user.get("id"), event_type="login", metadata={"provider": "google"})
+    return RedirectResponse("/")
+
+
+@app.get("/auth/microsoft")
+def auth_microsoft(request: Request):
+    if not microsoft_enabled():
+        raise HTTPException(status_code=404)
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
+    return RedirectResponse(microsoft_auth_url(state))
+
+
+@app.get("/auth/microsoft/callback")
+def auth_microsoft_callback(request: Request, code: str = "", state: str = "", error: str = ""):
+    if error:
+        return RedirectResponse(f"/login?error={error}")
+    expected = request.session.pop("oauth_state", None)
+    if not expected or state != expected:
+        return RedirectResponse("/login?error=invalid_state")
+    try:
+        info = exchange_microsoft_code(code)
+    except Exception as exc:
+        logger.error("Microsoft OAuth error: %s", exc)
+        return RedirectResponse("/login?error=microsoft_auth_failed")
+    if not info.get("email"):
+        return RedirectResponse("/login?error=no_email")
+    db_user = get_or_create_user(info["email"], info["name"], "microsoft")
+    set_session_user(request, db_user)
+    log_event(user_id=db_user.get("id"), event_type="login", metadata={"provider": "microsoft"})
+    return RedirectResponse("/")
+
+
+@app.get("/logout")
+def logout(request: Request):
+    clear_session(request)
+    return RedirectResponse("/login")
+
+
+@app.get("/")
+def index(request: Request, user: dict = Depends(_verify_auth)):
+    _username = _get_username(user)
+    _style = _user_style(user) or {}
+    paste_format = _style.get("paste_format", config.style_paste_format) or "rich"
+    return _jinja.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "request": request,
+            "templates": _list_templates(),
+            "username": _username,
+            "fhir_enabled": _user_fhir_enabled(user),
+            "ws_token": _make_ws_token(_username),
+            "static_version": _STATIC_VERSION,
+            "oauth_mode": oauth_enabled(),
+            "paste_format": paste_format,
+        },
+    )
+
+
+@app.get("/settings")
+def settings_page(request: Request, user: dict = Depends(_verify_auth)):
+    return _jinja.TemplateResponse(
+        request,
+        "settings.html",
+        {
+            "request": request,
+            "username": _get_username(user),
+            "static_version": _STATIC_VERSION,
+        },
+    )
+
+
+@app.get("/templates")
+def list_templates(user: dict = Depends(_verify_auth)):
+    user_dir = os.path.join(config.save_directory or "", "templates")
+    user_names: set[str] = set()
+    if os.path.isdir(user_dir):
+        user_names = {f for f in os.listdir(user_dir) if f.endswith((".txt", ".md"))}
+    return {
+        "templates": [
+            {"name": t, "is_custom": t in user_names}
+            for t in _list_templates()
+        ]
+    }
+
+
+_TEMPLATE_NAME_RE = re.compile(r'^[\w\-. ]+\.(txt|md)$')
+
+
+@app.get("/api/templates/{name}")
+def get_template_content(name: str, user: dict = Depends(_verify_auth)):
+    if not _TEMPLATE_NAME_RE.match(name):
+        raise HTTPException(status_code=400, detail="Invalid template name")
+    user_dir = os.path.join(config.save_directory or "", "templates")
+    user_path = os.path.join(user_dir, name)
+    bundled_path = os.path.join(_BUNDLED_TEMPLATES_DIR, name)
+    is_custom = os.path.exists(user_path)
+    path = user_path if is_custom else bundled_path
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Template not found")
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    structure, ai_instructions, has_split = split_template(content)
+    return {
+        "content": content,
+        "structure": structure,
+        "ai_instructions": ai_instructions,
+        "has_split": has_split,
+        "is_custom": is_custom,
+    }
+
+
+class _TemplateSaveBody(BaseModel):
+    # Either pass `content` (raw, legacy) OR the two-section fields. When the
+    # section fields are present they take precedence and are recombined into
+    # the on-disk file via join_template().
+    content: Optional[str] = None
+    structure: Optional[str] = None
+    ai_instructions: Optional[str] = None
+
+
+@app.put("/api/templates/{name}")
+def save_template_content(name: str, body: _TemplateSaveBody, user: dict = Depends(_verify_auth)):
+    if not _TEMPLATE_NAME_RE.match(name):
+        raise HTTPException(status_code=400, detail="Invalid template name")
+    if body.structure is not None or body.ai_instructions is not None:
+        content = join_template(body.structure or "", body.ai_instructions or "")
+    elif body.content is not None:
+        content = body.content
+    else:
+        raise HTTPException(status_code=400, detail="No content provided")
+    user_dir = os.path.join(config.save_directory or "", "templates")
+    os.makedirs(user_dir, exist_ok=True)
+    with open(os.path.join(user_dir, name), "w", encoding="utf-8") as f:
+        f.write(content)
+    return {"ok": True}
+
+
+@app.delete("/api/templates/{name}")
+def delete_template_content(name: str, user: dict = Depends(_verify_auth)):
+    if not _TEMPLATE_NAME_RE.match(name):
+        raise HTTPException(status_code=400, detail="Invalid template name")
+    user_dir = os.path.join(config.save_directory or "", "templates")
+    path = os.path.join(user_dir, name)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="No custom version found")
+    os.remove(path)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Whisper hallucination filter
+# ---------------------------------------------------------------------------
+
+# Whisper reliably hallucinates these phrases on silent/noisy audio.
+# Normalise to lowercase, strip trailing punctuation before comparing.
+_HALLUCINATIONS: set[str] = {
+    "", "thank you", "thanks", "thank you so much", "thank you very much",
+    "thank you for watching", "thanks for watching", "thank you for listening",
+    "thanks for listening", "please like and subscribe", "don't forget to subscribe",
+    "okay", "ok", "alright", "right", "sure", "yes", "no", "yep", "nope",
+    "bye", "goodbye", "see you", "see you next time", "take care",
+    "hello", "hi", "hey", "welcome", "welcome back",
+    "you", "hmm", "mm", "mm-hmm", "um", "uh", "ah", "oh",
+    "of course", "absolutely", "indeed", "certainly",
+    "subtitles by", "subtitles", "captions by", "captions",
+    "transcribed by", "translated by",
+    "john", "omar", "james", "michael", "david",  # common single-name hallucinations
+}
+
+
+def _is_hallucination(text: str, asr_prompt: str = "") -> bool:
+    normalised = text.strip().lower().rstrip(".,!?;: ").strip()
+    if normalised in _HALLUCINATIONS:
+        return True
+    # Single short non-medical word
+    words = normalised.split()
+    if len(words) == 1 and len(normalised) <= 6 and normalised.isalpha():
+        return True
+    # Repetition loop: any 5-word ngram appearing more than once
+    if len(words) >= 10:
+        seen: set[tuple] = set()
+        for i in range(len(words) - 4):
+            ngram = tuple(words[i:i+5])
+            if ngram in seen:
+                return True
+            seen.add(ngram)
+    # Prompt-echo detection: discard if the transcription matches any sentence
+    # from the ASR prompt (Whisper completes/repeats prompt on silent audio)
+    if asr_prompt:
+        text_norm = text.strip().lower().rstrip(".,!?;: ")
+        for sentence in re.split(r"[.!?]", asr_prompt):
+            s = sentence.strip().lower().rstrip(".,!?;: ")
+            if len(s) > 15 and (text_norm == s or text_norm in s or s in text_norm):
+                return True
+    return False
+
+
+# Valid single-word replacements a radiologist may dictate in voice-edit mode.
+# We allow these through the voice-edit hallucination filter; the regular
+# dictation filter still rejects them (because standalone they're suspicious).
+# Laterality ("right"/"left") and severity/presence short words are the
+# most common one-word voice edits, so they must pass through even though
+# some (e.g. "right") are in _HALLUCINATIONS for the general filter.
+_VOICE_EDIT_ALLOWED_SHORT = {
+    # Laterality and orientation — critical for anatomy swaps
+    "left", "right", "bilateral", "upper", "lower",
+    "anterior", "posterior", "medial", "lateral",
+    "superior", "inferior", "proximal", "distal",
+    # Presence / absence
+    "no", "yes", "none", "absent", "present", "unchanged",
+    "normal", "abnormal", "positive", "negative",
+    # Severity
+    "mild", "moderate", "severe", "minimal", "marked",
+    "small", "large", "trace",
+    # Character
+    "acute", "chronic", "focal", "diffuse",
+    "intact", "clear", "stable", "benign", "patent", "occluded",
+    # Common punctuated variants the ASR may return
+    "mild.", "no.", "yes.", "right.", "left.",
+}
+
+
+def _is_voice_edit_hallucination(text: str, asr_prompt: str = "") -> bool:
+    """Hallucination filter for voice-edit mode.
+
+    Same as _is_hallucination but permissive of short valid replacements
+    (e.g. "normal", "intact", "no") that a radiologist may genuinely say.
+    Still rejects known Whisper garbage phrases, prompt-echo, and repetition
+    loops — the ones that fire on silent/noisy audio.
+    """
+    normalised = text.strip().lower().rstrip(".,!?;: ").strip()
+    if normalised in _VOICE_EDIT_ALLOWED_SHORT:
+        return False
+    if normalised in _HALLUCINATIONS:
+        return True
+    words = normalised.split()
+    # Repetition loop
+    if len(words) >= 10:
+        seen: set[tuple] = set()
+        for i in range(len(words) - 4):
+            ngram = tuple(words[i:i+5])
+            if ngram in seen:
+                return True
+            seen.add(ngram)
+    # Prompt-echo: Whisper repeats the surrounding-text prompt verbatim on
+    # silent audio. Decisive signal — keep this check active.
+    if asr_prompt:
+        text_norm = text.strip().lower().rstrip(".,!?;: ")
+        for sentence in re.split(r"[.!?]", asr_prompt):
+            s = sentence.strip().lower().rstrip(".,!?;: ")
+            if len(s) > 15 and (text_norm == s or text_norm in s or s in text_norm):
+                return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Radiology vocabulary prompt for Whisper
+# Two-part design per OpenAI Whisper docs:
+#   1. A short context sentence (tells Whisper this is medical dictation)
+#   2. A curated vocabulary list of RadLex-derived terms Whisper commonly
+#      confuses — comma-separated so Whisper learns their spelling/casing.
+# Template-specific [correct spellings] blocks override this entirely.
+# ---------------------------------------------------------------------------
+_RADIOLOGY_PROMPT = (
+    # Context sentence + RadLex-derived vocabulary list (≤ 896 chars for Groq)
+    "Radiology dictation. "
+    "oedema, meniscus, menisci, supraspinatus, infraspinatus, subscapularis, "
+    "chondromalacia, chondral, subchondral, osteochondral, trabecular, "
+    "Baker's cyst, Hoffa's fat pad, trochanteric, ACL, PCL, MCL, LCL, MPFL, "
+    "Bankart, Hill-Sachs, SLAP, rotator cuff, "
+    "effusion, synovitis, tenosynovitis, enthesopathy, bursitis, "
+    "consolidation, atelectasis, bronchiectasis, pneumothorax, "
+    "pleural effusion, mediastinum, hilar, parenchyma, "
+    "hepatomegaly, splenomegaly, cholelithiasis, nephrolithiasis, "
+    "lymphadenopathy, herniation, spondylosis, spondylolisthesis, stenosis, "
+    "cauda equina, ligamentum flavum, intraosseous, cortical, cancellous, "
+    "T1-weighted, T2-weighted, STIR, gradient echo, Hounsfield, "
+    "coronal, sagittal, axial."
+)
+
+# ---------------------------------------------------------------------------
+# LLM post-correction for raw Whisper output
+# A fast, tight prompt that fixes medical ASR errors without rephrasing.
+# ---------------------------------------------------------------------------
+_CORRECTION_SYSTEM = """\
+You are a medical transcription corrector for radiology dictation.
+Fix ONLY obvious speech recognition errors: misspelled medical terms, \
+mangled anatomy, and garbled drug or procedure names.
+Do NOT rephrase, reorder, summarise, or add any words not present in the input.
+Return the corrected text only — no explanation, no prefix, no punctuation changes \
+beyond fixing the erroneous word itself.\
+"""
+
+
+def _correct_asr_text(raw: str) -> str:
+    """Pass raw Whisper output through a fast LLM to fix medical terminology errors.
+
+    Uses the text LLM (GPT-4o-mini / configured model). Skips correction if
+    the text LLM is not configured or if the text is very short (≤ 3 words).
+    """
+    if not config.TEXT_API_KEY:
+        return raw
+    words = raw.split()
+    if len(words) <= 3:
+        return raw  # too short to bother; unlikely to have complex errors
+    try:
+        client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+        resp = client.chat.completions.create(
+            model=config.SELECTED_MODEL,
+            messages=[
+                {"role": "system", "content": _CORRECTION_SYSTEM},
+                {"role": "user", "content": raw},
+            ],
+            temperature=0.0,
+            max_tokens=len(words) + 30,  # corrected text won't be longer
+        )
+        corrected = resp.choices[0].message.content.strip()
+        # Safety: if the LLM somehow returns nothing or drastically expands the
+        # text, fall back to the original Whisper output.
+        if not corrected or len(corrected) > len(raw) * 2:
+            return raw
+        return corrected
+    except Exception as exc:
+        logger.warning("ASR correction skipped: %s", exc)
+        return raw
+
+
+# ---------------------------------------------------------------------------
+# Per-user vocabulary — "remember my corrections"
+# ---------------------------------------------------------------------------
+# When the user voice-edits a highlighted word and the replacement sounds
+# like a correction of a misheard word (rather than a content change), we
+# suggest adding the new spelling to their vocab. Accepted terms are then
+# injected into the Whisper ASR prompt on subsequent dictations, so the
+# same mistake is less likely to recur.
+#
+# Phonetic check is intentionally heuristic — the toast is dismissable, the
+# user has the final say.
+
+def _vocab_dir() -> str:
+    return os.path.join(config.save_directory or "/tmp", "vocab")
+
+
+def _vocab_path(user: dict) -> str:
+    os.makedirs(_vocab_dir(), exist_ok=True)
+    uid = user.get("id")
+    # OAuth → per-user file; Basic Auth → one shared file.
+    key = f"user_{uid}" if uid is not None else "shared"
+    return os.path.join(_vocab_dir(), f"{key}.txt")
+
+
+def _load_user_vocab(user: dict) -> list:
+    path = _vocab_path(user)
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return [line.strip() for line in f if line.strip()]
+    except OSError:
+        return []
+
+
+def _add_to_user_vocab(user: dict, term: str) -> bool:
+    term = term.strip()
+    if not term:
+        return False
+    existing = _load_user_vocab(user)
+    if term.lower() in [t.lower() for t in existing]:
+        return False
+    path = _vocab_path(user)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(term + "\n")
+    logger.info("Added vocab term %r for %s", term, _get_username(user))
+    return True
+
+
+def _soundalike(word: str) -> str:
+    """Crude phonetic reduction. Not full metaphone, zero deps.
+
+    Collapses homophonic digraphs, drops interior vowels, removes doubles —
+    enough to make 'supraspinatus'↔'super spin atrice' look close without
+    making 'mild'↔'moderate' look close.
+    """
+    w = re.sub(r"[^a-z]", "", word.lower())
+    if not w:
+        return ""
+    w = w.replace("ph", "f").replace("ck", "k").replace("qu", "kw")
+    w = w.replace("ch", "k").replace("sh", "s")
+    head, tail = w[0], re.sub(r"[aeiouy]", "", w[1:])
+    collapsed = head + tail
+    out = []
+    for ch in collapsed:
+        if not out or out[-1] != ch:
+            out.append(ch)
+    return "".join(out)
+
+
+def _phonetic_similar(old: str, new: str) -> bool:
+    """True when `new` looks like an ASR correction of `old`, not a content edit."""
+    import difflib
+    a = re.sub(r"[^\w\s]", "", old.strip().lower())
+    b = re.sub(r"[^\w\s]", "", new.strip().lower())
+    if not a or not b or a == b:
+        return False
+    if difflib.SequenceMatcher(None, a, b).ratio() >= 0.65:
+        return True
+    sa, sb = _soundalike(a), _soundalike(b)
+    if sa and sb and difflib.SequenceMatcher(None, sa, sb).ratio() >= 0.7:
+        return True
+    return False
+
+
+def _should_suggest_vocab(user: dict, old: str, new: str) -> Optional[dict]:
+    """Return {old, new} if this edit looks like a correction worth remembering.
+
+    Single-word edits only — multi-word diffs are too error-prone to
+    auto-suggest. Skips terms already in the user's vocab.
+    """
+    a = (old or "").strip()
+    b = (new or "").strip()
+    if not a or not b:
+        return None
+    if len(a.split()) != 1 or len(b.split()) != 1:
+        return None
+    a_key = a.lower().rstrip(".,!?;:")
+    b_key = b.lower().rstrip(".,!?;:")
+    if a_key == b_key:
+        return None
+    if not _phonetic_similar(a, b):
+        return None
+    if b_key in {t.lower().rstrip(".,!?;:") for t in _load_user_vocab(user)}:
+        return None
+    return {"old": a.rstrip(".,!?;:"), "new": b.rstrip(".,!?;:")}
+
+
+# ---------------------------------------------------------------------------
+# Style drift detection — proactive setting suggestions
+# ---------------------------------------------------------------------------
+# Detects when the user repeatedly corrects the LLM's output in a way that
+# signals a style-setting preference. After 2 similar edits, returns a
+# suggest_setting dict so the client can offer to save the preference.
+#
+# Patterns checked via voice-edit old/new pairs (/transcribe):
+#   1. Spelling — British↔American word substitutions
+#   3. Laterality — full ("left") ↔ abbreviated ("L")
+#   5. Negation phrasing — "no evidence of" / "no X identified" / "X absent"
+#   N. Numerals — same-combo rule: "grade VI"→"grade 6" must appear ≥2×
+#      for the SAME preceding-word+numeral combo to count
+#
+# Patterns checked via full-text report diff (/api/track-report-edit):
+#   4. Impression style — bullets ↔ numbered ↔ prose
+#   6. Date format — format inferred from the dates that appear in the report
+
+# British → American spelling pairs frequent in radiology.
+_BRIT_TO_AMER: dict = {
+    "colour": "color",        "colours": "colors",
+    "tumour": "tumor",        "tumours": "tumors",
+    "oedema": "edema",        "oedemas": "edemas",     "oedematous": "edematous",
+    "haemorrhage": "hemorrhage",  "haemorrhagic": "hemorrhagic",
+    "haematoma": "hematoma",  "haematomas": "hematomas",
+    "haematological": "hematological",
+    "anaesthesia": "anesthesia",  "anaesthetic": "anesthetic",
+    "paediatric": "pediatric",    "paediatrics": "pediatrics",
+    "localised": "localized",     "generalised": "generalized",
+    "organised": "organized",     "visualised": "visualized",
+    "recognised": "recognized",   "characterised": "characterized",
+    "analysed": "analyzed",
+    "oesophagus": "esophagus",    "oesophageal": "esophageal",
+    "orthopaedic": "orthopedic",  "orthopaedics": "orthopedics",
+    "gynaecology": "gynecology",  "gynaecological": "gynecological",
+    "diarrhoea": "diarrhea",
+    "foetal": "fetal",            "foetus": "fetus",
+    "aetiology": "etiology",      "aetiological": "etiological",
+    "grey": "gray",               "greys": "grays",
+    "artefact": "artifact",       "artefacts": "artifacts",
+    "caecum": "cecum",            "caecal": "cecal",
+    "oestrogen": "estrogen",      "haemoglobin": "hemoglobin",
+    "fibre": "fiber",             "fibres": "fibers",
+    "centre": "center",           "centres": "centers",
+}
+_AMER_TO_BRIT: dict = {v: k for k, v in _BRIT_TO_AMER.items()}
+
+# Roman ↔ Arabic numerals (I–XII covers all clinical grades/segments/stages).
+_ROMAN_TO_INT: dict = {
+    "i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6,
+    "vii": 7, "viii": 8, "ix": 9, "x": 10, "xi": 11, "xii": 12,
+}
+_INT_TO_ROMAN: dict = {v: k.upper() for k, v in _ROMAN_TO_INT.items()}
+
+# Per-user in-memory edit counters — {user_key: {pattern_key: count}}.
+# Resets on server restart (deploy). Two edits within a session is enough.
+_STYLE_COUNTS: dict = {}
+_STYLE_THRESHOLD = 2
+
+
+def _sty_key(user: dict) -> str:
+    return str(user.get("id") or user.get("email") or "anon")
+
+
+def _sty_count(user: dict, pk: str) -> int:
+    """Increment the counter for pattern_key and return the new count."""
+    k = _sty_key(user)
+    if k not in _STYLE_COUNTS:
+        _STYLE_COUNTS[k] = {}
+    _STYLE_COUNTS[k][pk] = _STYLE_COUNTS[k].get(pk, 0) + 1
+    return _STYLE_COUNTS[k][pk]
+
+
+def _dismissed_path(user: dict) -> str:
+    os.makedirs(_vocab_dir(), exist_ok=True)
+    return os.path.join(_vocab_dir(), f"style_dismissed_{_sty_key(user)}.json")
+
+
+def _load_dismissed(user: dict) -> set:
+    path = _dismissed_path(user)
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+    except (OSError, ValueError):
+        pass
+    return set()
+
+
+def _save_dismissed(user: dict, pattern_key: str) -> None:
+    current = _load_dismissed(user)
+    current.add(pattern_key)
+    with open(_dismissed_path(user), "w", encoding="utf-8") as f:
+        json.dump(list(current), f)
+
+
+def _numeral_prefs_path(user: dict) -> str:
+    os.makedirs(_vocab_dir(), exist_ok=True)
+    return os.path.join(_vocab_dir(), f"numeral_prefs_{_sty_key(user)}.json")
+
+
+def _load_numeral_prefs(user: dict) -> list:
+    """List of {pattern, replacement} dicts, e.g. [{"pattern": "grade VI", "replacement": "grade 6"}]."""
+    path = _numeral_prefs_path(user)
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except (OSError, ValueError):
+        pass
+    return []
+
+
+def _add_numeral_pref(user: dict, pattern: str, replacement: str) -> None:
+    prefs = [p for p in _load_numeral_prefs(user) if p.get("pattern", "").lower() != pattern.lower()]
+    prefs.append({"pattern": pattern, "replacement": replacement})
+    with open(_numeral_prefs_path(user), "w", encoding="utf-8") as f:
+        json.dump(prefs, f)
+    logger.info("Saved numeral pref %r→%r for %s", pattern, replacement, _get_username(user))
+
+
+def _make_suggest(setting: str, value: str, message: str, pattern_key: str, **extra) -> dict:
+    d = {"setting": setting, "value": value, "message": message, "pattern_key": pattern_key}
+    d.update(extra)
+    return d
+
+
+def _check_and_suggest(user: dict, pk: str, make_fn) -> Optional[dict]:
+    """Increment counter for pk; if >= threshold and not dismissed, return make_fn()."""
+    if pk in _load_dismissed(user):
+        return None
+    if _sty_count(user, pk) >= _STYLE_THRESHOLD:
+        return make_fn()
+    return None
+
+
+def _detect_style_drift(
+    user: dict, old: str, new: str, pre_context: str = ""
+) -> Optional[dict]:
+    """Detect style-setting drift from a voice-edit old→new pair.
+
+    Checks spelling, laterality, negation phrasing, and numerals (same-combo rule).
+    Returns a suggest_setting dict when the threshold is reached, else None.
+    """
+    if not old or not new:
+        return None
+    o_clean = re.sub(r"[^\w\s]", "", old.lower()).strip()
+    n_clean = re.sub(r"[^\w\s]", "", new.lower()).strip()
+    if not o_clean or not n_clean or o_clean == n_clean:
+        return None
+
+    o_set = set(o_clean.split())
+    n_set = set(n_clean.split())
+
+    # 1. Spelling drift (per-word scan handles multi-word selections)
+    for ow in o_set:
+        if ow in _BRIT_TO_AMER and _BRIT_TO_AMER[ow] in n_set:
+            amer = _BRIT_TO_AMER[ow]
+            pk = "spelling:brit→amer"
+            return _check_and_suggest(user, pk, lambda ow=ow, amer=amer: _make_suggest(
+                "style_spelling", "american",
+                f"You keep using American spelling (e.g. <b>{amer}</b> instead of <b>{ow}</b>) — set American English as default?",
+                pk,
+            ))
+        if ow in _AMER_TO_BRIT and _AMER_TO_BRIT[ow] in n_set:
+            brit = _AMER_TO_BRIT[ow]
+            pk = "spelling:amer→brit"
+            return _check_and_suggest(user, pk, lambda ow=ow, brit=brit: _make_suggest(
+                "style_spelling", "british",
+                f"You keep using British spelling (e.g. <b>{brit}</b> instead of <b>{ow}</b>) — set British English as default?",
+                pk,
+            ))
+
+    # 3. Laterality drift — full ↔ abbreviated
+    _lat_f2a = {"left": "l", "right": "r", "bilateral": "b"}
+    _lat_a2f = {v: k for k, v in _lat_f2a.items()}
+    for ow in o_set:
+        if ow in _lat_f2a and _lat_f2a[ow] in n_set:
+            abbrev = _lat_f2a[ow].upper()
+            pk = "laterality:full→abbrev"
+            return _check_and_suggest(user, pk, lambda ow=ow, abbrev=abbrev: _make_suggest(
+                "style_laterality", "abbrev",
+                f"You keep abbreviating laterality (e.g. <b>{ow}</b> → <b>{abbrev}</b>) — use abbreviated style by default?",
+                pk,
+            ))
+        if ow in _lat_a2f and _lat_a2f[ow] in n_set:
+            full = _lat_a2f[ow]
+            pk = "laterality:abbrev→full"
+            return _check_and_suggest(user, pk, lambda ow=ow, full=full: _make_suggest(
+                "style_laterality", "full",
+                f"You keep writing out laterality in full (e.g. <b>{ow.upper()}</b> → <b>{full}</b>) — use full style by default?",
+                pk,
+            ))
+
+    # 5. Negation phrasing drift — compare phrase structure
+    def _neg_style(text: str) -> Optional[str]:
+        t = text.lower()
+        if "no evidence of" in t:
+            return "no_evidence_of"
+        if re.search(r'\bno\b.{1,40}\bidentified\b', t):
+            return "no_x_identified"
+        if re.search(r'\b\w+\b.{0,30}\babsent\b', t):
+            return "x_absent"
+        return None
+
+    old_neg = _neg_style(old)
+    new_neg = _neg_style(new)
+    if old_neg and new_neg and old_neg != new_neg:
+        pk = f"negation:{old_neg}→{new_neg}"
+        label = new_neg.replace("_", " ")
+        sug = _check_and_suggest(user, pk, lambda label=label, new_neg=new_neg: _make_suggest(
+            "style_negation_phrasing", new_neg,
+            f"You keep rephrasing negations to <b>{label}</b> style — set as default?",
+            pk,
+        ))
+        if sug:
+            return sug
+
+    # Numerals — single-word only; same-combo rule uses preceding word from pre_context
+    o_words = o_clean.split()
+    n_words = n_clean.split()
+    if len(o_words) == 1 and len(n_words) == 1:
+        ow, nw = o_words[0], n_words[0]
+        roman_val = _ROMAN_TO_INT.get(ow)
+        if roman_val is not None and nw.isdigit() and int(nw) == roman_val:
+            ctx = (pre_context or "").strip()
+            preceding = re.sub(r"[^\w]", "", ctx.split()[-1]).lower() if ctx else ""
+            pk = f"numeral:roman→arabic:{preceding}:{ow}"
+            lbl = f"{preceding} {old.strip().upper()}".strip()
+            repl = f"{preceding} {new.strip()}".strip()
+            return _check_and_suggest(user, pk, lambda lbl=lbl, repl=repl, pk=pk: _make_suggest(
+                "numeral_correction", "",
+                f"You keep changing <b>{lbl}</b> to <b>{repl}</b> — remember this preference?",
+                pk,
+                numeral_pattern=lbl, numeral_replacement=repl,
+            ))
+        arabic_val = int(ow) if ow.isdigit() else None
+        if arabic_val is not None:
+            roman = _INT_TO_ROMAN.get(arabic_val, "").lower()
+            if roman and roman == nw:
+                ctx = (pre_context or "").strip()
+                preceding = re.sub(r"[^\w]", "", ctx.split()[-1]).lower() if ctx else ""
+                pk = f"numeral:arabic→roman:{preceding}:{ow}"
+                lbl = f"{preceding} {old.strip()}".strip()
+                repl = f"{preceding} {new.strip().upper()}".strip()
+                return _check_and_suggest(user, pk, lambda lbl=lbl, repl=repl, pk=pk: _make_suggest(
+                    "numeral_correction", "",
+                    f"You keep changing <b>{lbl}</b> to <b>{repl}</b> — remember this preference?",
+                    pk,
+                    numeral_pattern=lbl, numeral_replacement=repl,
+                ))
+
+    return None
+
+
+def _detect_report_drift(
+    user: dict, original_report: str, edited_report: str
+) -> Optional[dict]:
+    """Detect style drift by diffing the LLM-generated report against the user's final edit.
+
+    Checks impression style and date format — patterns not visible from single word edits.
+    """
+    if not original_report or not edited_report:
+        return None
+    # Safety cap
+    orig = original_report[:20_000]
+    edit = edited_report[:20_000]
+
+    # 4. Impression style
+    def _extract_impression(text: str) -> str:
+        m = re.search(
+            r'(?:^|\n)[^\n]*(?:IMPRESSION|Impression)\s*:?\s*\n(.*?)(?:\n\n|\Z)',
+            text, re.DOTALL,
+        )
+        return m.group(1).strip() if m else ""
+
+    def _imp_style(imp: str) -> Optional[str]:
+        lines = [ln.strip() for ln in imp.split("\n") if ln.strip()]
+        if len(lines) < 2:
+            return None
+        n_bullet = sum(1 for ln in lines if re.match(r"^[-*•]\s", ln))
+        n_num = sum(1 for ln in lines if re.match(r"^\d+[.)]\s", ln))
+        if n_bullet >= len(lines) // 2:
+            return "bulleted"
+        if n_num >= len(lines) // 2:
+            return "numbered"
+        return "prose"
+
+    old_imp = _imp_style(_extract_impression(orig))
+    new_imp = _imp_style(_extract_impression(edit))
+    if old_imp and new_imp and old_imp != new_imp:
+        pk = f"impression:{old_imp}→{new_imp}"
+        sug = _check_and_suggest(user, pk, lambda new_imp=new_imp: _make_suggest(
+            "style_impression_style", new_imp,
+            f"You keep reformatting your Impression to <b>{new_imp}</b> style — set as default?",
+            pk,
+        ))
+        if sug:
+            return sug
+
+    # 6. Date format
+    def _date_fmt(text: str) -> Optional[str]:
+        if re.search(r"\b\d{4}-\d{2}-\d{2}\b", text):
+            return "yyyy_mm_dd"
+        hits = re.findall(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b", text)
+        if hits:
+            if any(int(h[0]) > 12 for h in hits):
+                return "dd_mm_yyyy"
+            if any(int(h[1]) > 12 for h in hits):
+                return "mm_dd_yyyy"
+            return "dd_mm_yyyy"
+        return None
+
+    old_fmt = _date_fmt(orig)
+    new_fmt = _date_fmt(edit)
+    if old_fmt and new_fmt and old_fmt != new_fmt:
+        pk = f"date:{old_fmt}→{new_fmt}"
+        friendly = new_fmt.replace("_", "/")
+        sug = _check_and_suggest(user, pk, lambda friendly=friendly, new_fmt=new_fmt: _make_suggest(
+            "style_date_format", new_fmt,
+            f"You keep reformatting dates to <b>{friendly}</b> — set as default?",
+            pk,
+        ))
+        if sug:
+            return sug
+
+    return None
+
+
+_MOCK_TRANSCRIPTION = (
+    "CT chest with contrast. "
+    "The lungs are clear. No focal consolidation, pleural effusion, or pneumothorax. "
+    "The heart size is normal. The mediastinum is unremarkable. "
+    "No axillary, mediastinal, or hilar lymphadenopathy. "
+    "Impression: No acute cardiopulmonary abnormality."
+)
+
+_MOCK_REPORT = """\
+CT CHEST WITH CONTRAST
+
+TECHNIQUE: Axial CT images of the chest were obtained with IV contrast.
+
+FINDINGS:
+
+Lungs: Clear bilaterally. No focal consolidation, mass, nodule, or pleural effusion.
+       No pneumothorax.
+
+Heart: Normal in size. No pericardial effusion.
+
+Mediastinum: Normal width. No lymphadenopathy.
+
+IMPRESSION:
+1. No acute cardiopulmonary abnormality.
+"""
+
+_MOCK_MODE = bool(os.environ.get("VOXRAD_MOCK_MODE"))
+
+
+@app.post("/transcribe")
+async def transcribe(
+    audio: UploadFile = File(...),
+    template_name: Optional[str] = Form(None),
+    whisper_prompt: Optional[str] = Form(None),
+    selected_text: Optional[str] = Form(None),
+    user: dict = Depends(_verify_auth),
+):
+    """Accept a WebM audio blob, transcribe via Whisper-compatible API."""
+    if _MOCK_MODE:
+        _ = await audio.read()
+        _prune_sessions()
+        session_id = _create_session(_MOCK_TRANSCRIPTION)
+        logger.info("[mock] Returning canned transcription for session %s", session_id)
+        return {"transcription": _MOCK_TRANSCRIPTION, "session_id": session_id}
+
+    if not config.TRANSCRIPTION_API_KEY:
+        raise HTTPException(
+            status_code=503, detail="Transcription API key not loaded on server."
+        )
+
+    audio_bytes = await audio.read()
+    if len(audio_bytes) == 0:
+        raise HTTPException(status_code=400, detail="Empty audio file.")
+    if len(audio_bytes) > 100 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Audio exceeds 100 MB limit.")
+
+
+    tmp_path = None
+    try:
+        # Save to temp file — suffix preserves format for Whisper
+        suffix = ".webm"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+            tmp.write(audio_bytes)
+            tmp_path = tmp.name
+
+        # Build ASR prompt.
+        # whisper_prompt (from voice-edit mode) overrides everything — it is the
+        # surrounding transcript text, which is what Whisper's prompt parameter
+        # is actually designed for.  Using the vocabulary list as the prompt for
+        # short voice-edit clips causes Whisper to hallucinate completions of it.
+        user_vocab = _load_user_vocab(user)
+        if whisper_prompt is not None:
+            asr_prompt = whisper_prompt[:896]
+        else:
+            asr_prompt = _RADIOLOGY_PROMPT
+            if template_name:
+                content = _load_template_content(template_name)
+                match = re.search(
+                    r"\[correct spellings\](.*?)\[correct spellings\]", content, re.DOTALL
+                )
+                if match:
+                    asr_prompt = match.group(1).strip()[:896]  # Groq hard limit
+            # Append user-learned vocab, truncating to the 896-char Groq limit.
+            if user_vocab:
+                addition = ", " + ", ".join(user_vocab)
+                asr_prompt = (asr_prompt + addition)[:896]
+
+        client = OpenAI(
+            api_key=config.TRANSCRIPTION_API_KEY,
+            base_url=config.TRANSCRIPTION_BASE_URL,
+        )
+        with open(tmp_path, "rb") as f:
+            result = client.audio.transcriptions.create(
+                file=(os.path.basename(tmp_path), f.read()),
+                model=config.SELECTED_TRANSCRIPTION_MODEL,
+                prompt=asr_prompt,
+                language="en",
+                temperature=0.0,
+            )
+
+        text = result.text.strip()
+        # Hallucination filtering. Voice-edit mode uses a permissive variant
+        # that allows short valid replacements ("normal", "intact", "no") but
+        # still rejects known Whisper garbage phrases (e.g. "thank you for
+        # watching") that fire on silent or noisy audio.
+        is_voice_edit = whisper_prompt is not None
+        hallucinated = (
+            _is_voice_edit_hallucination(text, asr_prompt)
+            if is_voice_edit
+            else _is_hallucination(text, asr_prompt)
+        )
+        if hallucinated:
+            logger.debug("Discarded hallucination (voice_edit=%s): %r", is_voice_edit, text)
+            return {"transcription": "", "session_id": ""}
+
+        _prune_sessions()
+        session_id = _create_session(text)
+        logger.info("Transcription complete for session %s (%d chars)", session_id, len(text))
+
+        response = {"transcription": text, "session_id": session_id}
+        if is_voice_edit and selected_text:
+            # Vocab suggestion: phonetically similar replacement → offer to remember spelling
+            vocab_sug = _should_suggest_vocab(user, selected_text, text)
+            if vocab_sug:
+                response["suggest_vocab"] = vocab_sug
+            # Style drift: repeated correction pattern → offer to change a style setting
+            style_sug = _detect_style_drift(user, selected_text, text, whisper_prompt or "")
+            if style_sug:
+                response["suggest_setting"] = style_sug
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Transcription failed: %s", e, exc_info=True)
+        raise HTTPException(status_code=503, detail=f"Transcription failed: {e}")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
+class VocabAddRequest(BaseModel):
+    term: str
+
+
+@app.post("/vocab/add")
+def vocab_add(req: VocabAddRequest, user: dict = Depends(_verify_auth)):
+    """Append a term to the signed-in user's custom vocabulary."""
+    term = (req.term or "").strip()
+    if not term:
+        raise HTTPException(status_code=400, detail="Empty term.")
+    if len(term) > 64:
+        raise HTTPException(status_code=400, detail="Term too long (max 64 chars).")
+    added = _add_to_user_vocab(user, term)
+    return {"added": added, "term": term}
+
+
+@app.get("/vocab")
+def vocab_list(user: dict = Depends(_verify_auth)):
+    """Return the signed-in user's custom vocabulary."""
+    return {"terms": _load_user_vocab(user)}
+
+
+# ---------------------------------------------------------------------------
+# Style drift endpoints
+# ---------------------------------------------------------------------------
+
+class TrackReportEditRequest(BaseModel):
+    original_report: str
+    edited_report: str
+
+
+@app.post("/api/track-report-edit")
+def api_track_report_edit(req: TrackReportEditRequest, user: dict = Depends(_verify_auth)):
+    """Diff the LLM-generated report against the user's edited version.
+
+    Called (fire-and-forget) when the user copies a report. Detects
+    impression-style and date-format drift and returns a suggest_setting.
+    """
+    suggestion = _detect_report_drift(user, req.original_report, req.edited_report)
+    return {"suggest_setting": suggestion}
+
+
+class StyleSuggestionRequest(BaseModel):
+    pattern_key: str
+    setting: Optional[str] = None
+    value: Optional[str] = None
+    numeral_pattern: Optional[str] = None
+    numeral_replacement: Optional[str] = None
+
+
+@app.post("/api/style-suggestion/apply")
+def api_style_suggestion_apply(req: StyleSuggestionRequest, user: dict = Depends(_verify_auth)):
+    """Apply a suggested style change and mark the pattern as permanently dismissed."""
+    _save_dismissed(user, req.pattern_key)
+
+    if req.setting == "numeral_correction":
+        if req.numeral_pattern and req.numeral_replacement:
+            _add_numeral_pref(user, req.numeral_pattern, req.numeral_replacement)
+        return {"ok": True}
+
+    setting = req.setting or ""
+    style_key = _STYLE_FIELD_MAP.get(setting)
+    if not style_key:
+        raise HTTPException(status_code=400, detail=f"Unknown setting: {setting!r}")
+    allowed = _STYLE_ALLOWED.get(setting, set())
+    if req.value not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid value {req.value!r} for {setting}")
+
+    if oauth_enabled() and user.get("id") is not None:
+        existing = get_user_style(user["id"])
+        existing[style_key] = req.value
+        save_user_style(user["id"], existing)
+    else:
+        setattr(config, setting, req.value)
+        save_web_settings()
+
+    logger.info("Applied style %s=%r for %s", setting, req.value, _get_username(user))
+    return {"ok": True}
+
+
+@app.post("/api/style-suggestion/dismiss")
+def api_style_suggestion_dismiss(req: StyleSuggestionRequest, user: dict = Depends(_verify_auth)):
+    """Permanently dismiss a style suggestion without applying it."""
+    _save_dismissed(user, req.pattern_key)
+    return {"ok": True}
+
+
+class KeyboardEditRequest(BaseModel):
+    old_text: str
+    new_text: str
+
+
+@app.post("/api/check-edit-suggestion")
+def api_check_edit_suggestion(req: KeyboardEditRequest, user: dict = Depends(_verify_auth)):
+    """Check whether a keyboard edit of the transcript warrants a vocab or style suggestion.
+
+    Word-diffs the old and new transcript, then runs the same vocab + style-drift
+    checks as the voice-edit pipeline. Called on textarea blur when text changed.
+    """
+    old_words = req.old_text.split()
+    new_words = req.new_text.split()
+    if old_words == new_words:
+        return {"suggest_vocab": None, "suggest_setting": None}
+
+    matcher = difflib.SequenceMatcher(None, old_words, new_words, autojunk=False)
+    suggest_vocab = None
+    suggest_setting = None
+
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag != "replace":
+            continue
+        old_phrase = " ".join(old_words[i1:i2])
+        new_phrase = " ".join(new_words[j1:j2])
+        pre_context = " ".join(old_words[:i1])
+
+        # Vocab: try the full block first, then leading/trailing word pairs.
+        # The leading-pair check catches "edema" -> "oedema with no consolidation"
+        # where the user's correction is followed by STT extension.
+        if not suggest_vocab:
+            candidates = []
+            if i2 - i1 == 1 and j2 - j1 == 1:
+                candidates.append((old_phrase, new_phrase))
+            else:
+                if i2 - i1 >= 1 and j2 - j1 >= 1:
+                    candidates.append((old_words[i1], new_words[j1]))     # leading pair
+                    candidates.append((old_words[i2 - 1], new_words[j2 - 1]))  # trailing pair
+            for ow, nw in candidates:
+                sv = _should_suggest_vocab(user, ow, nw)
+                if sv:
+                    suggest_vocab = sv
+                    break
+
+        # Style drift: works on any phrase length
+        if not suggest_setting:
+            ss = _detect_style_drift(user, old_phrase, new_phrase, pre_context)
+            if ss:
+                suggest_setting = ss
+
+    return {"suggest_vocab": suggest_vocab, "suggest_setting": suggest_setting}
+
+
+class FormatRequest(BaseModel):
+    transcription: str
+    template_name: Optional[str] = None
+    session_id: Optional[str] = None
+    # Patient context fields
+    patient_name: Optional[str] = None
+    patient_dob: Optional[str] = None
+    patient_id: Optional[str] = None
+    accession: Optional[str] = None
+    modality: Optional[str] = None
+    body_part: Optional[str] = None
+    referring_physician: Optional[str] = None
+    radiologist: Optional[str] = None
+
+
+def _hl7_outbox_dir() -> Optional[str]:
+    """Resolve the HL7 outbox directory, falling back to {save_directory}/hl7_outbox."""
+    if not config.hl7_export_enabled:
+        return None
+    if config.hl7_outbox_path:
+        return config.hl7_outbox_path
+    if config.save_directory:
+        return os.path.join(config.save_directory, "hl7_outbox")
+    return None
+
+
+def _hl7_inbox_dir() -> Optional[str]:
+    """Resolve the HL7 order inbox directory used by the worklist."""
+    if config.hl7_inbox_path:
+        return config.hl7_inbox_path
+    if config.save_directory:
+        return os.path.join(config.save_directory, "hl7_inbox")
+    return None
+
+
+def _sr_outbox_dir() -> Optional[str]:
+    """Resolve the DICOM SR outbox directory, or None when export is disabled."""
+    if not config.dicom_sr_export_enabled:
+        return None
+    if config.dicom_sr_outbox_path:
+        return config.dicom_sr_outbox_path
+    if config.save_directory:
+        return os.path.join(config.save_directory, "sr_outbox")
+    return None
+
+
+def _patient_context(req: "FormatRequest") -> Optional[dict]:
+    """Build a patient context dict from a FormatRequest, returning None if all fields empty."""
+    ctx = {k: v for k, v in {
+        "patient_name": req.patient_name,
+        "patient_dob": req.patient_dob,
+        "patient_id": req.patient_id,
+        "accession": req.accession,
+        "modality": req.modality,
+        "body_part": req.body_part,
+        "referring_physician": req.referring_physician,
+        "radiologist": req.radiologist,
+    }.items() if v}
+    return ctx or None
+
+
+@app.post("/format")
+def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
+    """Format a transcription into a structured radiology report."""
+    if _MOCK_MODE:
+        logger.info("[mock] Returning canned report")
+        return {"report": _MOCK_REPORT, "fhir_saved": False}
+
+    if not config.TEXT_API_KEY:
+        raise HTTPException(
+            status_code=503, detail="Text model API key not loaded on server."
+        )
+
+    _style = dict(_user_style(user) or {})
+    numeral_prefs = _load_numeral_prefs(user)
+    if numeral_prefs:
+        _style["numeral_corrections"] = numeral_prefs
+    with _format_lock:
+        old_template = config.global_md_text_content
+        config.global_md_text_content = (
+            _load_template_content(req.template_name) if req.template_name else ""
+        )
+        try:
+            report = format_text(
+                req.transcription,
+                patient_context=_patient_context(req),
+                style=_style,
+            )
+        finally:
+            config.global_md_text_content = old_template
+
+    if report is None:
+        raise HTTPException(status_code=503, detail="Report generation failed.")
+
+    fhir_saved = False
+    if _user_fhir_enabled(user):
+        path = save_fhir_report(
+            report_text=report,
+            template_name=req.template_name,
+            patient_id=req.patient_id or None,
+            accession=req.accession or None,
+            radiologist=req.radiologist or None,
+        )
+        fhir_saved = path is not None
+
+    hl7_saved = False
+    _hl7_dir = _hl7_outbox_dir()
+    if _hl7_dir:
+        try:
+            path = save_hl7_report(
+                report_text=report,
+                outbox_path=_hl7_dir,
+                patient_context=_patient_context(req),
+                template_name=req.template_name,
+                sending_facility=config.hl7_sending_facility or "VOXRAD",
+                receiving_facility=config.hl7_receiving_facility or "",
+            )
+            hl7_saved = path is not None
+        except Exception as e:
+            logger.warning("HL7 save failed: %s", e)
+
+    sr_saved = False
+    _sr_dir = _sr_outbox_dir()
+    if _sr_dir:
+        try:
+            path = save_dicom_sr_report(
+                report_text=report,
+                outbox_path=_sr_dir,
+                patient_context=_patient_context(req),
+                template_name=req.template_name,
+                institution_name=config.dicom_sr_institution_name or "VOXRAD",
+            )
+            sr_saved = path is not None
+        except Exception as e:
+            logger.warning("DICOM SR save failed: %s", e)
+
+    logger.info(
+        "Report formatted (%d chars), fhir_saved=%s, hl7_saved=%s, sr_saved=%s",
+        len(report), fhir_saved, hl7_saved, sr_saved,
+    )
+    log_event(
+        user_id=user.get("id"),
+        event_type="format",
+        accession=req.accession or None,
+        metadata={
+            "template": req.template_name,
+            "chars": len(report),
+            "fhir_saved": fhir_saved,
+            "hl7_saved": hl7_saved,
+            "sr_saved": sr_saved,
+        },
+    )
+    return {
+        "report": report,
+        "fhir_saved": fhir_saved,
+        "hl7_saved": hl7_saved,
+        "sr_saved": sr_saved,
+    }
+
+
+@app.post("/format/stream")
+def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth)):
+    """Stream a structured radiology report as Server-Sent Events.
+
+    Each SSE event is one of:
+      data: {"token": "..."}       — a text chunk from the LLM
+      data: {"done": true, "fhir_saved": bool}  — signals completion
+      data: {"error": "..."}       — an error occurred
+    """
+    if _MOCK_MODE:
+        def _mock_stream():
+            import time
+            for word in _MOCK_REPORT.split(" "):
+                yield f'data: {{"token": {json.dumps(word + " ")}}}\n\n'
+                time.sleep(0.03)
+            yield 'data: {"done": true, "fhir_saved": false}\n\n'
+        return StreamingResponse(_mock_stream(), media_type="text/event-stream")
+
+    if not config.TEXT_API_KEY:
+        def _err():
+            yield 'data: {"error": "Text model API key not loaded on server."}\n\n'
+        return StreamingResponse(_err(), media_type="text/event-stream")
+
+    _ctx = _patient_context(req)
+    _style = dict(_user_style(user) or {})
+    numeral_prefs = _load_numeral_prefs(user)
+    if numeral_prefs:
+        _style["numeral_corrections"] = numeral_prefs
+
+    def _generate():
+        with _format_lock:
+            old_template = config.global_md_text_content
+            config.global_md_text_content = (
+                _load_template_content(req.template_name) if req.template_name else ""
+            )
+            _template_snapshot = config.global_md_text_content
+            config.global_md_text_content = old_template
+
+        with _format_lock:
+            config.global_md_text_content = _template_snapshot
+        try:
+            full_report = ""
+            for chunk in stream_format_text(req.transcription, patient_context=_ctx, style=_style):
+                if chunk:
+                    full_report += chunk
+                    yield f'data: {json.dumps({"token": chunk})}\n\n'
+        except Exception as e:
+            logger.error("Streaming format error: %s", e, exc_info=True)
+            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+            return
+        finally:
+            with _format_lock:
+                config.global_md_text_content = old_template
+
+        # Apply post-processing (capitalise after colons) to the full report.
+        # Send corrected version so the client can replace the streamed text.
+        corrected_report = capitalize_after_colon(full_report)
+
+        fhir_saved = False
+        if _user_fhir_enabled(user) and corrected_report:
+            try:
+                path = save_fhir_report(
+                    report_text=corrected_report,
+                    template_name=req.template_name,
+                    patient_id=req.patient_id or None,
+                    accession=req.accession or None,
+                    radiologist=req.radiologist or None,
+                )
+                fhir_saved = path is not None
+            except Exception as e:
+                logger.warning("FHIR save failed during streaming: %s", e)
+
+        hl7_saved = False
+        _hl7_dir = _hl7_outbox_dir()
+        if _hl7_dir and corrected_report:
+            try:
+                path = save_hl7_report(
+                    report_text=corrected_report,
+                    outbox_path=_hl7_dir,
+                    patient_context=_ctx,
+                    template_name=req.template_name,
+                    sending_facility=config.hl7_sending_facility or "VOXRAD",
+                    receiving_facility=config.hl7_receiving_facility or "",
+                )
+                hl7_saved = path is not None
+            except Exception as e:
+                logger.warning("HL7 save failed during streaming: %s", e)
+
+        sr_saved = False
+        _sr_dir = _sr_outbox_dir()
+        if _sr_dir and corrected_report:
+            try:
+                path = save_dicom_sr_report(
+                    report_text=corrected_report,
+                    outbox_path=_sr_dir,
+                    patient_context=_ctx,
+                    template_name=req.template_name,
+                    institution_name=config.dicom_sr_institution_name or "VOXRAD",
+                )
+                sr_saved = path is not None
+            except Exception as e:
+                logger.warning("DICOM SR save failed during streaming: %s", e)
+
+        log_event(
+            user_id=user.get("id"),
+            event_type="format",
+            accession=req.accession or None,
+            metadata={
+                "template": req.template_name,
+                "chars": len(corrected_report),
+                "fhir_saved": fhir_saved,
+                "hl7_saved": hl7_saved,
+                "sr_saved": sr_saved,
+                "stream": True,
+            },
+        )
+        yield f'data: {json.dumps({"done": True, "fhir_saved": fhir_saved, "hl7_saved": hl7_saved, "sr_saved": sr_saved, "report": corrected_report})}\n\n'
+
+    return StreamingResponse(_generate(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Voice-feedback report refinement
+# ---------------------------------------------------------------------------
+
+class FeedbackRequest(BaseModel):
+    report: str
+    feedback: str
+    selected_text: str = ""
+
+
+@app.post("/format/feedback")
+def format_feedback(req: FeedbackRequest, user: dict = Depends(_verify_auth)):
+    """Apply radiologist verbal feedback to refine an already-generated report.
+
+    Accepts a full report, a feedback transcription, and an optional selected
+    passage.  If selected_text is provided, only that passage is revised.
+    Returns {"report": "<corrected markdown>"}.
+    """
+    if _MOCK_MODE:
+        tag = f" [targeted: {req.selected_text[:40]}…]" if req.selected_text else ""
+        return {"report": req.report + f"\n\n*[Feedback applied{tag}: {req.feedback}]*"}
+
+    if not config.TEXT_API_KEY:
+        raise HTTPException(
+            status_code=503, detail="Text model API key not loaded on server."
+        )
+
+    try:
+        corrected = apply_report_feedback(req.report, req.feedback, req.selected_text)
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Report refinement failed: {e}")
+
+    return {"report": corrected}
+
+
+# ---------------------------------------------------------------------------
+# Phase 1: Sign-off, amendments, audit log
+# ---------------------------------------------------------------------------
+
+class SignOffRequest(BaseModel):
+    report_text: str
+    template_name: Optional[str] = None
+    patient_name: Optional[str] = None
+    patient_dob: Optional[str] = None
+    patient_id: Optional[str] = None
+    accession: Optional[str] = None
+    modality: Optional[str] = None
+    body_part: Optional[str] = None
+    referring_physician: Optional[str] = None
+    radiologist: Optional[str] = None
+
+
+class AmendmentRequest(BaseModel):
+    prior_report_id: int
+    report_text: str
+    amendment_reason: str
+
+
+def _exports_for_signed_report(
+    *,
+    report_text: str,
+    template_name: Optional[str],
+    patient_context: Optional[dict],
+    user: dict,
+    user_id_for_audit: Optional[int],
+    accession: Optional[str],
+    report_id: int,
+    is_amendment: bool,
+) -> dict:
+    """Run the HL7 / DICOM SR / FHIR export pipeline and audit each result."""
+    exports = {"hl7_saved": False, "sr_saved": False, "fhir_saved": False}
+
+    if _user_fhir_enabled(user):
+        try:
+            path = save_fhir_report(
+                report_text=report_text,
+                template_name=template_name,
+                patient_id=(patient_context or {}).get("patient_id"),
+                accession=accession,
+                radiologist=(patient_context or {}).get("radiologist"),
+            )
+            exports["fhir_saved"] = path is not None
+            log_event(
+                user_id=user_id_for_audit,
+                event_type="export_fhir",
+                accession=accession,
+                report_id=report_id,
+                metadata={"path": path, "amendment": is_amendment},
+            )
+        except Exception as e:
+            logger.warning("FHIR export at sign-off failed: %s", e)
+
+    _hl7_dir = _hl7_outbox_dir()
+    if _hl7_dir:
+        try:
+            path = save_hl7_report(
+                report_text=report_text,
+                outbox_path=_hl7_dir,
+                patient_context=patient_context,
+                template_name=template_name,
+                sending_facility=config.hl7_sending_facility or "VOXRAD",
+                receiving_facility=config.hl7_receiving_facility or "",
+            )
+            exports["hl7_saved"] = path is not None
+            log_event(
+                user_id=user_id_for_audit,
+                event_type="export_hl7",
+                accession=accession,
+                report_id=report_id,
+                metadata={"path": path, "amendment": is_amendment},
+            )
+        except Exception as e:
+            logger.warning("HL7 export at sign-off failed: %s", e)
+
+    _sr_dir = _sr_outbox_dir()
+    if _sr_dir:
+        try:
+            path = save_dicom_sr_report(
+                report_text=report_text,
+                outbox_path=_sr_dir,
+                patient_context=patient_context,
+                template_name=template_name,
+                institution_name=config.dicom_sr_institution_name or "VOXRAD",
+            )
+            exports["sr_saved"] = path is not None
+            log_event(
+                user_id=user_id_for_audit,
+                event_type="export_sr",
+                accession=accession,
+                report_id=report_id,
+                metadata={"path": path, "amendment": is_amendment},
+            )
+        except Exception as e:
+            logger.warning("DICOM SR export at sign-off failed: %s", e)
+
+    return exports
+
+
+@app.post("/api/reports/sign-off")
+def api_sign_off(req: SignOffRequest, user: dict = Depends(_verify_auth)):
+    """Lock a report as FINAL.
+
+    Persists the signed version, runs the HL7 / SR / FHIR export pipeline,
+    and writes audit events for each step. The user-supplied report text is
+    treated as the canonical FINAL — no further LLM processing is applied.
+    """
+    if not req.report_text or not req.report_text.strip():
+        raise HTTPException(status_code=400, detail="report_text is required")
+
+    user_id = user.get("id") if user.get("id") is not None else None
+    if user_id is None:
+        # In Basic Auth mode there is no users.id row to FK to. Sign-off
+        # requires per-user accountability, so insist on OAuth here.
+        raise HTTPException(
+            status_code=403,
+            detail="Sign-off requires an authenticated user (OAuth login).",
+        )
+
+    saved = save_report_version(
+        user_id=user_id,
+        report_text=req.report_text,
+        status="final",
+        accession=req.accession or None,
+        patient_id=req.patient_id or None,
+        patient_name=req.patient_name or None,
+        patient_dob=req.patient_dob or None,
+        modality=req.modality or None,
+        body_part=req.body_part or None,
+        referring=req.referring_physician or None,
+        radiologist=req.radiologist or None,
+        template_name=req.template_name or None,
+    )
+
+    log_event(
+        user_id=user_id,
+        event_type="sign_off",
+        accession=req.accession or None,
+        report_id=saved["id"],
+        metadata={
+            "version": saved["version"],
+            "report_hash": saved["report_hash"],
+            "template": req.template_name,
+            "chars": len(req.report_text),
+        },
+    )
+
+    patient_context = {
+        k: v for k, v in {
+            "patient_name": req.patient_name,
+            "patient_dob": req.patient_dob,
+            "patient_id": req.patient_id,
+            "accession": req.accession,
+            "modality": req.modality,
+            "body_part": req.body_part,
+            "referring_physician": req.referring_physician,
+            "radiologist": req.radiologist,
+        }.items() if v
+    } or None
+
+    exports = _exports_for_signed_report(
+        report_text=req.report_text,
+        template_name=req.template_name,
+        patient_context=patient_context,
+        user=user,
+        user_id_for_audit=user_id,
+        accession=req.accession or None,
+        report_id=saved["id"],
+        is_amendment=False,
+    )
+
+    return {"report": saved, **exports}
+
+
+@app.post("/api/reports/amend")
+def api_amend(req: AmendmentRequest, user: dict = Depends(_verify_auth)):
+    """Create an amendment (versioned successor) of a previously signed report."""
+    if not req.report_text or not req.report_text.strip():
+        raise HTTPException(status_code=400, detail="report_text is required")
+    if not req.amendment_reason or not req.amendment_reason.strip():
+        raise HTTPException(status_code=400, detail="amendment_reason is required")
+
+    user_id = user.get("id") if user.get("id") is not None else None
+    if user_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Amendments require an authenticated user (OAuth login).",
+        )
+
+    prior = get_report(req.prior_report_id)
+    if not prior:
+        raise HTTPException(status_code=404, detail="Prior report not found")
+    if prior["status"] not in ("final", "amended"):
+        raise HTTPException(
+            status_code=400,
+            detail="Only signed reports (final / amended) can be amended.",
+        )
+
+    saved = save_report_version(
+        user_id=user_id,
+        report_text=req.report_text,
+        status="amended",
+        accession=prior["accession"],
+        patient_id=prior["patient_id"],
+        patient_name=prior["patient_name"],
+        patient_dob=prior["patient_dob"],
+        modality=prior["modality"],
+        body_part=prior["body_part"],
+        referring=prior["referring"],
+        radiologist=prior["radiologist"],
+        template_name=prior["template_name"],
+        prior_version_id=prior["id"],
+        amendment_reason=req.amendment_reason,
+    )
+
+    log_event(
+        user_id=user_id,
+        event_type="amend",
+        accession=prior["accession"],
+        report_id=saved["id"],
+        metadata={
+            "prior_report_id": prior["id"],
+            "prior_version": prior["version"],
+            "version": saved["version"],
+            "report_hash": saved["report_hash"],
+            "reason": req.amendment_reason,
+            "chars": len(req.report_text),
+        },
+    )
+
+    patient_context = {
+        k: v for k, v in {
+            "patient_name": prior["patient_name"],
+            "patient_dob": prior["patient_dob"],
+            "patient_id": prior["patient_id"],
+            "accession": prior["accession"],
+            "modality": prior["modality"],
+            "body_part": prior["body_part"],
+            "referring_physician": prior["referring"],
+            "radiologist": prior["radiologist"],
+        }.items() if v
+    } or None
+
+    exports = _exports_for_signed_report(
+        report_text=req.report_text,
+        template_name=prior["template_name"],
+        patient_context=patient_context,
+        user=user,
+        user_id_for_audit=user_id,
+        accession=prior["accession"],
+        report_id=saved["id"],
+        is_amendment=True,
+    )
+
+    return {"report": saved, **exports}
+
+
+@app.get("/api/reports")
+def api_list_reports(
+    accession: Optional[str] = None,
+    user: dict = Depends(_verify_auth),
+):
+    """List versions for an accession, or recent reports for the current user."""
+    if accession:
+        return {"reports": list_reports_for_accession(accession)}
+    user_id = user.get("id")
+    if user_id is None:
+        return {"reports": []}
+    return {"reports": list_reports_for_user(user_id, limit=100)}
+
+
+@app.get("/api/reports/{report_id}")
+def api_get_report(report_id: int, user: dict = Depends(_verify_auth)):
+    rep = get_report(report_id)
+    if not rep:
+        raise HTTPException(status_code=404, detail="Report not found")
+    return rep
+
+
+@app.get("/api/audit-log")
+def api_audit_log(
+    accession: Optional[str] = None,
+    report_id: Optional[int] = None,
+    limit: int = 200,
+    user: dict = Depends(_verify_auth),
+):
+    """Return audit-log entries. Filter by accession or report_id when given."""
+    user_id = user.get("id")
+    # In Basic Auth mode (id None) we still allow filtering by accession,
+    # but block unrestricted "all events" reads.
+    if accession is None and report_id is None and user_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Specify accession or report_id when not signed in via OAuth.",
+        )
+    return {
+        "events": list_audit_events(
+            user_id=None,  # cross-user view by case is the medico-legal default
+            accession=accession,
+            report_id=report_id,
+            limit=min(int(limit), 1000),
+        )
+    }
+
+
+@app.get("/api/audit-log/verify")
+def api_audit_verify(user: dict = Depends(_verify_auth)):
+    return verify_chain()
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: NLP QA layer
+# ---------------------------------------------------------------------------
+
+class QACheckRequest(BaseModel):
+    report_text: str
+    accession: Optional[str] = None
+    patient_gender: Optional[str] = None  # "M" / "F" / "male" / "female"
+    body_part: Optional[str] = None
+    ordered_side: Optional[str] = None    # "left" / "right" / "bilateral"
+
+
+@app.post("/api/qa-check")
+def api_qa_check(req: QACheckRequest, user: dict = Depends(_verify_auth)):
+    """Run deterministic NLP QA checks against a report. Flag-only — no rewrite."""
+    if not req.report_text or not req.report_text.strip():
+        return {"flags": []}
+    flags = run_qa_checks(
+        report_text=req.report_text,
+        patient_gender=req.patient_gender,
+        ordered_side=req.ordered_side,
+        body_part=req.body_part,
+    )
+    log_event(
+        user_id=user.get("id"),
+        event_type="qa_check",
+        accession=req.accession,
+        metadata={
+            "flag_count": len(flags),
+            "flag_types": sorted({f.get("type", "?") for f in flags}),
+            "chars": len(req.report_text),
+        },
+    )
+    return {"flags": flags}
+
+
+# ---------------------------------------------------------------------------
+# FHIR RIS patient lookup
+# ---------------------------------------------------------------------------
+
+@app.get("/patient/{accession}")
+async def lookup_patient(accession: str, user: dict = Depends(_verify_auth)):
+    """Look up patient data from a configured FHIR R4 server by accession number.
+
+    Requires FHIR_BASE_URL env var (e.g. https://fhir.hospital.org/r4).
+    Optional FHIR_BEARER_TOKEN env var for Bearer auth.
+
+    Returns a JSON object with any of:
+      patient_name, patient_dob, patient_id, accession,
+      modality, body_part, referring_physician
+    """
+    import httpx
+
+    fhir_base = os.environ.get("FHIR_BASE_URL", "").rstrip("/")
+    if not fhir_base:
+        raise HTTPException(
+            status_code=503,
+            detail="FHIR_BASE_URL is not configured on this server.",
+        )
+
+    headers: dict = {"Accept": "application/fhir+json"}
+    token = os.environ.get("FHIR_BEARER_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Search ImagingStudy by identifier, requesting inline Patient
+            resp = await client.get(
+                f"{fhir_base}/ImagingStudy",
+                params={"identifier": accession, "_include": "ImagingStudy:patient"},
+                headers=headers,
+            )
+            resp.raise_for_status()
+            bundle = resp.json()
+
+        result: dict = {"accession": accession}
+        patient_ref: Optional[str] = None
+
+        for entry in bundle.get("entry", []):
+            resource = entry.get("resource", {})
+            rt = resource.get("resourceType", "")
+
+            if rt == "ImagingStudy":
+                series = resource.get("series", [])
+                if series:
+                    s = series[0]
+                    mod = s.get("modality", {})
+                    if mod:
+                        result["modality"] = mod.get("code", "")
+                    site = s.get("bodySite", {})
+                    if site:
+                        result["body_part"] = site.get("display", "")
+                subject = resource.get("subject", {})
+                patient_ref = subject.get("reference") or patient_ref
+
+            elif rt == "Patient":
+                _extract_patient_fields(resource, result)
+
+        # If patient wasn't bundled via _include, fetch separately
+        if patient_ref and "patient_name" not in result:
+            url = patient_ref if patient_ref.startswith("http") else f"{fhir_base}/{patient_ref}"
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                p_resp = await client.get(url, headers=headers)
+            if p_resp.status_code == 200:
+                _extract_patient_fields(p_resp.json(), result)
+
+        if len(result) <= 1:  # only "accession" key — nothing found
+            raise HTTPException(
+                status_code=404,
+                detail=f"No imaging study found for accession: {accession}",
+            )
+
+        return result
+
+    except HTTPException:
+        raise
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"Accession not found: {accession}")
+        raise HTTPException(status_code=503, detail=f"FHIR server error: {exc.response.status_code}")
+    except Exception as exc:
+        logger.error("FHIR lookup failed: %s", exc)
+        raise HTTPException(status_code=503, detail=f"FHIR lookup failed: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Settings API
+# ---------------------------------------------------------------------------
+
+class SettingsRequest(BaseModel):
+    streaming_stt_provider: Optional[str] = None
+    transcription_base_url: Optional[str] = None
+    transcription_model: Optional[str] = None
+    text_base_url: Optional[str] = None
+    text_model: Optional[str] = None
+    fhir_export_enabled: bool = False
+    # Reporting style preferences
+    style_spelling: Optional[str] = None
+    style_numerals: Optional[str] = None
+    style_measurement_unit: Optional[str] = None
+    style_measurement_separator: Optional[str] = None
+    style_decimal_precision: Optional[int] = None
+    style_laterality: Optional[str] = None
+    style_impression_style: Optional[str] = None
+    style_negation_phrasing: Optional[str] = None
+    style_date_format: Optional[str] = None
+    style_paste_format: Optional[str] = None
+    # HL7 v2.4 ORU^R01 export (global, server-admin controlled)
+    hl7_export_enabled: Optional[bool] = None
+    hl7_outbox_path: Optional[str] = None
+    hl7_sending_facility: Optional[str] = None
+    hl7_receiving_facility: Optional[str] = None
+
+
+_STYLE_ALLOWED = {
+    "style_spelling": {"american", "british"},
+    "style_numerals": {"roman", "arabic"},
+    "style_measurement_unit": {"mm", "cm", "auto"},
+    "style_measurement_separator": {"x", "times", "by"},
+    "style_decimal_precision": {0, 1, 2},
+    "style_laterality": {"full", "abbrev"},
+    "style_impression_style": {"bulleted", "numbered", "prose"},
+    "style_negation_phrasing": {"no_evidence_of", "no_x_identified", "x_absent"},
+    "style_date_format": {"dd_mm_yyyy", "mm_dd_yyyy", "yyyy_mm_dd"},
+    "style_paste_format": {"rich", "plain", "markdown"},
+}
+
+
+@app.get("/api/capabilities")
+def api_capabilities():
+    """Return streaming STT availability — no auth required."""
+    provider = get_streaming_provider()
+    return {
+        "streaming_stt": provider is not None,
+        "provider": config.STREAMING_STT_PROVIDER,
+    }
+
+
+@app.get("/api/hl7/worklist")
+def api_hl7_worklist(user: dict = Depends(_verify_auth)):
+    """Return pending radiology orders parsed from the HL7 inbox directory.
+
+    The inbox is configured via VOXRAD_HL7_INBOX or the [HL7] InboxPath
+    setting, and defaults to {save_directory}/hl7_inbox. Each order includes
+    an order_id so the client can dismiss it after dictating.
+    """
+    inbox = _hl7_inbox_dir()
+    if not inbox:
+        return {"enabled": False, "orders": []}
+    try:
+        orders = list_inbox(inbox)
+    except Exception as e:
+        logger.warning("HL7 worklist scan failed: %s", e)
+        return {"enabled": True, "orders": [], "error": str(e)}
+    return {"enabled": True, "orders": orders, "inbox": inbox}
+
+
+@app.post("/api/hl7/worklist/{order_id}/archive")
+def api_hl7_worklist_archive(order_id: str, user: dict = Depends(_verify_auth)):
+    """Move a processed order out of the inbox into the 'processed' subfolder."""
+    inbox = _hl7_inbox_dir()
+    if not inbox:
+        raise HTTPException(status_code=404, detail="HL7 inbox not configured")
+    # Reject path traversal — order_id must be a simple filename stem.
+    if "/" in order_id or "\\" in order_id or order_id.startswith("."):
+        raise HTTPException(status_code=400, detail="Invalid order_id")
+    ok = archive_order(inbox, order_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Order not found in inbox")
+    return {"ok": True}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MWL bridge agent — accepts pushed DICOM Modality Worklist orders
+# ─────────────────────────────────────────────────────────────────────────────
+# The clinic's on-prem agent runs C-FIND SCU against their PACS/broker and
+# POSTs each parsed order here. We write one JSON file per order into the
+# HL7 inbox so the existing worklist UI, filter, and archive flow pick it up
+# with no further changes. Shared-secret auth only — not a user session.
+
+_MWL_FIELD_WHITELIST = {
+    "patient_name", "patient_dob", "patient_id",
+    "accession", "modality", "body_part", "procedure",
+    "referring_physician", "scheduled_datetime",
+}
+
+
+@app.post("/api/worklist/push")
+def api_worklist_push(
+    payload: dict = Body(...),
+    x_voxrad_agent_token: str | None = Header(None),
+):
+    """Accept a batch of MWL orders from an on-prem bridge agent.
+
+    Authentication is via the X-VoxRad-Agent-Token header matching the
+    VOXRAD_MWL_AGENT_TOKEN env var. When the token is unset, the endpoint
+    is disabled. The agent POSTs `{"orders": [{...}, ...]}` — each order
+    uses the same field names as the HL7 worklist output.
+    """
+    expected = (config.mwl_agent_token or "").strip()
+    if not expected:
+        raise HTTPException(status_code=404, detail="MWL push not configured")
+    if not x_voxrad_agent_token or not secrets.compare_digest(
+        x_voxrad_agent_token.strip(), expected
+    ):
+        raise HTTPException(status_code=401, detail="Invalid agent token")
+
+    inbox = _hl7_inbox_dir()
+    if not inbox:
+        raise HTTPException(status_code=500, detail="HL7 inbox not configured on server")
+
+    orders = payload.get("orders") if isinstance(payload, dict) else None
+    if not isinstance(orders, list):
+        raise HTTPException(status_code=400, detail="Expected {'orders': [...]}")
+
+    written = 0
+    skipped = 0
+    for order in orders:
+        if not isinstance(order, dict):
+            skipped += 1
+            continue
+        clean = {k: v for k, v in order.items() if k in _MWL_FIELD_WHITELIST and v}
+        if not clean.get("accession") and not clean.get("patient_id"):
+            # Need at least one stable identifier to build the filename
+            skipped += 1
+            continue
+        clean["source"] = "mwl"
+        # Deterministic order_id so re-pushed orders overwrite rather than
+        # duplicating — keyed on accession (preferred) or patient+scheduled.
+        key = clean.get("accession") or f"{clean.get('patient_id','')}_{clean.get('scheduled_datetime','')}"
+        # Sanitise for filesystem
+        safe = re.sub(r"[^A-Za-z0-9_.-]", "_", key)[:80] or "order"
+        fname = f"mwl_{safe}.json"
+        fpath = os.path.join(inbox, fname)
+        try:
+            with open(fpath, "w", encoding="utf-8") as f:
+                json.dump(clean, f, ensure_ascii=False, indent=2)
+            written += 1
+        except OSError as e:
+            logger.warning("Could not write MWL order %s: %s", fpath, e)
+            skipped += 1
+
+    return {"ok": True, "written": written, "skipped": skipped, "inbox": inbox}
+
+
+@app.get("/api/settings")
+def api_get_settings(user: dict = Depends(_verify_auth)):
+    """Return current (non-sensitive) configuration state.
+
+    In OAuth mode, style settings are per-user; in Basic Auth mode they come
+    from the global config / settings.ini.
+    """
+    style = _user_style(user)
+    if style is None:
+        # Basic Auth mode — read from global config
+        style = {
+            "spelling":              config.style_spelling,
+            "numerals":              config.style_numerals,
+            "measurement_unit":      config.style_measurement_unit,
+            "measurement_separator": config.style_measurement_separator,
+            "decimal_precision":     config.style_decimal_precision,
+            "laterality":            config.style_laterality,
+            "impression_style":      config.style_impression_style,
+            "negation_phrasing":     config.style_negation_phrasing,
+            "date_format":           config.style_date_format,
+            "paste_format":          config.style_paste_format,
+            "fhir_export_enabled":   config.fhir_export_enabled,
+        }
+    return {
+        "streaming_stt_provider": config.STREAMING_STT_PROVIDER or "",
+        "transcription_base_url": config.TRANSCRIPTION_BASE_URL or "",
+        "transcription_model":    config.SELECTED_TRANSCRIPTION_MODEL or "",
+        "text_base_url":          config.BASE_URL or "",
+        "text_model":             config.SELECTED_MODEL or "",
+        "fhir_export_enabled":    style.get("fhir_export_enabled", config.fhir_export_enabled),
+        "style":                  {k: v for k, v in style.items() if k != "fhir_export_enabled"},
+        "oauth_mode":             oauth_enabled(),
+        "hl7": {
+            "export_enabled":     config.hl7_export_enabled,
+            "outbox_path":        config.hl7_outbox_path or "",
+            "sending_facility":   config.hl7_sending_facility or "VOXRAD",
+            "receiving_facility": config.hl7_receiving_facility or "",
+        },
+        "keys": {
+            "transcription": bool(config.TRANSCRIPTION_API_KEY),
+            "text":          bool(config.TEXT_API_KEY),
+            "deepgram":      bool(config.DEEPGRAM_API_KEY),
+            "assemblyai":    bool(config.ASSEMBLYAI_API_KEY),
+        },
+    }
+
+
+_STYLE_FIELD_MAP = {
+    "style_spelling":             "spelling",
+    "style_numerals":             "numerals",
+    "style_measurement_unit":     "measurement_unit",
+    "style_measurement_separator":"measurement_separator",
+    "style_decimal_precision":    "decimal_precision",
+    "style_laterality":           "laterality",
+    "style_impression_style":     "impression_style",
+    "style_negation_phrasing":    "negation_phrasing",
+    "style_date_format":          "date_format",
+    "style_paste_format":         "paste_format",
+}
+
+
+@app.post("/api/settings")
+def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
+    """Persist non-sensitive settings.
+
+    Global settings (model URLs, streaming provider) → settings.ini.
+    Style preferences → per-user SQLite row (OAuth mode) or settings.ini (Basic Auth mode).
+    """
+    config.STREAMING_STT_PROVIDER = req.streaming_stt_provider or None
+    if req.transcription_base_url:
+        config.TRANSCRIPTION_BASE_URL = req.transcription_base_url
+    if req.transcription_model:
+        config.SELECTED_TRANSCRIPTION_MODEL = req.transcription_model
+    if req.text_base_url:
+        config.BASE_URL = req.text_base_url
+    if req.text_model:
+        config.SELECTED_MODEL = req.text_model
+
+    # Validate style fields
+    style_update: dict = {}
+    for req_field, style_key in _STYLE_FIELD_MAP.items():
+        val = getattr(req, req_field)
+        if val is None:
+            continue
+        allowed = _STYLE_ALLOWED[req_field]
+        if val not in allowed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid {req_field}: {val!r} (allowed: {sorted(allowed)})",
+            )
+        style_update[style_key] = val
+
+    # HL7 settings are always global (server-admin controlled).
+    hl7_touched = False
+    if req.hl7_export_enabled is not None:
+        config.hl7_export_enabled = bool(req.hl7_export_enabled)
+        hl7_touched = True
+    if req.hl7_outbox_path is not None:
+        config.hl7_outbox_path = req.hl7_outbox_path.strip()
+        hl7_touched = True
+    if req.hl7_sending_facility is not None:
+        config.hl7_sending_facility = req.hl7_sending_facility.strip() or "VOXRAD"
+        hl7_touched = True
+    if req.hl7_receiving_facility is not None:
+        config.hl7_receiving_facility = req.hl7_receiving_facility.strip()
+        hl7_touched = True
+
+    if oauth_enabled() and user.get("id") is not None:
+        # Per-user: merge with existing preferences and save to SQLite
+        existing = get_user_style(user["id"])
+        existing.update(style_update)
+        existing["fhir_export_enabled"] = req.fhir_export_enabled
+        save_user_style(user["id"], existing)
+        if hl7_touched:
+            # Persist the global HL7 change to settings.ini.
+            save_web_settings()
+    else:
+        # Basic Auth / global mode: write to config + settings.ini
+        config.fhir_export_enabled = req.fhir_export_enabled
+        for style_key, val in style_update.items():
+            setattr(config, f"style_{style_key}", val)
+        save_web_settings()
+
+    logger.info("Settings saved by %s", _get_username(user))
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# WebSocket: real-time streaming STT proxy
+# ---------------------------------------------------------------------------
+
+@app.websocket("/ws/transcribe")
+async def ws_transcribe(websocket: WebSocket, token: str = ""):
+    """Proxy PCM audio from browser to Deepgram/AssemblyAI; stream transcripts back.
+
+    Protocol:
+      1. Client connects with ?token=<base64(user:pass)>
+      2. Client sends JSON: {"template_name": "..."}
+      3. Client sends binary frames: raw PCM 16kHz mono int16
+      4. Server sends JSON: {"type":"interim","text":"..."} or {"type":"final","text":"..."}
+      5. Client sends JSON: {"type":"stop"} when done recording
+      6. Server sends JSON: {"type":"session_complete","transcription":"...","session_id":"..."}
+    """
+    ws_user = _verify_ws_token(token)
+    if not ws_user:
+        await websocket.close(code=4001)
+        return
+
+    await websocket.accept()
+    provider = None
+    try:
+        # Step 1: receive config message
+        config_msg = await asyncio.wait_for(websocket.receive_json(), timeout=10.0)
+        template_name = config_msg.get("template_name")
+        keywords = _build_keyword_list(template_name, ws_user)
+
+        provider = get_streaming_provider()
+        if not provider:
+            await websocket.send_json({
+                "type": "error",
+                "message": "No streaming STT provider configured. Configure one in Settings.",
+            })
+            return
+
+        provider_name = (config.STREAMING_STT_PROVIDER or "").lower()
+        if provider_name == "deepgram":
+            api_key = config.DEEPGRAM_API_KEY or ""
+        elif provider_name == "assemblyai":
+            api_key = config.ASSEMBLYAI_API_KEY or ""
+        else:
+            api_key = ""
+
+        await provider.connect(api_key, 16000, keywords)
+
+        finals: list[str] = []
+        stop_event = asyncio.Event()
+        # Tracks the most recent interim, so a stop pressed before the
+        # provider's endpointing window fires (e.g. a short voice-edit like
+        # "oedema") can fall back to committing the last interim as final.
+        last_interim_state = {"text": "", "committed": True}
+
+        async def receive_loop():
+            """Read from browser: binary frames are audio, text frames are control."""
+            try:
+                while not stop_event.is_set():
+                    msg = await websocket.receive()
+                    if msg.get("type") == "websocket.disconnect":
+                        stop_event.set()
+                        break
+                    raw_bytes = msg.get("bytes")
+                    if raw_bytes:
+                        await provider.send_audio(raw_bytes)
+                    raw_text = msg.get("text")
+                    if raw_text:
+                        try:
+                            ctrl = json.loads(raw_text)
+                            if ctrl.get("type") == "stop":
+                                stop_event.set()
+                        except (json.JSONDecodeError, KeyError):
+                            pass
+            except Exception:
+                stop_event.set()
+
+        async def results_loop():
+            """Forward transcript events from provider to browser.
+
+            Keeps running after stop_event so finals emitted in response to
+            provider.finalize() can still be captured during the drain phase.
+            """
+            try:
+                async for event in provider.receive_results():
+                    if not _is_hallucination(event.text):
+                        # Strip em dash artifacts (STT inserts — during pauses)
+                        clean = re.sub(r'\s*—\s*', ' ', event.text).strip()
+                        if not clean:
+                            continue
+                        if event.is_final:
+                            finals.append(clean)
+                            last_interim_state["text"] = ""
+                            last_interim_state["committed"] = True
+                            try:
+                                await websocket.send_json({"type": "final", "text": clean})
+                            except Exception:
+                                pass
+                        else:
+                            last_interim_state["text"] = clean
+                            last_interim_state["committed"] = False
+                            try:
+                                await websocket.send_json({"type": "interim", "text": clean})
+                            except Exception:
+                                pass
+            except Exception as e:
+                logger.warning("Results loop error: %s", e)
+
+        receive_task = asyncio.create_task(receive_loop())
+        results_task = asyncio.create_task(results_loop())
+
+        await stop_event.wait()
+
+        # Stop accepting more audio from the client first.
+        receive_task.cancel()
+        try:
+            await receive_task
+        except (asyncio.CancelledError, Exception):
+            pass
+
+        # Ask the provider to flush any pending speech as a final event,
+        # then give it a brief window to deliver that final before teardown.
+        try:
+            await provider.finalize()
+        except Exception:
+            pass
+        # Drain finals emitted in response to finalize() before teardown.
+        await asyncio.sleep(1.5)
+
+        results_task.cancel()
+        try:
+            await results_task
+        except (asyncio.CancelledError, Exception):
+            pass
+
+        # Fallback for the short-utterance edge case: if the provider never
+        # finalised the last interim (e.g. user stopped inside the endpointing
+        # window and finalize didn't take effect), commit the interim text so
+        # the voice edit isn't silently dropped.
+        if last_interim_state["text"] and not last_interim_state["committed"]:
+            logger.info(
+                "[stt] no final received after stop — committing last interim: %r",
+                last_interim_state["text"],
+            )
+            finals.append(last_interim_state["text"])
+
+        try:
+            await asyncio.wait_for(provider.close(), timeout=4.0)
+        except asyncio.TimeoutError:
+            logger.warning("provider.close() timed out — forcing teardown")
+        provider = None
+
+        full_text = " ".join(finals).strip()
+        # Run synchronous LLM call in a thread so it doesn't block the event loop.
+        # Cap at 8 s — if the LLM is slow/unavailable, send the raw Deepgram text
+        # (which is already high quality from Nova-2 medical) rather than hanging.
+        if full_text:
+            try:
+                corrected = await asyncio.wait_for(
+                    asyncio.to_thread(_correct_asr_text, full_text),
+                    timeout=8.0,
+                )
+            except asyncio.TimeoutError:
+                logger.warning("_correct_asr_text timed out — using raw text")
+                corrected = full_text
+        else:
+            corrected = ""
+
+        _prune_sessions()
+        session_id = _create_session(corrected) if corrected else ""
+
+        await websocket.send_json({
+            "type": "session_complete",
+            "transcription": corrected,
+            "session_id": session_id,
+        })
+
+    except WebSocketDisconnect:
+        logger.info("WS client disconnected during streaming")
+    except Exception as e:
+        logger.error("WS transcribe error: %s", e, exc_info=True)
+        try:
+            await websocket.send_json({"type": "error", "message": str(e)})
+        except Exception:
+            pass
+    finally:
+        if provider:
+            try:
+                await provider.close()
+            except Exception:
+                pass
+
+
+def _extract_patient_fields(resource: dict, result: dict) -> None:
+    """Pull name, DOB, and MRN from a FHIR Patient resource into result dict."""
+    names = resource.get("name", [])
+    if names:
+        n = names[0]
+        given = " ".join(n.get("given", []))
+        family = n.get("family", "")
+        full = f"{given} {family}".strip()
+        if full:
+            result["patient_name"] = full
+    dob = resource.get("birthDate", "")
+    if dob:
+        result["patient_dob"] = dob
+    for ident in resource.get("identifier", []):
+        code = (ident.get("type", {}).get("coding") or [{}])[0].get("code", "")
+        if code == "MR":
+            result["patient_id"] = ident.get("value", "")
+            break
