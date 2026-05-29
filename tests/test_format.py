@@ -381,5 +381,40 @@ class TestValidateGuidelines(unittest.TestCase):
         self.assertEqual(missing, ["GHOST.md"])
 
 
+class TestTemplateSplit(unittest.TestCase):
+    """Two-section template format: structure + AI instructions."""
+
+    def test_old_template_not_split(self):
+        old = "### Findings:\nLabrum intact.\n[correct spellings] x [correct spellings]"
+        structure, ai, has = fmt.split_template(old)
+        self.assertFalse(has)
+        self.assertEqual(structure, old)
+        self.assertEqual(ai, "")
+
+    def test_old_template_llm_text_unchanged(self):
+        old = "### Findings:\nLabrum intact.\n[correct spellings] sample [correct spellings]\nEnd."
+        # Same as the legacy behaviour: strip ASR block, then strip().
+        self.assertEqual(fmt._template_for_llm(old), "### Findings:\nLabrum intact.\n\nEnd.")
+
+    def test_round_trip(self):
+        joined = fmt.join_template("### Findings:\nLabrum intact.", "**Instructions:** concise.")
+        structure, ai, has = fmt.split_template(joined)
+        self.assertTrue(has)
+        self.assertEqual(structure, "### Findings:\nLabrum intact.")
+        self.assertEqual(ai, "**Instructions:** concise.")
+
+    def test_llm_text_combines_both_sections(self):
+        joined = fmt.join_template("### Findings:\nLabrum intact.", "**Instructions:** be concise.")
+        llm = fmt._template_for_llm(joined)
+        self.assertIn("Labrum intact.", llm)
+        self.assertIn("be concise.", llm)
+        self.assertNotIn(fmt.TEMPLATE_AI_MARKER, llm)
+        self.assertNotIn(fmt.TEMPLATE_STRUCTURE_MARKER, llm)
+
+    def test_asr_stripped_from_ai_section(self):
+        joined = fmt.join_template("### Findings:", "[correct spellings] x [correct spellings]")
+        self.assertNotIn("correct spellings", fmt._template_for_llm(joined))
+
+
 if __name__ == "__main__":
     unittest.main()

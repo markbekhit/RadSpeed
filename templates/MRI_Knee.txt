@@ -1,13 +1,50 @@
-### THIS IS CONTINUATION OF SYSTEM PROMPT ###
-### THIS IS THE SAMPLE TEMPLATE TO BE USED FOR THE TRANSCRIPT ###
-
----
-
+### ===== REPORT STRUCTURE ===== ###
 ### Exam:
 MRI Knee
 
 ### Technique:
 MRI of the [right/left] knee was performed using PD-weighted fat-suppressed, T2-weighted, T1-weighted, and STIR sequences in coronal, sagittal, and axial planes.
+
+### Clinical Details
+
+### Comparison:
+
+### Findings:
+
+**Menisci**
+- Medial Meniscus (anterior horn, body, posterior horn)
+- Lateral Meniscus (anterior horn, body, posterior horn)
+
+**Cruciate Ligaments**
+- ACL and PCL
+
+**Collateral Ligaments and Posterolateral Corner**
+- MCL, LCL, and posterolateral corner structures
+
+**Articular Cartilage**
+- Default if all intact: "Articular cartilage intact throughout, no focal chondral defect."
+- Medial Compartment (medial femoral condyle, medial tibial plateau)
+- Lateral Compartment (lateral femoral condyle, lateral tibial plateau)
+- Patellofemoral Compartment (patella, trochlear groove)
+
+**Tendons**
+- Quadriceps Tendon and Patellar Tendon
+
+**Soft Tissues**
+- Joint Effusion, Hoffa's Fat Pad, Popliteal Fossa, Baker's Cyst
+
+**Bony Structures**
+- Default: "Bone marrow signal is normal. No suspicious osseous lesion identified."
+
+### Impression:
+- **Sample:**
+  - Posterior horn medial meniscal tear.
+  - ACL intact. No significant ligamentous injury.
+  - No joint effusion.
+
+### ===== AI INSTRUCTIONS (advanced) ===== ###
+### THIS IS CONTINUATION OF SYSTEM PROMPT ###
+### THIS IS THE SAMPLE TEMPLATE TO BE USED FOR THE TRANSCRIPT ###
 
 ### Clinical Details
 **Instructions:**
@@ -23,6 +60,7 @@ MRI of the [right/left] knee was performed using PD-weighted fat-suppressed, T2-
 ### Findings:
 **Instructions:**
 - Describe pathological structures specifically. Normal structures within the same anatomical group may be combined into a single statement — do not force a separate bullet for every structure when all are normal.
+- Cover all groups in the order shown in the structure section.
 - Use precise radiology terminology for normal structures:
   - Menisci → "intact"
   - Ligaments → "intact"
@@ -33,39 +71,15 @@ MRI of the [right/left] knee was performed using PD-weighted fat-suppressed, T2-
   - Bony structures → "no fracture or aggressive bony lesion"
   - Bone marrow → "no bone marrow oedema"
   - Soft tissues → "unremarkable"
-
-Cover all groups in this order:
-
-**Menisci**
-- Medial Meniscus (anterior horn, body, posterior horn)
-- Lateral Meniscus (anterior horn, body, posterior horn)
-
-**Cruciate Ligaments**
-- ACL and PCL (describe individually if pathology; otherwise a single combined statement is acceptable)
-
-**Collateral Ligaments and Posterolateral Corner**
-- MCL, LCL, and posterolateral corner structures (describe individually if pathology; otherwise combine normals)
-
-**Articular Cartilage**
-- If all surfaces are intact, a single statement suffices: "Articular cartilage intact throughout, no focal chondral defect."
-- If pathology is present, report by compartment:
-  - Medial Compartment (medial femoral condyle, medial tibial plateau)
-  - Lateral Compartment (lateral femoral condyle, lateral tibial plateau)
-  - Patellofemoral Compartment (patella, trochlear groove)
-- Patellofemoral alignment and tracking are included here; do not create a separate Patellofemoral Joint heading.
-
-**Tendons**
-- Quadriceps Tendon and Patellar Tendon (combine if both normal)
-
-**Soft Tissues**
-- Joint Effusion, Hoffa's Fat Pad, Popliteal Fossa, Baker's Cyst
-
-**Bony Structures**
-- ALWAYS use the radiologist's exact dictated words for bony/marrow findings, whether normal or abnormal. Examples:
+- Cruciate Ligaments: describe ACL and PCL individually if pathology; otherwise a single combined statement is acceptable.
+- Collateral Ligaments and Posterolateral Corner: describe individually if pathology; otherwise combine normals.
+- Articular Cartilage: if all surfaces are intact, a single statement suffices ("Articular cartilage intact throughout, no focal chondral defect."). If pathology is present, report by compartment (medial, lateral, patellofemoral). Patellofemoral alignment and tracking are included here; do not create a separate Patellofemoral Joint heading.
+- Tendons: combine quadriceps and patellar tendons if both normal.
+- Bony Structures: ALWAYS use the radiologist's exact dictated words for bony/marrow findings, whether normal or abnormal. Examples:
   - If they said "no marrow oedema, contusion or fracture" → write exactly that.
   - If they said "normal bony alignment, no marrow signal abnormality" → write exactly that.
-- Only use the default "Bone marrow signal is normal. No suspicious osseous lesion identified." if the radiologist said NOTHING about bony structures.
-- If a specific abnormality is described, state it, then add "Remaining marrow signal is normal."
+  - Only use the default "Bone marrow signal is normal. No suspicious osseous lesion identified." if the radiologist said NOTHING about bony structures.
+  - If a specific abnormality is described, state it, then add "Remaining marrow signal is normal."
 
 - **ASR Prompt (for speech recognition spelling correction ONLY — do NOT copy this text into the report):**
 [correct spellings] MRI of the right knee. Normal bony alignment. No marrow oedema, contusion or fracture. No joint effusion. Medial meniscus: oblique undersurface tear of the posterior horn. Lateral meniscus intact. ACL: partial thickness tear, fibres intact. PCL intact. MCL and LCL intact. Posterolateral corner structures intact. Articular cartilage intact, no focal chondral defect. Patellofemoral joint unremarkable. Quadriceps and patellar tendons intact. Hoffa fat pad unremarkable. Popliteal fossa clear. Small Baker's cyst without features of rupture. Osteophyte formation. Subchondral sclerosis. Trochlear dysplasia. [correct spellings]
@@ -76,9 +90,3 @@ Cover all groups in this order:
 - Concise bullet-point summary of key findings.
 - Include only clinically relevant findings. Minor incidental findings that are fully described in the body do not need to be restated here.
 - For a normal/negative study, include a closing statement where appropriate, e.g. 'No cause for the patient's symptoms identified on this examination.'
-- **Sample:**
-  - Posterior horn medial meniscal tear.
-  - ACL intact. No significant ligamentous injury.
-  - No joint effusion.
-
----
