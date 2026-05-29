@@ -2427,9 +2427,9 @@ def api_hl7_worklist_archive(order_id: str, user: dict = Depends(_verify_auth)):
     return {"ok": True}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────────────
 # MWL bridge agent — accepts pushed DICOM Modality Worklist orders
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────────────────────────────────────────────────────────
 # The clinic's on-prem agent runs C-FIND SCU against their PACS/broker and
 # POSTs each parsed order here. We write one JSON file per order into the
 # HL7 inbox so the existing worklist UI, filter, and archive flow pick it up
