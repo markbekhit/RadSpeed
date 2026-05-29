@@ -2010,15 +2010,40 @@ async function _tmplSelect(name) {
   if (!r.ok) { $("tmpl-status").textContent = "Failed to load."; return; }
   const data = await r.json();
 
-  _tmplCurrent = { name, is_custom: data.is_custom };
+  _tmplCurrent = { name, is_custom: data.is_custom, has_split: !!data.has_split };
   const titleEl = $("tmpl-editor-title");
   titleEl.textContent = name.replace(/_/g, " ").replace(/\.(txt|md)$/, "");
   titleEl.classList.remove("tmpl-dirty");
-  $("tmpl-content").value = data.content;
+
+  // Populate the two sections. When a template predates the split format the
+  // whole file lands in "Report structure" so nothing is lost; saving it
+  // converts it to the new two-section format.
+  if (data.has_split) {
+    $("tmpl-content").value = data.structure || "";
+    $("tmpl-content-ai").value = data.ai_instructions || "";
+  } else {
+    $("tmpl-content").value = data.content || "";
+    $("tmpl-content-ai").value = "";
+  }
+  $("tmpl-tabs").style.display = "flex";
+  _tmplSwitchTab("structure");
+  $("tmpl-split-note").textContent = data.has_split
+    ? ""
+    : "Not split yet — save to separate AI instructions";
+
   $("tmpl-save").disabled = false;
   $("tmpl-duplicate").disabled = false;
   $("tmpl-restore").style.display = data.is_custom ? "inline-flex" : "none";
   $("tmpl-status").textContent = data.is_custom ? "Custom version" : "Bundled default";
+}
+
+function _tmplSwitchTab(pane) {
+  document.querySelectorAll(".tmpl-tab").forEach(b =>
+    b.classList.toggle("tmpl-tab-active", b.dataset.pane === pane)
+  );
+  $("tmpl-content").style.display = pane === "structure" ? "block" : "none";
+  $("tmpl-content-ai").style.display = pane === "ai" ? "block" : "none";
+  (pane === "structure" ? $("tmpl-content") : $("tmpl-content-ai")).focus();
 }
 
 function _tmplMarkDirty() {
@@ -2034,12 +2059,17 @@ async function tmplSave() {
   const r = await fetch(`/api/templates/${encodeURIComponent(_tmplCurrent.name)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: $("tmpl-content").value }),
+    body: JSON.stringify({
+      structure: $("tmpl-content").value,
+      ai_instructions: $("tmpl-content-ai").value,
+    }),
   });
   $("tmpl-save").disabled = false;
   if (r.ok) {
     _tmplDirty = false;
     _tmplCurrent.is_custom = true;
+    _tmplCurrent.has_split = true;
+    $("tmpl-split-note").textContent = "";
     $("tmpl-editor-title").classList.remove("tmpl-dirty");
     $("tmpl-restore").style.display = "inline-flex";
     $("tmpl-status").textContent = "Saved ✓  (Custom version)";
@@ -2070,7 +2100,10 @@ async function tmplDuplicate() {
   const r = await fetch(`/api/templates/${encodeURIComponent(filename)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: $("tmpl-content").value }),
+    body: JSON.stringify({
+      structure: $("tmpl-content").value,
+      ai_instructions: $("tmpl-content-ai").value,
+    }),
   });
   if (r.ok) {
     await _tmplFetchList();
@@ -2086,7 +2119,7 @@ async function tmplNew() {
   const r = await fetch(`/api/templates/${encodeURIComponent(filename)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content: "" }),
+    body: JSON.stringify({ structure: "", ai_instructions: "" }),
   });
   if (r.ok) {
     await _tmplFetchList();
@@ -2529,6 +2562,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("tmpl-new").addEventListener("click", tmplNew);
   $("tmpl-search").addEventListener("input", () => _tmplRenderList());
   $("tmpl-content").addEventListener("input", _tmplMarkDirty);
+  $("tmpl-content-ai").addEventListener("input", _tmplMarkDirty);
+  document.querySelectorAll(".tmpl-tab").forEach(b =>
+    b.addEventListener("click", () => _tmplSwitchTab(b.dataset.pane))
+  );
   $("tmpl-modal").addEventListener("click", (e) => { if (e.target === $("tmpl-modal")) tmplClose(); });
 
   // Upload wiring

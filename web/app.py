@@ -42,7 +42,14 @@ from llm.dicom_sr_export import save_dicom_sr_report
 from llm.fhir_export import save_fhir_report
 from llm.hl7_export import save_hl7_report
 from llm.hl7_import import archive_order, list_inbox
-from llm.format import apply_report_feedback, capitalize_after_colon, format_text, stream_format_text
+from llm.format import (
+    apply_report_feedback,
+    capitalize_after_colon,
+    format_text,
+    join_template,
+    split_template,
+    stream_format_text,
+)
 from llm.impressions import stream_impression
 from web.auth_oauth import (
     exchange_google_code,
@@ -626,27 +633,45 @@ def get_template_content(name: str, user: dict = Depends(_verify_auth)):
     user_dir = os.path.join(config.save_directory or "", "templates")
     user_path = os.path.join(user_dir, name)
     bundled_path = os.path.join(_BUNDLED_TEMPLATES_DIR, name)
-    if os.path.exists(user_path):
-        with open(user_path, "r", encoding="utf-8") as f:
-            return {"content": f.read(), "is_custom": True}
-    if os.path.exists(bundled_path):
-        with open(bundled_path, "r", encoding="utf-8") as f:
-            return {"content": f.read(), "is_custom": False}
-    raise HTTPException(status_code=404, detail="Template not found")
+    is_custom = os.path.exists(user_path)
+    path = user_path if is_custom else bundled_path
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Template not found")
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+    structure, ai_instructions, has_split = split_template(content)
+    return {
+        "content": content,
+        "structure": structure,
+        "ai_instructions": ai_instructions,
+        "has_split": has_split,
+        "is_custom": is_custom,
+    }
 
 
 class _TemplateSaveBody(BaseModel):
-    content: str
+    # Either pass `content` (raw, legacy) OR the two-section fields. When the
+    # section fields are present they take precedence and are recombined into
+    # the on-disk file via join_template().
+    content: Optional[str] = None
+    structure: Optional[str] = None
+    ai_instructions: Optional[str] = None
 
 
 @app.put("/api/templates/{name}")
 def save_template_content(name: str, body: _TemplateSaveBody, user: dict = Depends(_verify_auth)):
     if not _TEMPLATE_NAME_RE.match(name):
         raise HTTPException(status_code=400, detail="Invalid template name")
+    if body.structure is not None or body.ai_instructions is not None:
+        content = join_template(body.structure or "", body.ai_instructions or "")
+    elif body.content is not None:
+        content = body.content
+    else:
+        raise HTTPException(status_code=400, detail="No content provided")
     user_dir = os.path.join(config.save_directory or "", "templates")
     os.makedirs(user_dir, exist_ok=True)
     with open(os.path.join(user_dir, name), "w", encoding="utf-8") as f:
-        f.write(body.content)
+        f.write(content)
     return {"ok": True}
 
 
