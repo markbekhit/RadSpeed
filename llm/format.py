@@ -408,9 +408,55 @@ _ASR_PROMPT_BLOCK_RE = re.compile(
 )
 
 
+# Markers that split a template into the human-editable report structure and
+# the AI instruction block. The editor shows these as two separate tabs. Only
+# the AI marker is required to detect a split; the structure marker is written
+# for readability. Templates WITHOUT these markers (old templates, freshly
+# uploaded files) are treated as all-structure with no separate instructions,
+# so they keep working unchanged.
+TEMPLATE_STRUCTURE_MARKER = "### ===== REPORT STRUCTURE ===== ###"
+TEMPLATE_AI_MARKER = "### ===== AI INSTRUCTIONS (advanced) ===== ###"
+
+
+def split_template(content: str) -> Tuple[str, str, bool]:
+    """Split template text into (structure, ai_instructions, has_split).
+
+    has_split is False for templates that predate the two-section format; in
+    that case the whole content is returned as `structure` and ai_instructions
+    is empty. This split is lossless: join_template(*split_template(x)[:2])
+    reproduces the same content the LLM sees.
+    """
+    if not content:
+        return "", "", False
+    parts = content.split(TEMPLATE_AI_MARKER, 1)
+    if len(parts) == 1:
+        return content, "", False
+    structure = parts[0]
+    if TEMPLATE_STRUCTURE_MARKER in structure:
+        structure = structure.split(TEMPLATE_STRUCTURE_MARKER, 1)[1]
+    return structure.strip("\n"), parts[1].strip("\n"), True
+
+
+def join_template(structure: str, ai_instructions: str) -> str:
+    """Recombine the two editor sections into a single template file."""
+    structure = (structure or "").strip("\n")
+    ai_instructions = (ai_instructions or "").strip("\n")
+    return (
+        f"{TEMPLATE_STRUCTURE_MARKER}\n{structure}\n\n"
+        f"{TEMPLATE_AI_MARKER}\n{ai_instructions}\n"
+    )
+
+
 def _template_for_llm(template_content: str) -> str:
-    """Strip ASR-only blocks from the template before handing it to the LLM."""
-    return _ASR_PROMPT_BLOCK_RE.sub("", template_content).strip()
+    """Strip editor markers and ASR-only blocks before handing to the LLM.
+
+    The structure and AI-instruction sections are concatenated so the model
+    sees the same logical template content regardless of how it is presented
+    in the editor. Templates without the markers are passed through unchanged.
+    """
+    structure, instructions, _ = split_template(template_content)
+    combined = f"{structure}\n\n{instructions}" if instructions else structure
+    return _ASR_PROMPT_BLOCK_RE.sub("", combined).strip()
 
 
 def _create_structured_report(
