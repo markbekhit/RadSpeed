@@ -275,7 +275,7 @@ function startWaveform(stream) {
     state.animFrameId = requestAnimationFrame(draw);
     state.analyser.getByteTimeDomainData(dataArr);
 
-    // ── VAD + Silence detection ────────────────────────────────────────────
+    // ── VAD + Silence detection ───────────────────────────────────────────────────────
     if (state.isRecording && !state.isPaused && !state.isSegmentTranscribing) {
       const rms = getRMS(dataArr);
       const now = Date.now();
