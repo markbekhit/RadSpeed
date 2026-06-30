@@ -24,9 +24,10 @@ Axial cuts were obtained from the cervicothoracic junction to the thoracolumbar 
 **Instructions:**
 - First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing its morphology and any neural compromise.
 - First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, a CT Thoracic Spine report involves Vertebral Bodies (T1–T12), Intervertebral Disc Spaces, Facet Joints, Pedicles and Posterior Elements, Rib Articulations, Spinal Canal, Neural Foramina, Paraspinal Soft Tissues, and Visualized Thoracic Organs. If not mentioned in transcript, state "{structure} appears normal."
+- Then mention ALL the structures that are normal. For your guidance, a CT Thoracic Spine report involves Vertebral Bodies (T1–T12), Intervertebral Disc Spaces, Facet Joints, Pedicles and Posterior Elements, Costovertebral and Costotransverse Joints (rib articulations), Spinal Canal, Neural Foramina, Paraspinal Soft Tissues, and Visualized Thoracic Organs. If not mentioned in transcript, state "{structure} appears normal."
 
   - Normal structures within the same anatomical group may be combined into a single statement. Only itemise individually when pathology is present.
+  - **Costovertebral and costotransverse joints** are unique to the thoracic spine: ALWAYS report them, stating "Costovertebral and costotransverse joints are intact." if the transcript does not describe them.
 - **Commonly Misspelled Words:**
 [correct spellings] vertebra, spondylosis, spondylolisthesis, kyphosis, scoliosis, pedicle, paraspinal, costovertebral, osteophyte, compression fracture, Schmorl's node [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.
