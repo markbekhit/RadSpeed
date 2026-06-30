@@ -22,11 +22,9 @@ Axial cuts were obtained from the T12/L1 junction to the sacrum. Sagittal and co
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing its morphology and any neural compromise.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, a CT Lumbar Spine report involves Vertebral Bodies (L1–L5 and S1), Intervertebral Disc Spaces (L1/2 through L5/S1), Facet Joints (bilateral, each level), Pedicles and Posterior Elements, Spinal Canal, Thecal Sac, Lateral Recesses, Neural Foramina (bilateral, each level), Sacrum and Sacroiliac Joints, Paraspinal Muscles, Cauda Equina, and Visualized Abdominal Structures. If not mentioned in transcript, state "{structure} appears normal."
-
-  - Normal structures within the same anatomical group may be combined into a single statement. Only itemise individually when pathology is present.
+- **Organise the level-specific findings level by level, in anatomical order from top to bottom (L1/2, L2/3, L3/4, L4/5, L5/S1), REGARDLESS of the order in which they were dictated.** The radiologist dictates freely as findings are noticed and may jump between levels or revisit a level more than once. Gather every comment that belongs to a given level and place it under that level's heading. Do NOT preserve dictation order — the anatomical level order above governs absolutely.
+- Give each abnormal disc level its own bold heading, e.g. **L4/5:**, describing disc-space and osteophyte morphology, facet and foraminal changes, and any neural compromise. Levels with no abnormality may be grouped, e.g. **Remaining levels (L1/2–L3/4):** No significant disc space narrowing or foraminal compromise. Every level must appear somewhere.
+- After the levels, report the structures that are not level-specific: Vertebral Bodies (L1–L5, S1), Pedicles and Posterior Elements, Sacrum and Sacroiliac Joints, Paraspinal Muscles, and Visualized Abdominal Structures. Normal structures within the same anatomical group may be combined into a single statement; only itemise individually when pathology is present. If not mentioned in the transcript, state "{structure} appears normal."
 - **Commonly Misspelled Words:**
 [correct spellings] spondylosis, spondylolisthesis, spondylolysis, foraminal stenosis, lateral recess, cauda equina, annular fissure, facet hypertrophy, ligamentum flavum, disc desiccation, laminectomy [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.

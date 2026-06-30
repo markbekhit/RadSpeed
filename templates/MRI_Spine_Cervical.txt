@@ -22,15 +22,15 @@ MRI of the cervical spine was performed using T1-weighted, T2-weighted, and STIR
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing disc morphology, signal changes, degree of canal/foraminal compromise, and cord signal.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, an MRI Cervical Spine report involves Vertebral Bodies (C1–C7), Intervertebral Discs (C2/3 through C7/T1), Disc Height and Signal (T2 hypointensity indicating desiccation), Facet Joints, Spinal Canal (AP diameter), Spinal Cord (signal, contour, calibre), Neural Foramina (bilateral, each level), Atlantoaxial Joint and Odontoid Process, Prevertebral Soft Tissues, Paraspinal Muscles, and Visualized Posterior Fossa and Upper Thoracic Spine. If not mentioned, state "{structure} appears normal."
-
-  - Describe each abnormal disc level specifically. Normal disc levels may be grouped: e.g. "Remaining disc levels show preserved height and normal T2 signal." Other structures (spinal cord, facet joints, prevertebral soft tissues) may be combined if normal.
-    For instance:
-    - **C5/C6:** Posterior disc osteophyte complex causing moderate central canal stenosis with cord flattening. No intrinsic cord signal change.
-    - **C6/C7:** Mild disc bulge causing mild bilateral foraminal narrowing.
-    - **Remaining Levels (C2/3–C4/5, C7/T1):** Normal disc height and T2 signal, no significant canal or foraminal compromise.
+- **Organise the report level by level, in anatomical order from top to bottom (C2/3, C3/4, C4/5, C5/6, C6/7, C7/T1), REGARDLESS of the order in which findings were dictated.** The radiologist dictates freely as findings are noticed and may jump between levels or revisit a level more than once. Gather every comment that belongs to a given level and place it under that level's heading. Do NOT preserve dictation order — the anatomical level order above governs absolutely.
+- Give each disc level its own bold heading, e.g. **C5/6:**, with that level's findings beneath it. For each abnormal level describe disc morphology, signal change, degree of canal/foraminal compromise, and any cord effect.
+- Levels with no abnormality may be grouped into one line, e.g. **Remaining levels (C2/3–C4/5, C7/T1):** Normal disc height and T2 signal, no significant canal or foraminal compromise. Every level must appear somewhere — either with its own findings or inside a grouped "remaining levels" line.
+- After the disc levels, report the structures that are not level-specific: Vertebral Bodies (C1–C7), Spinal Cord (signal, contour, calibre), Craniocervical Junction including the Atlantoaxial Joint and Odontoid Process, Prevertebral Soft Tissues, Paraspinal Muscles, and Visualized Posterior Fossa and Upper Thoracic Spine. Normal structures within the same group may be combined into a single statement. If a structure is not mentioned, state "{structure} appears normal."
+    For instance (note how levels are emitted in anatomical order even if dictated out of order):
+    - **C2/3–C4/5:** Normal disc height and T2 signal, no canal or foraminal compromise.
+    - **C5/6:** Posterior disc osteophyte complex causing moderate central canal stenosis with cord flattening. No intrinsic cord signal change.
+    - **C6/7:** Mild disc bulge causing mild bilateral foraminal narrowing.
+    - **C7/T1:** Normal disc height and T2 signal, no canal or foraminal compromise.
     - **Spinal Cord:** Normal signal and calibre throughout.
     - and so on...
 - **Commonly Misspelled Words:**

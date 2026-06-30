@@ -22,11 +22,9 @@ Axial cuts were obtained from the skull base to the cervicothoracic junction. Sa
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing its morphology and any neural compromise.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, a CT Cervical Spine report involves Vertebral Bodies (C1–C7), Intervertebral Disc Spaces, Facet Joints, Pedicles and Posterior Elements, Spinal Canal and Thecal Sac, Neural Foramina (bilateral, each level), Uncovertebral Joints, Prevertebral Soft Tissues, Atlantoaxial Joint and Odontoid Process, and Visualized Posterior Fossa and Cervicothoracic Junction. If the transcript doesn't mention anything about a certain structure or level, mention that it "appears normal."
-
-  - Normal structures within the same anatomical group may be combined into a single statement. Only itemise individually when pathology is present.
+- **Organise the level-specific findings level by level, in anatomical order from top to bottom (C2/3, C3/4, C4/5, C5/6, C6/7, C7/T1), REGARDLESS of the order in which they were dictated.** The radiologist dictates freely as findings are noticed and may jump between levels or revisit a level more than once. Gather every comment that belongs to a given level and place it under that level's heading. Do NOT preserve dictation order — the anatomical level order above governs absolutely.
+- Give each abnormal disc level its own bold heading, e.g. **C5/6:**, describing disc-space and osteophyte morphology, uncovertebral and facet changes, foraminal narrowing, and any neural compromise. Levels with no abnormality may be grouped, e.g. **Remaining levels (C2/3–C4/5, C7/T1):** No significant disc space narrowing or foraminal compromise. Every level must appear somewhere.
+- After the levels, report the structures that are not level-specific: Vertebral Bodies (C1–C7), Pedicles and Posterior Elements, Craniocervical Junction including the Atlantoaxial Joint and Odontoid Process, Prevertebral Soft Tissues, and Visualized Posterior Fossa and Cervicothoracic Junction. Normal structures within the same anatomical group may be combined into a single statement; only itemise individually when pathology is present. If the transcript doesn't mention a certain structure or level, state that it "appears normal."
 - **Commonly Misspelled Words:**
 [correct spellings] osteophyte, spondylosis, spondylolisthesis, foraminal, myelopathy, radiculopathy, uncovertebral, facet, listhesis, odontoid, atlantoaxial, prevertebral [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.

@@ -22,16 +22,16 @@ MRI of the lumbar spine was performed using T1-weighted, T2-weighted, and STIR s
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing disc morphology (bulge/protrusion/extrusion/sequestration), signal change, degree of canal/foraminal/lateral recess compromise, and nerve root involvement.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, an MRI Lumbar Spine report involves Vertebral Bodies (L1–L5, S1), Bone Marrow Signal, Intervertebral Discs (L1/2 through L5/S1 — disc height, T2 signal, disc morphology), End Plates, Facet Joints (bilateral, each level), Spinal Canal (AP diameter), Thecal Sac, Cauda Equina Nerve Roots, Lateral Recesses (bilateral), Neural Foramina (bilateral, each level), Ligamentum Flavum, Sacroiliac Joints, Paraspinal Muscles, and Visualized Abdominal Structures. If not mentioned, state "{structure} appears normal."
-
-  - Describe each abnormal disc level specifically. Normal disc levels may be grouped: e.g. "Remaining disc levels show preserved height and normal T2 signal." Other structures (thecal sac, cord/cauda equina, facet joints, paraspinal muscles) may be combined if normal.
-    For instance:
-    - **L4/L5:** Left paracentral disc protrusion abutting the traversing left L5 nerve root with mild left lateral recess narrowing.
+- **Organise the report level by level, in anatomical order from top to bottom (L1/2, L2/3, L3/4, L4/5, L5/S1), REGARDLESS of the order in which findings were dictated.** The radiologist dictates freely as findings are noticed and may jump between levels or revisit a level more than once. Gather every comment that belongs to a given level and place it under that level's heading. Do NOT preserve dictation order — the anatomical level order above governs absolutely.
+- Give each disc level its own bold heading, e.g. **L4/5:**, with that level's findings beneath it. For each abnormal level describe disc morphology (bulge/protrusion/extrusion/sequestration), signal change, degree of canal/foraminal/lateral recess compromise, and nerve root involvement.
+- Levels with no abnormality may be grouped into one line, e.g. **Remaining levels (L1/2–L3/4):** Normal disc height and T2 signal, no significant canal or foraminal compromise. Every level must appear somewhere — either with its own findings or inside a grouped "remaining levels" line.
+- After the disc levels, report the structures that are not level-specific: Vertebral Bodies (L1–L5, S1) and Bone Marrow Signal, End Plates, Conus Medullaris and Cauda Equina, Facet Joints, Ligamentum Flavum, Sacroiliac Joints, Paraspinal Muscles, and Visualized Abdominal Structures. Normal structures within the same group may be combined into a single statement. If a structure is not mentioned, state "{structure} appears normal."
+    For instance (note how levels are emitted in anatomical order even if dictated out of order):
+    - **L1/2–L3/4:** Normal disc height and T2 signal, no canal or foraminal compromise.
+    - **L4/5:** Left paracentral disc protrusion abutting the traversing left L5 nerve root with mild left lateral recess narrowing.
     - **L5/S1:** Broad-based disc bulge with mild bilateral foraminal narrowing.
-    - **Remaining Levels (L1/2–L3/4):** Normal disc height and T2 signal, no significant canal or foraminal compromise.
-    - **Thecal Sac and Cauda Equina:** Adequate calibre, no nerve root compression at remaining levels.
+    - **Conus and Cauda Equina:** Normal in calibre and position, no nerve root compression at the remaining levels.
+    - **Vertebral Bodies and Marrow:** Normal height and signal, no fracture or marrow oedema.
     - and so on...
 - **Commonly Misspelled Words:**
 [correct spellings] spondylolysis, spondylolisthesis, foraminal stenosis, lateral recess, cauda equina, ligamentum flavum, Modic, annular fissure, protrusion, extrusion, sequestration, facet hypertrophy [correct spellings]
