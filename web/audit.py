@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import sqlite3
+import threading
 from typing import Iterable, Optional
 
 # Reuse the same DB path resolver / connection helper as auth_oauth so
@@ -113,6 +114,14 @@ def _last_hash(db: sqlite3.Connection) -> str:
     return row[0] if row else ""
 
 
+# The hash chain is only tamper-evident if "read the tip, then append" is
+# atomic. FastAPI dispatches these sync endpoints across a threadpool, each
+# with its own SQLite connection, so two concurrent events could otherwise
+# read the same prev_hash and store the same value — permanently breaking
+# verify_chain() with a false "prev_hash mismatch". Serialise all appends.
+_audit_lock = threading.Lock()
+
+
 def log_event(
     *,
     user_id: Optional[int],
@@ -134,7 +143,7 @@ def log_event(
     try:
         meta = json.dumps(metadata, sort_keys=True, ensure_ascii=False) if metadata else None
         payload_hash = _sha256_hex(meta) if meta else None
-        with _conn() as db:
+        with _audit_lock, _conn() as db:
             prev = _last_hash(db)
             fields = {
                 "user_id": user_id,
@@ -326,21 +335,37 @@ def save_report_version(
     return _serialise_report_row(row)
 
 
-def get_report(report_id: int) -> Optional[dict]:
+def get_report(report_id: int, user_id: Optional[int] = None) -> Optional[dict]:
+    """Fetch a report by id.
+
+    When ``user_id`` is provided, the row is only returned if it belongs to
+    that user — this is the ownership check that prevents one radiologist from
+    reading or amending another's reports (and patient identifiers) by
+    enumerating ids.
+    """
+    sql = f"SELECT {_REPORT_COLS} FROM reports WHERE id = ?"
+    args: list = [report_id]
+    if user_id is not None:
+        sql += " AND user_id = ?"
+        args.append(user_id)
     with _conn() as db:
-        row = db.execute(
-            f"SELECT {_REPORT_COLS} FROM reports WHERE id = ?", (report_id,)
-        ).fetchone()
+        row = db.execute(sql, args).fetchone()
     return _serialise_report_row(row) if row else None
 
 
-def list_reports_for_accession(accession: str) -> list[dict]:
+def list_reports_for_accession(
+    accession: str, user_id: Optional[int] = None
+) -> list[dict]:
+    sql = (
+        f"SELECT {_REPORT_COLS} FROM reports WHERE accession = ?"
+    )
+    args: list = [accession]
+    if user_id is not None:
+        sql += " AND user_id = ?"
+        args.append(user_id)
+    sql += " ORDER BY version ASC, id ASC"
     with _conn() as db:
-        rows = db.execute(
-            f"SELECT {_REPORT_COLS} FROM reports "
-            "WHERE accession = ? ORDER BY version ASC, id ASC",
-            (accession,),
-        ).fetchall()
+        rows = db.execute(sql, args).fetchall()
     return [_serialise_report_row(r) for r in rows]
 
 

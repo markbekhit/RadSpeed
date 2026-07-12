@@ -168,6 +168,12 @@ def build_dicom_sr(
         preamble=b"\0" * 128,
     )
 
+    # Declare UTF-8 so non-ASCII report characters survive. The formatter
+    # routinely emits "×" (measurement separator style), en/em dashes and "≥";
+    # without SpecificCharacterSet pydicom encodes as default ISO-IR 6 (ASCII)
+    # and silently replaces them with "?" in the archived legal report.
+    ds.SpecificCharacterSet = "ISO_IR 192"
+
     # ─── Patient module ─────────────────────────────────────────────────
     ds.PatientName = _format_person_name(ctx.get("patient_name", ""))
     ds.PatientID = str(ctx.get("patient_id", ""))

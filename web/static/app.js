@@ -44,6 +44,10 @@ const state = {
   // Selection made DURING an active recording session. Set by the selectionchange
   // listener so the VAD/onstop handler can promote it to a voice-edit on the next cut.
   pendingVoiceEditSelection: null,
+  // True once the current report has been copied to the clipboard. Reset when a
+  // new report is produced or edited, so Next Case / tab-close can warn about
+  // losing an uncopied report.
+  reportCopied: false,
 };
 
 // Suppress our own programmatic cursor moves from triggering the selectionchange handler.
@@ -1356,6 +1360,7 @@ function setReport(markdown) {
   $("report-raw").value = markdown;
   $("report-rendered").innerHTML = marked.parse(markdown);
   if (_reportEditMode) _setReportEditMode(false);
+  state.reportCopied = false;  // fresh report — not yet on the clipboard
 }
 
 function _setReportEditMode(editing) {
@@ -1413,9 +1418,22 @@ async function copyReport() {
   const markdown = $("report-raw").value;
   if (!markdown.trim()) return;
   const fmt = _pasteFormat();
-  const plain = _renderedPlainText();
-  const html = $("report-rendered").innerHTML ||
-               (window.marked ? marked.parse(markdown) : markdown);
+  // Always render fresh from the raw markdown source. In Edit mode the visible
+  // #report-rendered div is not re-rendered until "Done" is clicked, so reading
+  // its innerText/innerHTML here would silently copy the *pre-edit* report and
+  // drop the radiologist's corrections.
+  const html = window.marked ? marked.parse(markdown) : markdown;
+  $("report-rendered").innerHTML = html;
+  // Derive plain text from an offscreen render — a display:none element (Edit
+  // mode) yields empty innerText, so we can't read the hidden rendered div.
+  const _tmp = document.createElement("div");
+  _tmp.innerHTML = html;
+  _tmp.style.position = "fixed";
+  _tmp.style.left = "-9999px";
+  _tmp.style.whiteSpace = "pre-wrap";
+  document.body.appendChild(_tmp);
+  const plain = (_tmp.innerText || _tmp.textContent || markdown).trim();
+  _tmp.remove();
   // Wrap in a minimal document so rich-text targets (PowerScribe, Word, Outlook)
   // reliably pick up the text/html flavor.
   const htmlDoc = `<!DOCTYPE html><html><body>${html}</body></html>`;
@@ -1445,6 +1463,7 @@ async function copyReport() {
     } else {
       throw new Error("Clipboard API unavailable");
     }
+    state.reportCopied = true;
     setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
     _trackReportEdit(markdown);
     return;
@@ -1468,8 +1487,16 @@ async function copyReport() {
     sel.removeAllRanges();
     sel.addRange(range);
     try {
-      document.execCommand("copy");
-      setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+      // execCommand returns false on failure instead of throwing — checking the
+      // return value stops us reporting "copied" when nothing reached the
+      // clipboard (which would let the radiologist paste stale content).
+      const ok = document.execCommand("copy");
+      if (ok) {
+        state.reportCopied = true;
+        setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+      } else {
+        setStatus("Copy failed — select and copy manually.", "error");
+      }
     } catch {
       setStatus("Copy failed — select and copy manually.", "error");
     }
@@ -1481,11 +1508,26 @@ async function copyReport() {
 // ---------------------------------------------------------------------------
 // Next Case — atomically reset the UI so a radiologist can burn through a list
 // ---------------------------------------------------------------------------
-function nextCase({ keepRadiologist = true } = {}) {
+function nextCase({ keepRadiologist = true, force = false } = {}) {
+  // Guard against destroying an unsaved report. Alt+N is a single keystroke and
+  // fires even while typing in the report field, so confirm when there is a
+  // non-empty report that has been neither copied nor signed off.
+  if (!force) {
+    const rpt = $("report-raw").value.trim();
+    if (rpt && !state.reportCopied && !_signedReportId) {
+      const ok = window.confirm(
+        "This case has a report that hasn't been copied or signed off.\n\n" +
+        "Start the next case and discard it?"
+      );
+      if (!ok) return;
+    }
+  }
+
   // Transcription + report
   $("transcription").value = "";
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
+  state.reportCopied = false;
 
   // Patient context — preserve radiologist name so they don't retype it each case.
   const fields = [
@@ -2281,6 +2323,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   initCanvasResize();
   setUI("idle");
   setStatus("Press Record to start dictating.");
+
+  // Editing the report after a copy re-arms the unsaved-work guard.
+  const _reportRaw = $("report-raw");
+  if (_reportRaw) _reportRaw.addEventListener("input", () => { state.reportCopied = false; });
+
+  // Warn before navigating away from an uncopied, unsigned report or a
+  // non-empty transcription — closing/refreshing the tab otherwise loses it.
+  window.addEventListener("beforeunload", (e) => {
+    const rpt = ($("report-raw")?.value || "").trim();
+    const tx  = ($("transcription")?.value || "").trim();
+    const unsaved = (rpt && !state.reportCopied && !_signedReportId) || (tx && !rpt);
+    if (unsaved) {
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    }
+  });
 
   // Track the last known selection in the transcription/report textareas.
   // _pendingSelection is set on every non-zero selection event and cleared only
