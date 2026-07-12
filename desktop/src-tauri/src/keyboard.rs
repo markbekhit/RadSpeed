@@ -28,10 +28,15 @@ fn new_enigo() -> Result<Enigo, String> {
 ///
 /// If Ctrl+C is blocked by UIPI (the target window runs at a higher integrity
 /// level than RadSpeed, which is common for medical software like PowerScribe
-/// One), the clipboard will be empty after our attempt. In that case we fall
-/// back to whatever the user had pre-copied manually so the caller can still
-/// work with the text.
-pub fn capture_selection() -> Result<String, String> {
+/// One), the clipboard will be empty after our attempt.
+///
+/// `allow_stale_fallback` controls what happens then. In `goto_impression` mode
+/// the user pre-copies the FINDINGS by design, so the pre-existing clipboard IS
+/// the intended input (pass `true`). In the live-selection modes
+/// (`after_selection` / `replace_selection` / `at_cursor`) falling back to the
+/// old clipboard would feed a PREVIOUS patient's text into the report, so we
+/// return an empty string instead (pass `false`) and let the caller error out.
+pub fn capture_selection(allow_stale_fallback: bool) -> Result<String, String> {
     // Snapshot existing clipboard before we clear it.
     let saved = Clipboard::new().ok().and_then(|mut c| c.get_text().ok());
 
@@ -71,13 +76,18 @@ pub fn capture_selection() -> Result<String, String> {
     }
 
     // Ctrl+C produced nothing — either UIPI blocked it or nothing was
-    // selected. Restore the saved clipboard and return it as a fallback so
-    // the caller can use text the user pre-copied manually.
+    // selected. Restore the saved clipboard so we don't leave it cleared.
     let fallback = saved.unwrap_or_default();
     if let Ok(mut c) = Clipboard::new() {
         let _ = c.set_text(&fallback);
     }
-    Ok(fallback)
+    if allow_stale_fallback {
+        // goto_impression: pre-copied text is the intended input.
+        Ok(fallback)
+    } else {
+        // Live-selection modes: never silently reuse the old clipboard.
+        Ok(String::new())
+    }
 }
 
 /// Write text to the clipboard without simulating any keystrokes.

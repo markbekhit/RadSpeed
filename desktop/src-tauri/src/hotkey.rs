@@ -1,6 +1,7 @@
 //! Parse hotkey strings like "ctrl+i", "ctrl+shift+f1" into Tauri's Shortcut
 //! struct, and run the impressions round-trip when triggered.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut};
@@ -146,11 +147,34 @@ mod tests {
     }
 }
 
+/// Set true for the duration of a flow. A second hotkey press (or the
+/// "Trigger now" button) while one is running would otherwise spawn an
+/// overlapping flow whose clipboard writes and keystrokes interleave with the
+/// first — capable of pasting one case's impression into another. We drop the
+/// re-trigger instead.
+static FLOW_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
+
+/// Releases the in-flight flag on every exit path (including a panic).
+struct InFlightGuard;
+impl Drop for InFlightGuard {
+    fn drop(&mut self) {
+        FLOW_IN_FLIGHT.store(false, Ordering::SeqCst);
+    }
+}
+
 /// Spawn the impressions round-trip on a Tokio task. The hotkey handler must
 /// return immediately, so we offload the HTTP call + clipboard work.
 pub fn run_impressions_flow(app: AppHandle) {
+    if FLOW_IN_FLIGHT.swap(true, Ordering::SeqCst) {
+        tray::set_status(
+            &app,
+            &format!("v{}: already running — press ignored", env!("CARGO_PKG_VERSION")),
+        );
+        return;
+    }
     let app = Arc::new(app);
     tauri::async_runtime::spawn(async move {
+        let _guard = InFlightGuard;
         let settings = settings::load(app.as_ref());
         let result = do_round_trip(&settings, app.as_ref()).await;
         match result {
@@ -177,7 +201,7 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
         app,
         &format!("v{}: capturing FINDINGS…", env!("CARGO_PKG_VERSION")),
     );
-    let findings = keyboard::capture_selection()
+    let findings = keyboard::capture_selection(settings.paste_mode == "goto_impression")
         .map_err(|e| format!("capture_selection: {e}"))?;
     let findings_len = findings.len();
     if findings.trim().is_empty() {

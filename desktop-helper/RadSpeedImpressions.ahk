@@ -309,10 +309,8 @@ PasteImpression(impression, mode) {
         block := impression
     }
 
-    savedClip := A_Clipboard
     A_Clipboard := block
     if !ClipWait(0.5) {
-        A_Clipboard := savedClip
         throw Error("Clipboard write failed")
     }
 
@@ -321,7 +319,12 @@ PasteImpression(impression, mode) {
     ; sticky-Ctrl situation that broke Send "^v" in earlier versions.
     Send "+{Insert}"
     Sleep 250
-    A_Clipboard := savedClip
+
+    ; Deliberately do NOT restore the previous clipboard (matching the Rust
+    ; companion's paste_block). Paste is serviced asynchronously by the target;
+    ; under Citrix/PowerScribe load the WM_PASTE can arrive after this point, so
+    ; restoring here would paste the OLD clipboard — a previous case's text — into
+    ; the patient's report. Leaving the impression on the clipboard is harmless.
 }
 
 ; ----------------------------------------------------------------------------
