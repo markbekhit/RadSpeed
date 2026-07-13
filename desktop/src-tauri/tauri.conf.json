@@ -51,7 +51,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYzRDFDNTQyQ0M1QTU5NDgKUldSSVdWck1Rc1hSWS9tRWNOM3cxWWVwTVVkc2ZlK0RqTjhoV3UxbzBoR2RhSFVVYkpYQ01xUGgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI5RUJGMkNDMDk4NjVDOApSV1RJWlpqQUxMK2VBaGxWYjNhbkxZT205bkFFRVRPQU96cXlHRGFiTmdYWlo5UERMVXJxNVZRdQo=",
       "endpoints": [
         "https://github.com/markbekhit/VoxRad/releases/latest/download/update.json"
       ]
