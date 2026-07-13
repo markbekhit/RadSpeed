@@ -322,7 +322,11 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Vendored (not CDN): hospital networks routinely block third-party CDNs,
+     which would kill report rendering. DOMPurify sanitizes LLM/HL7-derived
+     markup before it reaches innerHTML. -->
+<script src="/static/marked.min.js?v={{ static_version }}"></script>
+<script src="/static/purify.min.js?v={{ static_version }}"></script>
 <script src="/static/app.js?v={{ static_version }}"></script>
 </body>
 </html>

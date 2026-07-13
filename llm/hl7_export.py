@@ -76,6 +76,19 @@ def _format_name(full_name: Optional[str]) -> str:
     return _COMP_SEP.join(_escape(p) for p in (last, first, middle) if p or middle == "")
 
 
+def _format_person_xcn(name: Optional[str]) -> str:
+    """Format a free-form person name as an HL7 XCN value.
+
+    XCN puts the ID number in component 1 and the name in components 2-4
+    (Family^Given^Middle). We have no ID, so component 1 is left empty and the
+    name is placed from component 2 onward — this matches how the project's own
+    importer (`hl7_import._parse_xcn`) reads family/given from components 2-3.
+    """
+    if not name or not name.strip():
+        return ""
+    return _COMP_SEP + _format_name(name)
+
+
 def _format_dob(dob: Optional[str]) -> str:
     """Normalise a DOB string to HL7 TS format YYYYMMDD.
 
@@ -164,6 +177,12 @@ def build_oru_r01(
         msg_id,
         "P",  # processing ID: P = Production
         "2.4",
+        "",  # MSH-13 sequence number
+        "",  # MSH-14 continuation pointer
+        "",  # MSH-15 accept ack type
+        "",  # MSH-16 application ack type
+        "",  # MSH-17 country code
+        "UNICODE UTF-8",  # MSH-18 character set — the report body is UTF-8
     ])
 
     # PID — patient identification
@@ -186,53 +205,31 @@ def build_oru_r01(
     # ORC — common order
     orc = _FIELD_SEP.join(["ORC", "RE"])
 
-    # OBR — observation request
+    # OBR — observation request. Field positions matter: integration engines
+    # reject or misfile ORU messages whose OBR-25 (result status) is empty or
+    # whose fields are shifted. Each slot below is annotated with its 1-based
+    # OBR field number (OBR-1 is the first element after the "OBR" segment id).
     exam_code_component = _COMP_SEP.join([
         "",
         _escape(exam_display),
         "",
     ])
-    obr_diagnostic_service = _COMP_SEP.join([
-        _escape(modality) if modality else "",
-        _escape(body_part) if body_part else "",
-    ])
-    obr = _FIELD_SEP.join([
-        "OBR",
-        "1",
-        "",
-        _escape(accession),
-        exam_code_component,
-        "",
-        ts,  # observation date/time
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        _escape(referring),
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        obr_diagnostic_service,
-        ts,
-        "",
-        "",
-        "",
-        "",
-        "F",  # result status: F = Final
-        "",
-        "",
-        "",
-        "",
-        _escape(radiologist),  # principal result interpreter (OBR-32)
-    ])
+    obr_fields = [""] * 43  # OBR-1 .. OBR-43
+    obr_fields[1 - 1] = "1"                       # OBR-1  Set ID
+    obr_fields[3 - 1] = _escape(accession)        # OBR-3  Filler Order Number
+    obr_fields[4 - 1] = exam_code_component        # OBR-4  Universal Service ID
+    obr_fields[7 - 1] = ts                         # OBR-7  Observation Date/Time
+    obr_fields[16 - 1] = _format_person_xcn(referring)   # OBR-16 Ordering Provider
+    obr_fields[24 - 1] = _escape(modality)         # OBR-24 Diagnostic Serv Sect ID
+    obr_fields[25 - 1] = "F"                        # OBR-25 Result Status (F = Final)
+    obr_fields[32 - 1] = _format_person_xcn(radiologist) # OBR-32 Principal Result Interpreter
+    # Preserve the ordered body part somewhere structured without corrupting a
+    # standard field: OBR-4's text component already carries the exam display.
+    if body_part:
+        obr_fields[4 - 1] = _COMP_SEP.join(
+            ["", _escape(f"{exam_display} ({body_part})".strip()), ""]
+        )
+    obr = _FIELD_SEP.join(["OBR"] + obr_fields)
 
     # OBX segments — one per paragraph so a single FT field stays readable
     # and no individual segment crosses typical site length limits.
@@ -244,16 +241,17 @@ def build_oru_r01(
     for i, para in enumerate(paragraphs, start=1):
         obx_segments.append(_FIELD_SEP.join([
             "OBX",
-            str(i),
-            "FT",
-            "&GDT^Report Text",
-            "",
-            _format_text_for_ft(para),
-            "",
-            "",
-            "",
-            "",
-            "F",
+            str(i),                       # OBX-1  Set ID
+            "FT",                          # OBX-2  Value Type
+            "&GDT^Report Text",           # OBX-3  Observation Identifier
+            "",                            # OBX-4  Observation Sub-ID
+            _format_text_for_ft(para),     # OBX-5  Observation Value
+            "",                            # OBX-6  Units
+            "",                            # OBX-7  References Range
+            "",                            # OBX-8  Abnormal Flags
+            "",                            # OBX-9  Probability
+            "",                            # OBX-10 Nature of Abnormal Test
+            "F",                           # OBX-11 Observation Result Status (required)
         ]))
 
     segments = [msh, pid, pv1, orc, obr] + obx_segments

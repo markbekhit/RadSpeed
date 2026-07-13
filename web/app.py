@@ -32,6 +32,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse,
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from openai import OpenAI
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
@@ -160,6 +161,26 @@ def _get_username(user: dict) -> str:
     return user.get("name") or user.get("email") or "user"
 
 
+def _is_admin(user: dict) -> bool:
+    """True when the caller may change server-wide settings.
+
+    In Basic Auth mode the single shared operator is trusted. In OAuth mode
+    only emails in RADSPEED_ADMIN_EMAILS (comma-separated) may mutate global
+    process config — model IDs, base URLs, streaming provider, HL7 paths. Every
+    other authenticated user can still save their own per-user style prefs.
+
+    This closes a privilege hole: any logged-in user could otherwise point
+    config.BASE_URL at an attacker server and exfiltrate the shared LLM API key
+    and PHI on the next format/transcribe call by any user.
+    """
+    if not oauth_enabled():
+        return True
+    allow = os.environ.get("RADSPEED_ADMIN_EMAILS", "")
+    emails = {e.strip().lower() for e in allow.split(",") if e.strip()}
+    email = (user.get("email") or "").lower()
+    return bool(email) and email in emails
+
+
 def _user_style(user: dict) -> Optional[dict]:
     """Return per-user style dict in OAuth mode; None (→ global config) in Basic Auth mode."""
     if oauth_enabled() and user.get("id") is not None:
@@ -241,12 +262,25 @@ def _list_templates() -> list[str]:
 def _load_template_content(template_name: str) -> str:
     if not template_name:
         return ""
+    # Guard against path traversal / absolute paths. template_name arrives from
+    # a free-form request body (FormatRequest.template_name); without this an
+    # authenticated user could pass "../../data/session_secret.key" or an
+    # absolute path and have its contents loaded into the LLM system prompt.
+    if os.path.basename(template_name) != template_name:
+        logger.warning("Rejected template name with path separators: %r", template_name)
+        return ""
     for d in (
         os.path.join(config.save_directory or "", "templates"),
         _BUNDLED_TEMPLATES_DIR,
     ):
-        path = os.path.join(d, template_name)
-        if os.path.exists(path):
+        if not d:
+            continue
+        base = os.path.realpath(d)
+        path = os.path.realpath(os.path.join(base, template_name))
+        # Ensure the resolved path stays inside the templates directory.
+        if path != base and not path.startswith(base + os.sep):
+            continue
+        if os.path.isfile(path):
             with open(path, "r", encoding="utf-8") as f:
                 return f.read()
     return ""
@@ -281,10 +315,22 @@ _impressions_lock = threading.Lock()
 
 
 def _impressions_client_ip(request: Request) -> str:
-    # Honour X-Forwarded-For when set (we expect to run behind a reverse proxy).
+    """Best-effort real client IP for rate limiting.
+
+    The leftmost X-Forwarded-For entry is fully client-controlled, so keying
+    the limiter on it lets an attacker rotate a fake header per request and
+    bypass the limit entirely. Fly's edge sets Fly-Client-IP to the real peer
+    address; prefer it. Otherwise take the *rightmost* XFF entry (the hop
+    appended by our own trusted proxy), never the leftmost.
+    """
+    fly_ip = request.headers.get("fly-client-ip", "").strip()
+    if fly_ip:
+        return fly_ip
     fwd = request.headers.get("x-forwarded-for", "")
     if fwd:
-        return fwd.split(",")[0].strip()
+        parts = [p.strip() for p in fwd.split(",") if p.strip()]
+        if parts:
+            return parts[-1]
     return request.client.host if request.client else "unknown"
 
 
@@ -436,28 +482,38 @@ def api_impressions_text(req: ImpressionsRequest, request: Request):
 # WebSocket auth helpers
 # ---------------------------------------------------------------------------
 
+# WS tokens are short-lived signed tokens minted server-side for an already
+# authenticated user (the index page is behind _verify_auth). Signing them with
+# the session secret means an outsider cannot forge one — the previous scheme
+# was base64(user:password) keyed on the shared VOXRAD_WEB_PASSWORD, which in
+# OAuth deployments defaults to the public "voxrad", letting anyone open the
+# socket and burn STT/LLM credits.
+_WS_TOKEN_MAX_AGE = 12 * 3600  # 12 hours
+
+
+def _ws_serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(
+        SESSION_SECRET_KEY() or "voxrad-ws-fallback", salt="voxrad-ws-transcribe"
+    )
+
+
 def _make_ws_token(username: str) -> str:
-    """Return a base64-encoded token embedding username:password for WS auth."""
-    password = os.environ.get("VOXRAD_WEB_PASSWORD", _DEFAULT_WEB_PASSWORD)
-    return base64.b64encode(f"{username}:{password}".encode()).decode()
+    """Return a signed, time-limited token authorising a WS connection."""
+    return _ws_serializer().dumps({"u": username})
 
 
 def _verify_ws_token(token: str) -> Optional[dict]:
-    """Verify a WS auth token; return a minimal user dict on success, None on failure.
-
-    The token is base64(username:password). Returns {"id": None, "name": username}
-    — sufficient to load the shared vocab file in Basic Auth mode. OAuth per-user
-    vocab is not resolved here (the WS protocol doesn't carry the OAuth session).
-    """
+    """Verify a signed WS token; return a minimal user dict, or None on failure."""
+    if not token:
+        return None
     try:
-        decoded = base64.b64decode(token).decode()
-        username, pw = decoded.split(":", 1)
-        expected = os.environ.get("VOXRAD_WEB_PASSWORD", _DEFAULT_WEB_PASSWORD)
-        if secrets.compare_digest(pw.encode(), expected.encode()):
-            return {"id": None, "name": username, "email": username}
+        data = _ws_serializer().loads(token, max_age=_WS_TOKEN_MAX_AGE)
+    except (BadSignature, SignatureExpired, Exception):
         return None
-    except Exception:
+    username = data.get("u") if isinstance(data, dict) else None
+    if not username:
         return None
+    return {"id": None, "name": username, "email": username}
 
 
 # ---------------------------------------------------------------------------
@@ -1773,20 +1829,24 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
     if numeral_prefs:
         _style["numeral_corrections"] = numeral_prefs
 
-    def _generate():
-        with _format_lock:
-            old_template = config.global_md_text_content
-            config.global_md_text_content = (
-                _load_template_content(req.template_name) if req.template_name else ""
-            )
-            _template_snapshot = config.global_md_text_content
-            config.global_md_text_content = old_template
+    # Resolve the template once, per-request, and pass it explicitly into the
+    # generator. Previously this mutated the process-global
+    # config.global_md_text_content and released the lock before streaming, so
+    # a concurrent request could swap the template mid-stream and a report
+    # would be structured against the wrong template.
+    _template_snapshot = (
+        _load_template_content(req.template_name) if req.template_name else ""
+    )
 
-        with _format_lock:
-            config.global_md_text_content = _template_snapshot
+    def _generate():
         try:
             full_report = ""
-            for chunk in stream_format_text(req.transcription, patient_context=_ctx, style=_style):
+            for chunk in stream_format_text(
+                req.transcription,
+                patient_context=_ctx,
+                style=_style,
+                template_content=_template_snapshot,
+            ):
                 if chunk:
                     full_report += chunk
                     yield f'data: {json.dumps({"token": chunk})}\n\n'
@@ -1794,9 +1854,6 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
             logger.error("Streaming format error: %s", e, exc_info=True)
             yield f'data: {json.dumps({"error": str(e)})}\n\n'
             return
-        finally:
-            with _format_lock:
-                config.global_md_text_content = old_template
 
         # Apply post-processing (capitalise after colons) to the full report.
         # Send corrected version so the client can replace the streamed text.
@@ -2093,7 +2150,7 @@ def api_amend(req: AmendmentRequest, user: dict = Depends(_verify_auth)):
             detail="Amendments require an authenticated user (OAuth login).",
         )
 
-    prior = get_report(req.prior_report_id)
+    prior = get_report(req.prior_report_id, user_id=user_id)
     if not prior:
         raise HTTPException(status_code=404, detail="Prior report not found")
     if prior["status"] not in ("final", "amended"):
@@ -2167,9 +2224,11 @@ def api_list_reports(
     user: dict = Depends(_verify_auth),
 ):
     """List versions for an accession, or recent reports for the current user."""
-    if accession:
-        return {"reports": list_reports_for_accession(accession)}
     user_id = user.get("id")
+    if accession:
+        # Scope to the caller's own reports so an accession lookup can't
+        # disclose another radiologist's report text or patient identifiers.
+        return {"reports": list_reports_for_accession(accession, user_id=user_id)}
     if user_id is None:
         return {"reports": []}
     return {"reports": list_reports_for_user(user_id, limit=100)}
@@ -2177,7 +2236,7 @@ def api_list_reports(
 
 @app.get("/api/reports/{report_id}")
 def api_get_report(report_id: int, user: dict = Depends(_verify_auth)):
-    rep = get_report(report_id)
+    rep = get_report(report_id, user_id=user.get("id"))
     if not rep:
         raise HTTPException(status_code=404, detail="Report not found")
     return rep
@@ -2201,7 +2260,10 @@ def api_audit_log(
         )
     return {
         "events": list_audit_events(
-            user_id=None,  # cross-user view by case is the medico-legal default
+            # Scope to the caller's own events so an accession/report_id can't
+            # be used to read another radiologist's audit trail (which embeds
+            # patient identifiers and report hashes).
+            user_id=user_id,
             accession=accession,
             report_id=report_id,
             limit=min(int(limit), 1000),
@@ -2568,15 +2630,20 @@ def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
     Global settings (model URLs, streaming provider) → settings.ini.
     Style preferences → per-user SQLite row (OAuth mode) or settings.ini (Basic Auth mode).
     """
-    config.STREAMING_STT_PROVIDER = req.streaming_stt_provider or None
-    if req.transcription_base_url:
-        config.TRANSCRIPTION_BASE_URL = req.transcription_base_url
-    if req.transcription_model:
-        config.SELECTED_TRANSCRIPTION_MODEL = req.transcription_model
-    if req.text_base_url:
-        config.BASE_URL = req.text_base_url
-    if req.text_model:
-        config.SELECTED_MODEL = req.text_model
+    # Server-wide settings (model IDs, base URLs, streaming provider) mutate
+    # process-global config and affect every user, so only admins may change
+    # them. Non-admins silently skip these and still save their style prefs.
+    _admin = _is_admin(user)
+    if _admin:
+        config.STREAMING_STT_PROVIDER = req.streaming_stt_provider or None
+        if req.transcription_base_url:
+            config.TRANSCRIPTION_BASE_URL = req.transcription_base_url
+        if req.transcription_model:
+            config.SELECTED_TRANSCRIPTION_MODEL = req.transcription_model
+        if req.text_base_url:
+            config.BASE_URL = req.text_base_url
+        if req.text_model:
+            config.SELECTED_MODEL = req.text_model
 
     # Validate style fields
     style_update: dict = {}
@@ -2592,20 +2659,21 @@ def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
             )
         style_update[style_key] = val
 
-    # HL7 settings are always global (server-admin controlled).
+    # HL7 settings are always global (server-admin controlled) — admin only.
     hl7_touched = False
-    if req.hl7_export_enabled is not None:
-        config.hl7_export_enabled = bool(req.hl7_export_enabled)
-        hl7_touched = True
-    if req.hl7_outbox_path is not None:
-        config.hl7_outbox_path = req.hl7_outbox_path.strip()
-        hl7_touched = True
-    if req.hl7_sending_facility is not None:
-        config.hl7_sending_facility = req.hl7_sending_facility.strip() or "VOXRAD"
-        hl7_touched = True
-    if req.hl7_receiving_facility is not None:
-        config.hl7_receiving_facility = req.hl7_receiving_facility.strip()
-        hl7_touched = True
+    if _admin:
+        if req.hl7_export_enabled is not None:
+            config.hl7_export_enabled = bool(req.hl7_export_enabled)
+            hl7_touched = True
+        if req.hl7_outbox_path is not None:
+            config.hl7_outbox_path = req.hl7_outbox_path.strip()
+            hl7_touched = True
+        if req.hl7_sending_facility is not None:
+            config.hl7_sending_facility = req.hl7_sending_facility.strip() or "VOXRAD"
+            hl7_touched = True
+        if req.hl7_receiving_facility is not None:
+            config.hl7_receiving_facility = req.hl7_receiving_facility.strip()
+            hl7_touched = True
 
     if oauth_enabled() and user.get("id") is not None:
         # Per-user: merge with existing preferences and save to SQLite

@@ -44,6 +44,20 @@ const state = {
   // Selection made DURING an active recording session. Set by the selectionchange
   // listener so the VAD/onstop handler can promote it to a voice-edit on the next cut.
   pendingVoiceEditSelection: null,
+  // True once the current report has been copied to the clipboard. Reset when a
+  // new report is produced or edited, so Next Case / tab-close can warn about
+  // losing an uncopied report.
+  reportCopied: false,
+  // Set while we've sent {"type":"stop"} and are awaiting session_complete, so
+  // an unexpected socket close (or a timeout) during finalization can recover
+  // the transcript already in the box instead of hanging on "Processing…".
+  streamingFinalizing: false,
+  streamingFinalizeTimer: null,
+  // Bumped on every Next Case. In-flight streaming/formatting captures the
+  // epoch at start and bails if it changes, so a late SSE token or transcript
+  // can't land in the next patient's case.
+  caseEpoch: 0,
+  formatAbort: null,
 };
 
 // Suppress our own programmatic cursor moves from triggering the selectionchange handler.
@@ -234,6 +248,7 @@ function startTimer() {
   state.timerSeconds = 0;
   $("timer").textContent = "0:00";
   state.timerInterval = setInterval(() => {
+    if (state.isPaused) return;  // don't count time while paused
     state.timerSeconds++;
     const m = Math.floor(state.timerSeconds / 60);
     const s = String(state.timerSeconds % 60).padStart(2, "0");
@@ -698,15 +713,35 @@ async function startStreamingRecording() {
   state.streamingWs.onmessage = (e) => handleStreamingMessage(JSON.parse(e.data));
 
   state.streamingWs.onerror = (e) => {
-    setStatus("Streaming connection error.", "error");
-    _cleanupStreaming();
+    _teardownStreamingUnexpected("Streaming connection error — transcript preserved.");
   };
 
   state.streamingWs.onclose = (e) => {
     if (e.code === 4001) {
-      setStatus("Streaming auth failed. Please reload.", "error");
+      _teardownStreamingUnexpected("Streaming auth failed. Please reload.");
+      return;
+    }
+    // A drop mid-dictation (network blip, server redeploy) or before the server
+    // finalizes would otherwise leave the UI stuck recording/processing with the
+    // timer running and every subsequent word silently discarded.
+    if (state.isRecording) {
+      _teardownStreamingUnexpected("Connection lost — transcript preserved up to the interruption.");
+    } else if (state.streamingFinalizing) {
+      _teardownStreamingUnexpected("Connection lost before finalizing — using the transcript captured so far.");
     }
   };
+}
+
+// Full teardown after an unexpected streaming failure. Preserves whatever text
+// is already in the transcription box (the live display wrote it as words
+// arrived) and returns the UI to a usable state instead of a stuck spinner.
+function _teardownStreamingUnexpected(statusMsg) {
+  _cleanupStreaming();   // also clears the finalize flag/timer and stops the mic
+  stopTimer();
+  stopWaveform();
+  const hasText = ($("transcription").value || "").trim();
+  setUI(hasText ? "transcribed" : "idle");
+  setStatus(statusMsg, "error");
 }
 
 function handleStreamingMessage(msg) {
@@ -830,6 +865,11 @@ function _cleanupStreaming() {
     }
     state.streamingWs = null;
   }
+  if (state.streamingFinalizeTimer) {
+    clearTimeout(state.streamingFinalizeTimer);
+    state.streamingFinalizeTimer = null;
+  }
+  state.streamingFinalizing = false;
   state.isRecording   = false;
   state.isPaused      = false;
   state.confirmedText   = "";
@@ -895,7 +935,16 @@ function stopStreamingRecording() {
 
   // Tell server to flush and finalize
   if (state.streamingWs && state.streamingWs.readyState === WebSocket.OPEN) {
+    state.streamingFinalizing = true;
     state.streamingWs.send(JSON.stringify({ type: "stop" }));
+    // Don't wait forever for session_complete — if the server dies after we
+    // send stop, fall back to the transcript already captured in the box.
+    if (state.streamingFinalizeTimer) clearTimeout(state.streamingFinalizeTimer);
+    state.streamingFinalizeTimer = setTimeout(() => {
+      if (state.streamingFinalizing) {
+        _teardownStreamingUnexpected("Finalizing timed out — using the transcript captured so far.");
+      }
+    }, 10000);
   } else {
     // WS already closed; treat as no speech
     _cleanupStreaming();
@@ -977,6 +1026,9 @@ async function submitAudioSegment(chunks, isFinal) {
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({ detail: resp.statusText }));
       setStatus(`Transcription error: ${err.detail}`, "error");
+      // On a voice edit, clear the target and unlock the UI — otherwise it stays
+      // stuck in "processing" and the stale target hijacks the next recording.
+      if (editTarget) { state.voiceEditTarget = null; setUI(_inferUIMode()); }
       return;
     }
     const data = await resp.json();
@@ -1009,7 +1061,7 @@ async function submitAudioSegment(chunks, isFinal) {
         state.voiceEditTarget = null;
         if (updated !== null) {
           $("report-raw").value = updated;
-          $("report-rendered").innerHTML = marked.parse(updated);
+          $("report-rendered").innerHTML = renderMarkdown(updated);
           setUI(_inferUIMode());
           setStatus("Voice edit applied.", "success");
           if (data.suggest_vocab) showVocabSuggest(data.suggest_vocab);
@@ -1026,7 +1078,7 @@ async function submitAudioSegment(chunks, isFinal) {
         el.selectionStart = el.selectionEnd = start + newText.length;
         el.focus();
         if (editTarget.elId === "report-raw") {
-          $("report-rendered").innerHTML = marked.parse(el.value);
+          $("report-rendered").innerHTML = renderMarkdown(el.value);
         }
         state.voiceEditTarget = null;
         if (wasMidRecording && state.isRecording) {
@@ -1048,6 +1100,7 @@ async function submitAudioSegment(chunks, isFinal) {
     }
   } catch (err) {
     setStatus(`Transcription error: ${err.message}`, "error");
+    if (editTarget) { state.voiceEditTarget = null; setUI(_inferUIMode()); }
   } finally {
     state.isSegmentTranscribing = false;
     state.pendingSegments--;
@@ -1056,17 +1109,34 @@ async function submitAudioSegment(chunks, isFinal) {
 }
 
 // Find selectedText in raw markdown and replace with replacement.
-// Returns the updated string, or null if the text was not found.
+// Returns the updated string, or null if the text was not found OR is ambiguous.
+//
+// Radiology reports repeat short phrases constantly ("right", "normal", "No
+// focal lesion."). Blindly replacing the FIRST occurrence when the radiologist
+// selected a later one silently rewrites the wrong sentence — a laterality
+// error exactly where it matters most. When the selection is not unique we
+// refuse and let the caller tell the user to edit manually, rather than guess.
+function _countOccurrences(haystack, needle) {
+  if (!needle) return 0;
+  let n = 0, i = 0;
+  while ((i = haystack.indexOf(needle, i)) !== -1) { n++; i += needle.length; }
+  return n;
+}
+
 function _spliceRenderedEdit(raw, selectedText, replacement) {
-  // Verbatim match
-  const idx = raw.indexOf(selectedText);
-  if (idx !== -1) return raw.slice(0, idx) + replacement + raw.slice(idx + selectedText.length);
+  // Verbatim match — only act if it is unambiguous.
+  const exact = _countOccurrences(raw, selectedText);
+  if (exact === 1) {
+    const idx = raw.indexOf(selectedText);
+    return raw.slice(0, idx) + replacement + raw.slice(idx + selectedText.length);
+  }
+  if (exact > 1) return null;  // ambiguous — don't guess which one
   // Case-insensitive fallback (capitalisation post-processing may have changed case)
   const lower = raw.toLowerCase();
   const lowerSel = selectedText.toLowerCase();
+  if (_countOccurrences(lower, lowerSel) !== 1) return null;
   const idxLow = lower.indexOf(lowerSel);
-  if (idxLow !== -1) return raw.slice(0, idxLow) + replacement + raw.slice(idxLow + selectedText.length);
-  return null;
+  return raw.slice(0, idxLow) + replacement + raw.slice(idxLow + selectedText.length);
 }
 
 // Infer the correct UI mode from current content after a voice edit.
@@ -1285,11 +1355,18 @@ async function formatReport() {
   $("report-rendered").innerHTML = "";
   _setReportEditMode(false);
 
+  // Tie this run to the current case; abort a prior in-flight format.
+  const myEpoch = state.caseEpoch;
+  if (state.formatAbort) { try { state.formatAbort.abort(); } catch (_) {} }
+  const ac = new AbortController();
+  state.formatAbort = ac;
+
   try {
     const resp = await fetch("/format/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: ac.signal,
     });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({ detail: resp.statusText }));
@@ -1304,12 +1381,14 @@ async function formatReport() {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
+      if (state.caseEpoch !== myEpoch) return;  // superseded by Next Case
       buffer += decoder.decode(value, { stream: true });
 
       const lines = buffer.split("\n");
       buffer = lines.pop();
 
       for (const line of lines) {
+        if (state.caseEpoch !== myEpoch) return;  // superseded mid-batch
         if (!line.startsWith("data: ")) continue;
         const payload = line.slice(6).trim();
         if (!payload) continue;
@@ -1319,12 +1398,12 @@ async function formatReport() {
         if (msg.token) {
           accumulated += msg.token;
           $("report-raw").value = accumulated;
-          $("report-rendered").innerHTML = marked.parse(accumulated);
+          $("report-rendered").innerHTML = renderMarkdown(accumulated);
         } else if (msg.done) {
           // Replace streamed text with the post-processed version (e.g. capitalisation fixes)
           if (msg.report) {
             $("report-raw").value = msg.report;
-            $("report-rendered").innerHTML = marked.parse(msg.report);
+            $("report-rendered").innerHTML = renderMarkdown(msg.report);
           }
           // Snapshot the LLM output so copyReport() can diff for style-drift detection.
           state.reportLlmOutput = $("report-raw").value;
@@ -1342,8 +1421,12 @@ async function formatReport() {
       }
     }
   } catch (err) {
+    // Silent on an intentional abort (Next Case) or a superseded run.
+    if (ac.signal.aborted || state.caseEpoch !== myEpoch) return;
     setUI("transcribed");
     setStatus(`Format error: ${err.message}`, "error");
+  } finally {
+    if (state.formatAbort === ac) state.formatAbort = null;
   }
 }
 
@@ -1352,10 +1435,22 @@ async function formatReport() {
 // ---------------------------------------------------------------------------
 let _reportEditMode = false;
 
+// Render markdown to sanitized HTML. Report text is attacker-influenceable —
+// HL7-derived patient names/procedures flow through the LLM prompt and templates
+// echo demographics into the header, so raw HTML in the output (marked passes it
+// through untouched) could otherwise inject script into report-rendered.innerHTML
+// and exfiltrate the WS token / PHI. DOMPurify strips it; the same sanitized HTML
+// is what lands on the clipboard.
+function renderMarkdown(md) {
+  const html = (window.marked ? marked.parse(md || "") : (md || ""));
+  return (window.DOMPurify ? DOMPurify.sanitize(html) : html);
+}
+
 function setReport(markdown) {
   $("report-raw").value = markdown;
-  $("report-rendered").innerHTML = marked.parse(markdown);
+  $("report-rendered").innerHTML = renderMarkdown(markdown);
   if (_reportEditMode) _setReportEditMode(false);
+  state.reportCopied = false;  // fresh report — not yet on the clipboard
 }
 
 function _setReportEditMode(editing) {
@@ -1371,7 +1466,7 @@ function toggleReportEdit() {
   if (!_reportEditMode) {
     _setReportEditMode(true);
   } else {
-    $("report-rendered").innerHTML = marked.parse($("report-raw").value);
+    $("report-rendered").innerHTML = renderMarkdown($("report-raw").value);
     _setReportEditMode(false);
   }
 }
@@ -1413,9 +1508,22 @@ async function copyReport() {
   const markdown = $("report-raw").value;
   if (!markdown.trim()) return;
   const fmt = _pasteFormat();
-  const plain = _renderedPlainText();
-  const html = $("report-rendered").innerHTML ||
-               (window.marked ? marked.parse(markdown) : markdown);
+  // Always render fresh from the raw markdown source. In Edit mode the visible
+  // #report-rendered div is not re-rendered until "Done" is clicked, so reading
+  // its innerText/innerHTML here would silently copy the *pre-edit* report and
+  // drop the radiologist's corrections.
+  const html = renderMarkdown(markdown);
+  $("report-rendered").innerHTML = html;
+  // Derive plain text from an offscreen render — a display:none element (Edit
+  // mode) yields empty innerText, so we can't read the hidden rendered div.
+  const _tmp = document.createElement("div");
+  _tmp.innerHTML = html;
+  _tmp.style.position = "fixed";
+  _tmp.style.left = "-9999px";
+  _tmp.style.whiteSpace = "pre-wrap";
+  document.body.appendChild(_tmp);
+  const plain = (_tmp.innerText || _tmp.textContent || markdown).trim();
+  _tmp.remove();
   // Wrap in a minimal document so rich-text targets (PowerScribe, Word, Outlook)
   // reliably pick up the text/html flavor.
   const htmlDoc = `<!DOCTYPE html><html><body>${html}</body></html>`;
@@ -1445,6 +1553,7 @@ async function copyReport() {
     } else {
       throw new Error("Clipboard API unavailable");
     }
+    state.reportCopied = true;
     setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
     _trackReportEdit(markdown);
     return;
@@ -1468,8 +1577,16 @@ async function copyReport() {
     sel.removeAllRanges();
     sel.addRange(range);
     try {
-      document.execCommand("copy");
-      setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+      // execCommand returns false on failure instead of throwing — checking the
+      // return value stops us reporting "copied" when nothing reached the
+      // clipboard (which would let the radiologist paste stale content).
+      const ok = document.execCommand("copy");
+      if (ok) {
+        state.reportCopied = true;
+        setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+      } else {
+        setStatus("Copy failed — select and copy manually.", "error");
+      }
     } catch {
       setStatus("Copy failed — select and copy manually.", "error");
     }
@@ -1481,11 +1598,44 @@ async function copyReport() {
 // ---------------------------------------------------------------------------
 // Next Case — atomically reset the UI so a radiologist can burn through a list
 // ---------------------------------------------------------------------------
-function nextCase({ keepRadiologist = true } = {}) {
+function nextCase({ keepRadiologist = true, force = false } = {}) {
+  // Guard against destroying an unsaved report. Alt+N is a single keystroke and
+  // fires even while typing in the report field, so confirm when there is a
+  // non-empty report that has been neither copied nor signed off.
+  if (!force) {
+    const rpt = $("report-raw").value.trim();
+    if (rpt && !state.reportCopied && !_signedReportId) {
+      const ok = window.confirm(
+        "This case has a report that hasn't been copied or signed off.\n\n" +
+        "Start the next case and discard it?"
+      );
+      if (!ok) return;
+    }
+  }
+
+  // Invalidate in-flight work so a late token/transcript can't land in the new
+  // case, and abort the format stream / stop any active recording.
+  state.caseEpoch++;
+  if (state.formatAbort) { try { state.formatAbort.abort(); } catch (_) {} state.formatAbort = null; }
+  if (state.isRecording) {
+    if (state.streamingSupported && state.streamingWs) {
+      _cleanupStreaming();
+    } else {
+      state.isRecording = false;
+      if (state.mediaRecorder && state.mediaRecorder.state !== "inactive") {
+        try { state.mediaRecorder.stop(); } catch (_) {}
+      }
+      if (state.stream) { state.stream.getTracks().forEach((t) => t.stop()); state.stream = null; }
+    }
+    stopTimer();
+    stopWaveform();
+  }
+
   // Transcription + report
   $("transcription").value = "";
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
+  state.reportCopied = false;
 
   // Patient context — preserve radiologist name so they don't retype it each case.
   const fields = [
@@ -2281,6 +2431,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   initCanvasResize();
   setUI("idle");
   setStatus("Press Record to start dictating.");
+
+  // Editing the report after a copy re-arms the unsaved-work guard.
+  const _reportRaw = $("report-raw");
+  if (_reportRaw) _reportRaw.addEventListener("input", () => { state.reportCopied = false; });
+
+  // Warn before navigating away from an uncopied, unsigned report or a
+  // non-empty transcription — closing/refreshing the tab otherwise loses it.
+  window.addEventListener("beforeunload", (e) => {
+    const rpt = ($("report-raw")?.value || "").trim();
+    const tx  = ($("transcription")?.value || "").trim();
+    const unsaved = (rpt && !state.reportCopied && !_signedReportId) || (tx && !rpt);
+    if (unsaved) {
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    }
+  });
 
   // Track the last known selection in the transcription/report textareas.
   // _pendingSelection is set on every non-zero selection event and cleared only

@@ -469,7 +469,10 @@ def _create_structured_report(
     client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
 
     if not template_content:
-        return "Error: Template content is empty."
+        # Return None (not an error string) so callers treat this as a failure
+        # and never export the placeholder as a clinical report.
+        logger.error("Template content is empty in _create_structured_report.")
+        return None
 
     template_for_llm = _template_for_llm(template_content)
 
@@ -490,7 +493,12 @@ def _create_structured_report(
     except Exception as e:
         logger.error(f"Error in _create_structured_report: {e}")
         update_status("Error generating structured report.")
-        return "Error generating structured report."
+        # Critical: return None rather than a placeholder string. A truthy
+        # sentinel would pass the caller's `if report_content:` / `report is
+        # None` guards and be exported to HL7/DICOM SR/FHIR as a FINAL report
+        # reading "Error generating structured report." against a real
+        # accession. None makes the whole format call fail cleanly.
+        return None
 
 
 
@@ -734,7 +742,14 @@ def format_text(text, patient_context=None, style: Optional[dict] = None):
 
             if config.fhir_export_enabled:
                 from llm.fhir_export import save_fhir_report
-                fhir_path = save_fhir_report(report_content, template_name=template_name)
+                _ctx = patient_context or {}
+                fhir_path = save_fhir_report(
+                    report_content,
+                    template_name=template_name,
+                    patient_id=_ctx.get("patient_id") or None,
+                    accession=_ctx.get("accession") or None,
+                    radiologist=_ctx.get("radiologist") or None,
+                )
                 if fhir_path:
                     update_status(f"FHIR R4 JSON saved.")
                     logger.info(f"FHIR R4 JSON saved: {fhir_path}")
@@ -820,26 +835,34 @@ def stream_format_text(
     text: str,
     patient_context: Optional[dict] = None,
     style: Optional[dict] = None,
+    template_content: Optional[str] = None,
 ):
     """Public streaming entry point — mirrors format_text() but yields text chunks.
 
     Called by the web server's /format/stream endpoint.
+
+    ``template_content`` is the selected template passed explicitly by the
+    caller. The web server passes it per-request so concurrent streams never
+    race on shared state; when omitted (e.g. the desktop app) we fall back to
+    the process-global ``config.global_md_text_content``. An empty string means
+    "no template selected — auto-select one".
     """
     logger.info("Triggered stream_format_text.")
+    if template_content is None:
+        template_content = config.global_md_text_content
     try:
-        if not config.global_md_text_content:
+        if not template_content:
             template_name = _keyword_select_template(text)
             if not template_name:
                 template_name = _select_template(text)
             if template_name:
-                template_content = _get_template_content(template_name)
-                if template_content:
-                    yield from _stream_create_structured_report(text, template_content, style)
+                selected = _get_template_content(template_name)
+                if selected:
+                    yield from _stream_create_structured_report(text, selected, style)
                     return
             # Fallback
             yield _basic_format(text)
         else:
-            template_content = config.global_md_text_content
             yield from _stream_create_structured_report(text, template_content, style)
     except Exception as e:
         logger.error("stream_format_text error: %s", e, exc_info=True)

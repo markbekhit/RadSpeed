@@ -128,9 +128,15 @@
         setStatus("No impression returned. Try again with more detail.", "error");
         setOutput("The generated impression will appear here.", true);
       } else {
-        setStatus("Done. Copied to clipboard.", "success");
         $("btn-copy").disabled = false;
-        copyToClipboard(buffer.trim(), /* silent */ true);
+        // Auto-copy can be rejected (Safari requires a fresh user gesture, and
+        // this fires after a multi-second stream). Only claim "Copied" if the
+        // write actually succeeded; otherwise point the user at the button.
+        const copied = await copyToClipboard(buffer.trim(), /* silent */ true);
+        setStatus(
+          copied ? "Done. Copied to clipboard." : "Done. Click Copy to copy the impression.",
+          "success",
+        );
       }
     } catch (err) {
       setStatus(`Error: ${err.message || err}`, "error");
@@ -145,10 +151,11 @@
     if (!text) {
       text = ($("impression-output").textContent || "").trim();
     }
-    if (!text) return;
+    if (!text) return false;
     try {
       await navigator.clipboard.writeText(text);
       if (!silent) setStatus("Copied to clipboard.", "success");
+      return true;
     } catch (_) {
       // Fallback: select range then execCommand. Older browsers / insecure contexts.
       const ta = document.createElement("textarea");
@@ -157,9 +164,16 @@
       ta.style.opacity = "0";
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand("copy"); } catch (_) {}
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch (_) {}
       document.body.removeChild(ta);
-      if (!silent) setStatus("Copied to clipboard.", "success");
+      if (!silent) {
+        setStatus(
+          ok ? "Copied to clipboard." : "Copy failed — select and copy manually.",
+          ok ? "success" : "error",
+        );
+      }
+      return ok;
     }
   }
 
