@@ -167,7 +167,7 @@ Key vars:
 ### HL7 file-drop (generic RIS)
 
 Any integration engine that can write/read HL7 v2.x files to a shared
-directory works. Point the engine at VoxRad's inbox/outbox:
+directory works. Point the engine at RadSpeed's inbox/outbox:
 
 ```bash
 flyctl secrets set \
@@ -257,7 +257,7 @@ In this repo:
 - [`docs/FFmpeg.md`](docs/FFmpeg.md) — audio pipeline notes
 - [`CLAUDE.md`](CLAUDE.md) — project instructions for AI-assisted development
 
-Original desktop app's GitBook: https://voxrad.gitbook.io/voxrad
+Original VoxRad desktop app's GitBook: https://voxrad.gitbook.io/voxrad
 (historical reference — predates the web work)
 
 ## 🛠️ Development
