@@ -133,7 +133,7 @@ OnHotkey(*) {
 
 UpdateScript(*) {
     bust := A_Now
-    url := "https://raw.githubusercontent.com/markbekhit/voxrad/main/desktop-helper/RadSpeedImpressions.ahk?bust=" bust
+    url := "https://raw.githubusercontent.com/markbekhit/RadSpeed/main/desktop-helper/RadSpeedImpressions.ahk?bust=" bust
     tmp := A_ScriptFullPath ".new"
     TrayTip("Downloading latest...", "RadSpeed", 0x10)
     try {

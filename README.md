@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/voxrad_logo.jpg" alt="VoxRad Logo" />
+  <img src="images/voxrad_logo.jpg" alt="RadSpeed Logo" />
 </p>
 
 <div align="center">
@@ -12,9 +12,9 @@
 
 </div>
 
-# 🚀 VoxRad
+# 🚀 RadSpeed
 
-VoxRad is an AI-assisted voice reporting system for radiologists. Dictate a
+RadSpeed is an AI-assisted voice reporting system for radiologists. Dictate a
 study, get back a structured, style-consistent report ready to paste into
 your RIS — or, where integrations are available, delivered automatically.
 
@@ -61,7 +61,7 @@ worklist, and standards-based export back to the RIS. A legacy desktop
   for PACS that ingest SR directly instead of HL7
 - 🛰️ **DICOM Modality Worklist (MWL) bridge agent** — an on-prem Python
   agent runs C-FIND against the clinic's PACS and pushes orders to the
-  cloud VoxRad instance over HTTPS, avoiding the inbound-firewall problem
+  cloud RadSpeed instance over HTTPS, avoiding the inbound-firewall problem
 - 🧬 **FHIR R4 export** — `DiagnosticReport` JSON written per report
 - 🔎 **FHIR RIS patient lookup** — query a FHIR server by accession to
   auto-fill patient context
@@ -78,7 +78,7 @@ worklist, and standards-based export back to the RIS. A legacy desktop
                     │                │             │                     │
   ┌─────────┐       │   ┌─────────┐  │             │                     │
   │ PACS /  │──MWL──┼──▶│  MWL    │──┼── HTTPS ───▶│                     │
-  │  MWL    │       │   │  Bridge │  │             │      VoxRad         │
+  │  MWL    │       │   │  Bridge │  │             │     RadSpeed        │
   └─────────┘       │   └─────────┘  │             │      Web App        │
                     │                │             │      (FastAPI)      │
   ┌─────────┐       │   ┌─────────┐  │             │                     │
@@ -241,7 +241,7 @@ The original Tkinter desktop app still works for local, offline use:
 
 ```bash
 pip install -r requirements.txt
-python VoxRad.py
+python RadSpeed.py
 ```
 
 It supports encrypted paste, multimodal (Gemini) mode, and the same
@@ -264,13 +264,13 @@ Original desktop app's GitBook: https://voxrad.gitbook.io/voxrad
 
 ```bash
 # Clone + install
-git clone https://github.com/markbekhit/VoxRad.git
-cd VoxRad
+git clone https://github.com/markbekhit/RadSpeed.git
+cd RadSpeed
 pip install -r requirements-web.txt
 
 # Dev run with mock APIs
 VOXRAD_MOCK_MODE=1 VOXRAD_WEB_PASSWORD=dev \
-    python VoxRad.py --web --port 8000
+    python RadSpeed.py --web --port 8000
 
 # → http://localhost:8000   (user: voxrad, pass: dev)
 ```
@@ -292,7 +292,7 @@ binaries (e.g. FFmpeg in legacy desktop builds) are noted in
 
 ## 🚨 Disclaimer
 
-VoxRad is software for *drafting* radiology reports. It does not replace
+RadSpeed is software for *drafting* radiology reports. It does not replace
 professional medical judgement, is not a medical device, and has not been
 certified for clinical use in any jurisdiction. Users are responsible for:
 

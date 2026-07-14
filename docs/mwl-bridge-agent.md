@@ -52,8 +52,8 @@ On a clinic machine that can reach the PACS (any Linux/Mac/Windows box will
 do; a Raspberry Pi is plenty). Python 3.10+:
 
 ```bash
-git clone https://github.com/markbekhit/VoxRad.git
-cd VoxRad
+git clone https://github.com/markbekhit/RadSpeed.git
+cd RadSpeed
 pip install -r agents/requirements.txt
 ```
 

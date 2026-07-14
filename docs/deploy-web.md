@@ -1,4 +1,4 @@
-# VoxRad Web Server — Deployment Guide
+# RadSpeed Web Server — Deployment Guide
 
 Deploy VoxRad as a single-container web service — on Fly.io (recommended, always-on free tier) or on any Linux host using Docker Compose.
 

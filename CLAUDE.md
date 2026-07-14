@@ -1,6 +1,6 @@
-# VoxRad
+# RadSpeed
 
-VoxRad is a voice transcription desktop application for radiologists. It transcribes voice dictations and formats them into structured radiology reports using LLMs.
+RadSpeed is a voice transcription and reporting application for radiologists. It transcribes voice dictations and formats them into structured radiology reports using LLMs.
 
 ## Tech Stack
 
@@ -8,13 +8,13 @@ VoxRad is a voice transcription desktop application for radiologists. It transcr
 - **UI**: Tkinter (cross-platform)
 - **Audio**: sounddevice, soundfile, lameenc
 - **LLM backends**: OpenAI API-compatible (OpenAI, Google Gemini)
-- **Entry point**: `VoxRad.py`
+- **Entry point**: `RadSpeed.py` (`VoxRad.py` remains as a compatibility wrapper)
 
 ## Project Structure
 
 ```
-VoxRad/
-├── VoxRad.py          # Entry point
+RadSpeed/
+├── RadSpeed.py        # Entry point
 ├── audio/             # Voice recording and transcription
 ├── ui/                # Desktop UI (PyObjC)
 ├── llm/               # LLM integration and report formatting
@@ -49,7 +49,7 @@ The owner is **not a developer** and will not copy-paste logs from a browser. Cl
 
 ### What is reachable from this sandbox
 - `api.github.com`, `github.com`, `raw.githubusercontent.com` — **directly reachable via curl/wget** (HTTP 200). Unauthenticated calls are rate-limited (60/hr); authenticated calls are 5000/hr.
-- `crates.io` and the local git proxy at `127.0.0.1:38379/git/markbekhit/VoxRad` (for git push/fetch only).
+- `crates.io` and the local git proxy at `127.0.0.1:38379/git/markbekhit/RadSpeed` (for git push/fetch only).
 - `flyctl` works with the saved `FLY_API_TOKEN`.
 
 ### What is BLOCKED

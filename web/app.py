@@ -1,7 +1,7 @@
-"""VoxRad Web Server — FastAPI application.
+"""RadSpeed Web Server — FastAPI application.
 
 Launch via:
-    python VoxRad.py --web [--host 0.0.0.0] [--port 8765]
+    python RadSpeed.py --web [--host 0.0.0.0] [--port 8765]
 
 Authentication: HTTP Basic Auth.
 Password is read from the VOXRAD_WEB_PASSWORD environment variable
@@ -88,7 +88,7 @@ logger = logging.getLogger(__name__)
 # App setup
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="VoxRad Web", docs_url=None, redoc_url=None)
+app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=2592000)  # 30 days
 # auto_error=False so we can return a redirect (not a 401) when OAuth is active
 security = HTTPBasic(auto_error=False)
