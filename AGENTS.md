@@ -43,27 +43,23 @@ explicitly asks for one.
 - The active product roadmap is `docs/ROADMAP.md`. Update it whenever you
   ship a phase or change strategy.
 
-## Sandbox network & access strategy (READ FIRST)
+## Access and troubleshooting
 
-The owner is **not a developer** and will not copy-paste logs from a browser. Codex is responsible for closing its own feedback loop. **Never** stop at "blocked by sandbox" without trying the alternatives below.
+Close the feedback loop without asking the owner to copy logs or run commands.
+Use the authenticated `gh` CLI or GitHub connector for repository and Actions
+data, `flyctl` for Fly.io, and the user's Chrome profile for testing that needs
+signed-in browser state. Retry transient failures and use another available
+tool before reporting a blocker. Never place credentials in command-line URLs,
+commits, diagnostics branches, artifacts, or chat output.
 
-### What is reachable from this sandbox
-- `api.github.com`, `github.com`, `raw.githubusercontent.com` — **directly reachable via curl/wget** (HTTP 200). Unauthenticated calls are rate-limited (60/hr); authenticated calls are 5000/hr.
-- `crates.io` and the local git proxy at `127.0.0.1:38379/git/markbekhit/RadSpeed` (for git push/fetch only).
-- `flyctl` works with the saved `FLY_API_TOKEN`.
+### GitHub Actions diagnostics
 
-### What is BLOCKED
-- `cdn.playwright.dev`, `playwright.download.prss.microsoft.com` (Playwright browser downloads — HTTP 403 host_not_allowed)
-- `download.mozilla.org`, `storage.googleapis.com/chromium-browser-snapshots`
-- No system browsers (chromium/firefox), no apt sudo, no snap/flatpak
-- Most third-party CDNs
-
-### How to actually see GitHub Actions failures (no user copy-paste required)
-1. **MCP github tools** (`mcp__github__*`) handle auth server-side — use these first for repos/PRs/issues/releases/file contents/branches. **NO workflow-run/log tools exist** in this MCP surface.
-2. **Workflow self-reporting** is the canonical pattern: the workflow itself must commit diagnostics to a branch Codex can read via MCP. Use **`git clone` + `git push` with `https://x-access-token:${GITHUB_TOKEN}@github.com/...`** — NEVER use `Invoke-RestMethod` against the Contents API (it silently fails in the runner). The diagnostics branch should be `ci-diagnostics` and the file should be `ci-diag.md` so Codex reads it with one MCP call.
-3. **`gh` CLI is pre-installed on GitHub-hosted runners** and auto-authenticates with `GITHUB_TOKEN`. Use it for any GitHub-API operation from inside a workflow — far more reliable than raw REST.
-4. **Always upload `actions/upload-artifact@v4` with `if: always()`** including build logs (`tee` stdout/stderr into a file). User can download these directly if MCP-readable paths fail.
-5. **Issues are DISABLED on this repo** — do not try to write diagnostics via `gh issue create`.
+- Inspect checks and logs directly with the authenticated `gh` CLI; use the
+  GitHub connector for repository, PR, and issue context where useful.
+- Workflows should upload useful build logs with `actions/upload-artifact@v4`
+  and `if: always()` so failures remain diagnosable.
+- Issues are disabled on this repository; do not use issues as a diagnostics
+  transport.
 
 ### Tauri 2.x updater format (key gotcha for this repo)
 - `createUpdaterArtifacts: true` (boolean) = **v2 mode**. On Windows, NSIS is a "self-contained updater" — Tauri **does NOT create a `.nsis.zip` wrapper**. The `.exe` itself is the updater artifact and is signed directly to `RadSpeed_X.Y.Z_x64-setup.exe.sig`. `update.json` must reference the `.exe` URL.
@@ -73,18 +69,22 @@ The owner is **not a developer** and will not copy-paste logs from a browser. Co
 
 ## Deployment & infrastructure
 
-The owner is **not a developer** and does not use the terminal. All infrastructure operations are Codex's responsibility — never ask the owner to run terminal commands.
+The agent owns routine infrastructure operations and should not ask the owner to
+run terminal commands.
 
 ### Fly.io
 
 - App name: `voxrad-v-hkvq`, region: `syd` (Sydney, Australia)
-- `flyctl` is installed in the Codex environment at `/usr/local/bin/flyctl`
-- **Auth token is already saved** in `.Codex/settings.local.json` as `FLY_API_TOKEN` — valid for 10 years. Codex can run `flyctl` directly in any session without asking the owner for credentials.
+- `flyctl` is installed at `/opt/homebrew/bin/flyctl`; prefer resolving it from
+  `PATH` rather than hard-coding the location.
+- Use the existing authenticated Fly.io session or environment credential. Do
+  not document, print, or move the token.
 - Prefer `flyctl -a voxrad-v-hkvq <command>` (explicit app flag) so commands work regardless of working directory
 - Volume `voxrad_data` (vol_vgn7n65eyn2eg604) is mounted at `/data` — persistent across deploys and machine replacements
 - Persistent paths: `/data/users.db` (user DB), `/data/working` (templates/reports), `/data/hl7_inbox`, `/data/hl7_outbox`, `/data/sr_outbox`
 - Session secret is auto-generated and persisted to `/data/session_secret.key` on first boot — users stay logged in across deploys without any manual setup
-- Secrets are set via `flyctl secrets set KEY=VALUE -a voxrad-v-hkvq` — Codex does this, not the owner
+- The agent sets required secrets with `flyctl secrets set` without echoing
+  their values or committing them.
 
 ### GitHub Actions CI/CD
 
@@ -94,35 +94,9 @@ The owner is **not a developer** and does not use the terminal. All infrastructu
 - `fly.toml` uses `strategy = "immediate"` so a single volume is sufficient (no rolling-deploy two-machine requirement)
 - To trigger a deploy: push any commit to `main`. To force a redeploy without code changes: `git commit --allow-empty -m "redeploy" && git push`
 
-## gstack
+## Browser tooling
 
-gstack is installed globally at `~/.Codex/skills/gstack`. Use the `/browse` skill from gstack for all web browsing — never use `mcp__claude-in-chrome__*` tools.
-
-Available skills:
-- `/office-hours` — YC Office Hours: startup diagnostic + builder brainstorm
-- `/plan-ceo-review` — CEO/founder plan review
-- `/plan-eng-review` — Engineering plan review
-- `/plan-design-review` — Design plan review
-- `/design-consultation` — Design system from scratch
-- `/autoplan` — Auto-review pipeline: CEO → design → eng
-- `/review` — Paranoid code review
-- `/ship` — One-command release with tests and PR creation
-- `/land-and-deploy` — Merge → deploy → canary verify
-- `/canary` — Post-deploy monitoring loop
-- `/benchmark` — Performance regression detection
-- `/browse` — Headless browser for QA, testing, and dogfooding
-- `/qa` — Automated QA with fixes
-- `/qa-only` — QA report only (no fixes)
-- `/design-review` — Design audit + fix loop
-- `/setup-browser-cookies` — Import cookies for authenticated browsing
-- `/setup-deploy` — One-time deploy configuration
-- `/retro` — Team retrospective
-- `/investigate` — Systematic root-cause debugging
-- `/document-release` — Auto-update docs after shipping
-- `/codex` — Multi-AI second opinion via OpenAI Codex
-- `/cso` — OWASP Top 10 + STRIDE security audit
-- `/careful` — Warn before destructive commands
-- `/freeze` — Lock edits to one directory
-- `/guard` — Activate careful + freeze
-- `/unfreeze` — Remove freeze
-- `/gstack-upgrade` — Upgrade gstack to latest version
+Use a purpose-built connector first. Use Chrome when login state is required,
+and a headless or isolated browser for public pages and repeatable QA. gstack
+skills may be used when installed and suited to the task; they are not a reason
+to avoid a better available browser tool.
