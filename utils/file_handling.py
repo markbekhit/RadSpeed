@@ -51,6 +51,13 @@ def load_templates():
      template_files = [f for f in os.listdir(template_dir) if f.endswith((".txt", ".md"))]
      template_files.sort()  # Sort the list of template files alphabetically
      template_options = [f for f in template_files]  # Store full filename with extension
+     if not template_options:
+         from ui.utils import update_status
+         logger.warning("No templates found in %s.", template_dir)
+         update_status(
+             f"No report templates found in {template_dir}. "
+             "Add .txt/.md template files there, or reset the working directory in Settings."
+         )
      update_template_dropdown()
 
 

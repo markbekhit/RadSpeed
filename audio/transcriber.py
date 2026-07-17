@@ -17,6 +17,25 @@ logger = logging.getLogger(__name__)
 
 _GEMINI_MAX_BYTES = 20 * 1024 * 1024  # 20 MB hard limit for Gemini upload
 
+_GEMINI_KEY_REJECTED_MSG = (
+    "Multimodal Model API key rejected (invalid or expired). "
+    "Please update your key in Settings → Multimodal Model."
+)
+
+
+def is_gemini_auth_error(exc):
+    """True if a Gemini exception indicates a rejected/invalid API key.
+
+    google-generativeai surfaces key problems as several exception types
+    (PermissionDenied, Unauthenticated, InvalidArgument with API_KEY_INVALID),
+    so match on the message rather than the class.
+    """
+    text = str(exc).lower()
+    return any(
+        marker in text
+        for marker in ("api key not valid", "api_key_invalid", "unauthenticated", "permission denied", "401", "403")
+    )
+
 
 def transcribe_audio(encrypted_mp3_path, decryption_key):
     """Transcribes the audio from an encrypted MP3 file using OpenAI's API."""
@@ -144,7 +163,10 @@ def mm_gemini(encrypted_mp3_path, decryption_key):
             audio_file = genai.upload_file(path=decrypted_mp3_path)
         except Exception as e:
             logger.error("Gemini file upload failed: %s", e)
-            update_status(f"Gemini upload failed: {e}")
+            if is_gemini_auth_error(e):
+                update_status(_GEMINI_KEY_REJECTED_MSG)
+            else:
+                update_status(f"Gemini upload failed: {e}")
             return
 
         model = genai.GenerativeModel(model_name=config.multimodal_model)
@@ -158,7 +180,10 @@ def mm_gemini(encrypted_mp3_path, decryption_key):
             response = model.generate_content([prompt, audio_file])
         except Exception as e:
             logger.error("Gemini generate_content failed: %s", e)
-            update_status(f"Gemini error: {e}")
+            if is_gemini_auth_error(e):
+                update_status(_GEMINI_KEY_REJECTED_MSG)
+            else:
+                update_status(f"Gemini error: {e}")
             return
 
         if response.text:

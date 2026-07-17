@@ -35,7 +35,14 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **FHIR network push** — After local FHIR export is stable, add EHR endpoint configuration (URL + auth token) so reports can be pushed directly to Epic/Cerner. Follow-up sprint.
 
-- [ ] **Error diagnostics** — 7 known silent failure modes (mic permission denied, stale API key, empty template dir, macOS 15 AppleScript permissions, Gemini >20MB, stale report key, corrupted settings.ini). Each needs a user-visible status message instead of silent failure.
+- [x] **Error diagnostics** — All 7 known silent failure modes now surface user-visible status messages (tests in `tests/test_silent_failures.py`):
+  - Mic permission denied: `PermissionError`/`PortAudioError` caught in `audio/recorder.py`, plus all-silence detection at stop (macOS denies mic by delivering zeros, not raising) — silence is no longer transcribed.
+  - Stale API key: transcription (`AuthenticationError`), text model (`TextModelAuthError` in `llm/format.py` — no more silent fallback to unformatted output), and Gemini (`is_gemini_auth_error`) each point at the right Settings tab.
+  - Empty template dir: warned in both `load_templates()` (desktop dropdown) and `_select_template()`.
+  - macOS AppleScript permissions: `classify_applescript_error()` distinguishes Accessibility (1002) from macOS 15 Automation (-1743) and names the correct Settings pane; secure paste no longer reports success after a failed injection.
+  - Gemini >20MB: size guard in `mm_gemini()`.
+  - Stale report key: `InvalidToken` handled in secure paste and transcription.
+  - Corrupted settings.ini: surfaced in `load_settings()`; `_get_save_directory()` no longer crashes the app at import time.
 
 - [ ] **Gemini multimodal path in web mode** — `mm_gemini()` in transcriber.py uses `genai.upload_file()` directly. Web mode currently ignores `multimodal_pref=True`. Web UI should either: (a) show a warning when multimodal is enabled and route to it, or (b) always use standard ASR in web mode. Needs a decision and implementation.
 

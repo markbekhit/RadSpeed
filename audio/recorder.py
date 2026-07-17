@@ -126,6 +126,12 @@ def background_recording(device_index=None):
         update_status(
             "Microphone access denied. Grant permission in System Settings → Privacy → Microphone."
         )
+    except sd.PortAudioError as e:
+        logger.error("PortAudio error while opening input stream: %s", e)
+        update_status(
+            f"Could not open the microphone ({e}). Check that the device is connected and "
+            "that RadSpeed has microphone permission in System Settings → Privacy → Microphone."
+        )
     except Exception as e:
         logger.error("An error occurred during recording: %s", e)
         update_status(f"Recording error: {e}")
@@ -154,6 +160,19 @@ def check_recording_finished():
         complete_stop_recording()
 
 
+# Peak amplitude below this (float32 samples in [-1, 1]) means the stream
+# delivered effectively nothing. macOS denies mic access by handing the app
+# a stream of zeros rather than raising, so this is the only reliable signal.
+_SILENCE_PEAK_THRESHOLD = 1e-4
+
+
+def is_silent_recording(wav_data, threshold=_SILENCE_PEAK_THRESHOLD):
+    """True if the recorded audio is effectively silent (all near-zero samples)."""
+    if wav_data is None or len(wav_data) == 0:
+        return True
+    return float(np.max(np.abs(wav_data))) < threshold
+
+
 def complete_stop_recording():
     global audio_data, start_time
     logger.debug("complete_stop_recording called.")
@@ -166,6 +185,15 @@ def complete_stop_recording():
     fs = 44100
     if audio_data:
         wav_data = np.concatenate(audio_data, axis=0)
+
+        if is_silent_recording(wav_data):
+            logger.error("Recording contained only silence — likely denied mic permission or muted input.")
+            update_status(
+                "Recording captured no sound. The microphone may be muted, or RadSpeed lacks "
+                "microphone permission (System Settings → Privacy → Microphone). Nothing was transcribed."
+            )
+            return
+
         encrypted_mp3_path, encryption_key = convert_wav_to_encrypted_mp3(wav_data, fs)
 
         config.current_encrypted_mp3_path = encrypted_mp3_path

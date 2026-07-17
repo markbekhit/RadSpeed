@@ -99,10 +99,14 @@ def secure_paste_report():
             # Inject text based on OS
             if os.name == "nt":  # Windows
                 inject_text_windows(decrypted_report)
+                injected = True
             else:  # macOS (or other systems)
-                inject_text_with_applescript(decrypted_report)
+                injected = inject_text_with_applescript(decrypted_report)
 
-            thread_safe_update_status("Report securely pasted.")
+            # Only report success when injection actually happened — the
+            # injector surfaces its own error status on failure.
+            if injected:
+                thread_safe_update_status("Report securely pasted.")
         else:
             thread_safe_update_status("No report available for secure paste.")
     except Exception as e:
@@ -110,6 +114,33 @@ def secure_paste_report():
         thread_safe_update_status(f"Error during secure paste: {e}")
 
 ########## FOR MACOS ##########
+
+def classify_applescript_error(stderr: str):
+    """Classify osascript stderr into the macOS permission that is missing.
+
+    Returns "automation" (Privacy & Security → Automation, error -1743 on
+    macOS 15), "accessibility" (Privacy & Security → Accessibility, error
+    1002), or None for unrelated failures.
+    """
+    s = (stderr or "").lower()
+    if "1743" in s or "not authorized" in s or "not authorised" in s:
+        return "automation"
+    if "1002" in s or "not allowed" in s or "assistant" in s or "accessibility" in s:
+        return "accessibility"
+    return None
+
+
+_APPLESCRIPT_PERMISSION_MSGS = {
+    "automation": (
+        "Secure paste blocked by macOS. Allow RadSpeed to control System Events in "
+        "System Settings → Privacy & Security → Automation."
+    ),
+    "accessibility": (
+        "Secure paste blocked by macOS. Grant Accessibility access to RadSpeed in "
+        "System Settings → Privacy & Security → Accessibility."
+    ),
+}
+
 
 def inject_text_with_applescript(text):
     """Injects multiline text directly into the active window using AppleScript."""
@@ -127,17 +158,17 @@ def inject_text_with_applescript(text):
 
     try:
         subprocess.run(["osascript", "-e", applescript], check=True, capture_output=True)
+        return True
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.decode(errors="replace") if e.stderr else ""
-        if "not allowed" in stderr.lower() or "1002" in stderr or "assistant" in stderr.lower():
-            logger.error("AppleScript keystroke blocked by macOS permissions: %s", stderr)
-            thread_safe_update_status(
-                "Secure paste blocked. Grant Accessibility access to VoxRad in "
-                "System Settings → Privacy & Security → Accessibility."
-            )
+        permission = classify_applescript_error(stderr)
+        if permission:
+            logger.error("AppleScript keystroke blocked by macOS %s permission: %s", permission, stderr)
+            thread_safe_update_status(_APPLESCRIPT_PERMISSION_MSGS[permission])
         else:
             logger.error("AppleScript failed: %s", stderr)
             thread_safe_update_status(f"Secure paste failed: {stderr.strip() or e}")
+        return False
 
 
 ########## FOR WINDOWS ##########
