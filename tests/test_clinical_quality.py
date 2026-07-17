@@ -43,6 +43,11 @@ class ClinicalQualityEvaluatorTests(unittest.TestCase):
         result = evaluate_case(case, report)
         self.assertFalse(next(check.passed for check in result.checks if check.name == "section_order"))
 
+    def test_common_intact_ligament_punctuation_is_accepted(self):
+        case = next(case for case in self.cases if case["id"] == "mri_knee_medial_meniscus")
+        report = case["reference_report"].replace("ACL and PCL are intact", "ACL and PCL: Intact")
+        self.assertTrue(evaluate_case(case, report).passed)
+
 
 if __name__ == "__main__":
     unittest.main()

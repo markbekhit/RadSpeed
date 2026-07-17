@@ -26,7 +26,7 @@
     "template": "MRI_Knee.txt",
     "transcript": "MRI right knee. Oblique undersurface tear of the body and posterior horn of the medial meniscus. ACL and PCL are intact. Small joint effusion. No marrow oedema, contusion or fracture.",
     "reference_report": "MRI RIGHT KNEE\n\nFINDINGS:\nMedial meniscus: Oblique undersurface tear of the body and posterior horn. ACL and PCL are intact. Small joint effusion. No marrow oedema, contusion or fracture.\n\nIMPRESSION:\nOblique undersurface tear of the body and posterior horn of the medial meniscus.",
-    "required_any": [["oblique undersurface tear"], ["body and posterior horn"], ["acl and pcl are intact", "acl: intact"]],
+    "required_any": [["oblique undersurface tear"], ["body and posterior horn"], ["acl and pcl are intact", "acl and pcl: intact", "acl and pcl intact", "acl: intact"]],
     "forbidden": ["lateral meniscus tear", "no joint effusion", "marrow oedema is present"],
     "measurements": [],
     "laterality": ["right"],
