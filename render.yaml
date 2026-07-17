@@ -9,6 +9,9 @@ services:
         generateValue: true
       - key: VOXRAD_WORKING_DIR
         value: /data/working
+      # Render terminates TLS at its edge; the app listens plain HTTP inside.
+      - key: RADSPEED_BEHIND_PROXY
+        value: "1"
       # Transcription — Groq (https://console.groq.com, free tier)
       # - key: VOXRAD_TRANSCRIPTION_API_KEY
       #   value: gsk_...

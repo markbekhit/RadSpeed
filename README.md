@@ -268,9 +268,10 @@ git clone https://github.com/markbekhit/RadSpeed.git
 cd RadSpeed
 pip install -r requirements-web.txt
 
-# Dev run with mock APIs
+# Dev run with mock APIs (loopback-only — plain HTTP on a network
+# address is refused unless TLS is configured; see docs/deploy-web.md)
 VOXRAD_MOCK_MODE=1 VOXRAD_WEB_PASSWORD=dev \
-    python RadSpeed.py --web --port 8000
+    python RadSpeed.py --web --host 127.0.0.1 --port 8000
 
 # → http://localhost:8000   (user: voxrad, pass: dev)
 ```

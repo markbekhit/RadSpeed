@@ -47,7 +47,11 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **WebSocket real-time streaming** — V1 uses request/response for transcription (wait ~5-10s). V2 can stream partial transcription results via WebSocket as Whisper processes audio. High UX impact, deferred.
 
-- [ ] **HTTPS/TLS setup guide** — Document nginx reverse proxy config for TLS termination in front of VoxRad web server. HTTP Basic Auth is credential-exposing over plain HTTP; this is a required deployment step for any non-localhost use.
+- [x] **HTTPS/TLS setup guide** — Done (2026-07-17). TLS is now documented *and* enforced:
+  - In-app TLS termination: `--ssl-certfile` / `--ssl-keyfile` flags (env: `RADSPEED_SSL_CERTFILE` / `RADSPEED_SSL_KEYFILE`) passed through to uvicorn.
+  - Enforcement: the launcher refuses non-loopback plain-HTTP binds unless TLS is configured, `RADSPEED_BEHIND_PROXY=1` (Fly/Render/nginx — set in their configs), or an explicit `--insecure` / `RADSPEED_ALLOW_INSECURE_HTTP=1` opt-out (loud warning).
+  - `docker-compose.yml` publishes the port on 127.0.0.1 only by default (`VOXRAD_BIND` to override); nginx profile config gained HSTS.
+  - Session cookies marked `Secure` when TLS is in play. Docs: "TLS / HTTPS" section in `docs/deploy-web.md`. Tests: `tests/test_web_tls.py`.
 
 ## Known Issues (Fix Anytime)
 

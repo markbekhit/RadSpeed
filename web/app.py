@@ -8,8 +8,10 @@ Password is read from the VOXRAD_WEB_PASSWORD environment variable
 (default: "voxrad" — change before any non-localhost deployment).
 
 WARNING: HTTP Basic Auth sends credentials in cleartext over plain HTTP.
-Always run behind an HTTPS reverse proxy (e.g. nginx with TLS) in
-production. See docs/web-server-setup.md.
+The launcher refuses non-loopback plain-HTTP binds unless explicitly
+overridden — terminate TLS in-app (--ssl-certfile/--ssl-keyfile) or run
+behind an HTTPS reverse proxy (RADSPEED_BEHIND_PROXY=1).
+See docs/deploy-web.md.
 """
 
 import asyncio
@@ -89,7 +91,18 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None)
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=2592000)  # 30 days
+# Mark session cookies Secure when the browser-facing scheme is HTTPS —
+# i.e. TLS is terminated in-app or by an upstream reverse proxy.
+_HTTPS_DEPLOYMENT = bool(
+    os.environ.get("RADSPEED_SSL_CERTFILE")
+    or os.environ.get("RADSPEED_BEHIND_PROXY", "").strip().lower() in ("1", "true", "yes", "on")
+)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET_KEY(),
+    max_age=2592000,  # 30 days
+    https_only=_HTTPS_DEPLOYMENT,
+)
 # auto_error=False so we can return a redirect (not a 401) when OAuth is active
 security = HTTPBasic(auto_error=False)
 

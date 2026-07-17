@@ -4,11 +4,23 @@ services:
     image: voxrad:latest
     restart: unless-stopped
     ports:
-      - "${VOXRAD_PORT:-8765}:8765"
+      # Bound to localhost only by default — the app speaks plain HTTP inside
+      # the container. To serve the network, use the nginx TLS profile below
+      # (recommended) or set VOXRAD_BIND=0.0.0.0 at your own risk.
+      - "${VOXRAD_BIND:-127.0.0.1}:${VOXRAD_PORT:-8765}:8765"
     environment:
       # ── UI password ────────────────────────────────────────────────────────
       # Change before any non-localhost deployment.
       VOXRAD_WEB_PASSWORD: "${VOXRAD_WEB_PASSWORD:-voxrad}"
+
+      # ── TLS posture ────────────────────────────────────────────────────────
+      # Inside the container the app must bind 0.0.0.0, so the launcher's
+      # plain-HTTP guard is satisfied here; actual exposure is controlled by
+      # the host port binding above. Set RADSPEED_BEHIND_PROXY=1 in .env when
+      # running the nginx profile (or your own TLS proxy) so session cookies
+      # are marked Secure.
+      RADSPEED_ALLOW_INSECURE_HTTP: "${RADSPEED_ALLOW_INSECURE_HTTP:-1}"
+      RADSPEED_BEHIND_PROXY: "${RADSPEED_BEHIND_PROXY:-}"
 
       # ── Working directory (templates / guidelines / reports) ───────────────
       VOXRAD_WORKING_DIR: /data/working

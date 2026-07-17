@@ -12,6 +12,9 @@ primary_region = "syd"
 [env]
   VOXRAD_WORKING_DIR = "/data/working"
   VOXRAD_DB_PATH     = "/data/users.db"
+  # Fly's edge proxy terminates TLS (force_https below); the app itself
+  # listens plain HTTP inside the private network.
+  RADSPEED_BEHIND_PROXY = "1"
 
 [http_service]
   internal_port = 8765

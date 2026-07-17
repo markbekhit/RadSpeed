@@ -4,6 +4,45 @@ Deploy VoxRad as a single-container web service — on Fly.io (recommended, alwa
 
 ---
 
+## TLS / HTTPS — required for network access
+
+RadSpeed's web mode authenticates with HTTP Basic Auth (or session cookies in
+OAuth mode). Over plain HTTP both are readable by anyone on the network path —
+as is every dictation and report (PHI). The launcher therefore **refuses to
+bind a non-loopback address over plain HTTP** and exits with an error unless
+one of the following applies:
+
+| Situation | What to do |
+|---|---|
+| Bare-metal / VM, no proxy | Terminate TLS in-app: `--ssl-certfile` + `--ssl-keyfile` (or `RADSPEED_SSL_CERTFILE` / `RADSPEED_SSL_KEYFILE` env vars) |
+| Behind a TLS reverse proxy (nginx, Caddy, Fly.io, Render, …) | Set `RADSPEED_BEHIND_PROXY=1` — already set in `fly.toml`, `render.yaml`, and `docker-compose.yml` |
+| Local use only | Bind loopback: `--host 127.0.0.1` (always allowed) |
+| Trusted network, accepted risk | `--insecure` (or `RADSPEED_ALLOW_INSECURE_HTTP=1`) — starts with a loud warning |
+
+When TLS is active (in-app or `RADSPEED_BEHIND_PROXY=1`), session cookies are
+additionally marked `Secure` so browsers never send them over plain HTTP.
+
+### In-app TLS (bare-metal self-hosting, no reverse proxy)
+
+```bash
+# Obtain certificates (Let's Encrypt shown; any CA or self-signed works):
+certbot certonly --standalone -d your.domain.com
+
+python RadSpeed.py --web --port 8765 \
+    --ssl-certfile /etc/letsencrypt/live/your.domain.com/fullchain.pem \
+    --ssl-keyfile  /etc/letsencrypt/live/your.domain.com/privkey.pem
+# → https://your.domain.com:8765
+```
+
+Certificate renewal: certbot renews in place, but uvicorn loads the files once
+at startup — restart RadSpeed after each renewal (e.g. a `--deploy-hook` that
+restarts the service).
+
+For Docker/Compose deployments prefer the nginx profile below; it handles
+port 80 → 443 redirect and HSTS as well.
+
+---
+
 ## Option A — Fly.io (recommended, always-on free tier)
 
 Fly.io keeps your container running permanently — no cold-start delays. The free allowance
@@ -101,6 +140,12 @@ docker compose up -d
 
 The first `docker compose up` builds the image (~5 min). Subsequent starts are instant.
 
+The container's port is published on **127.0.0.1 only** by default, so the
+plain-HTTP app is not reachable from the network. To serve other machines,
+use the nginx TLS profile below (recommended). Setting `VOXRAD_BIND=0.0.0.0`
+in `.env` exposes plain HTTP to the network — credentials and PHI in
+cleartext — and should only be used behind your own TLS proxy.
+
 ---
 
 ### Configuration
@@ -120,6 +165,8 @@ All configuration is done via environment variables in `.env`.
 | Variable | Default | Description |
 |---|---|---|
 | `VOXRAD_PORT` | `8765` | Host port to bind |
+| `VOXRAD_BIND` | `127.0.0.1` | Host interface to publish the port on. `0.0.0.0` exposes plain HTTP to the network — use the nginx profile instead |
+| `RADSPEED_BEHIND_PROXY` | _(empty)_ | Set to `1` when a TLS reverse proxy (nginx profile, or your own) fronts the app — marks session cookies `Secure` |
 | `VOXRAD_WORKING_DIR` | `/data/working` | Path inside container for templates, guidelines, reports |
 | `VOXRAD_MM_API_KEY` | _(empty)_ | Gemini API key (only if multimodal mode is used) |
 
@@ -166,7 +213,7 @@ volumes:
 
 ### HTTPS with nginx (recommended for production)
 
-HTTP Basic Auth sends credentials in cleartext. Always run behind HTTPS for any deployment accessible outside localhost.
+HTTP Basic Auth sends credentials in cleartext. Always run behind HTTPS for any deployment accessible outside localhost. When running the nginx profile, set `RADSPEED_BEHIND_PROXY=1` in `.env` so session cookies are marked `Secure`.
 
 ### 1. Obtain TLS certificates
 
