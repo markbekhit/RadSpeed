@@ -1,0 +1,68 @@
+[
+  {
+    "id": "ct_head_negative",
+    "template": "CT_Head_Brain.txt",
+    "transcript": "CT head without contrast. No acute intracranial haemorrhage, territorial infarct or mass effect. Ventricles and basal cisterns are normal. No calvarial fracture.",
+    "reference_report": "FINDINGS:\nNo acute intracranial haemorrhage, territorial infarct or mass effect. Ventricles and basal cisterns are normal. No calvarial fracture.\n\nIMPRESSION:\nNo acute intracranial abnormality.",
+    "required_any": [["no acute intracranial haemorrhage", "no acute intracranial hemorrhage"], ["no calvarial fracture"]],
+    "forbidden": ["intracranial haemorrhage is present", "intracranial hemorrhage is present"],
+    "measurements": [],
+    "laterality": [],
+    "section_order": ["findings", "impression"]
+  },
+  {
+    "id": "ctpa_right_lower_lobe_embolus",
+    "template": "CT_Pulmonary_Angiogram.txt",
+    "transcript": "CT pulmonary angiogram. Acute segmental pulmonary embolus in the right lower lobe. No right heart strain. Main pulmonary artery measures 29 mm. No pleural effusion.",
+    "reference_report": "FINDINGS:\nAcute segmental pulmonary embolus in the right lower lobe. No right heart strain. Main pulmonary artery measures 29 mm. No pleural effusion.\n\nIMPRESSION:\nAcute right lower lobe segmental pulmonary embolus. No right heart strain.",
+    "required_any": [["acute segmental pulmonary embolus", "acute right lower lobe segmental pulmonary embolus"], ["no right heart strain"]],
+    "forbidden": ["left lower lobe pulmonary embolus", "no pulmonary embolus"],
+    "measurements": ["29 mm"],
+    "laterality": ["right"],
+    "section_order": ["findings", "impression"]
+  },
+  {
+    "id": "mri_knee_medial_meniscus",
+    "template": "MRI_Knee.txt",
+    "transcript": "MRI right knee. Oblique undersurface tear of the body and posterior horn of the medial meniscus. ACL and PCL are intact. Small joint effusion. No marrow oedema, contusion or fracture.",
+    "reference_report": "MRI RIGHT KNEE\n\nFINDINGS:\nMedial meniscus: Oblique undersurface tear of the body and posterior horn. ACL and PCL are intact. Small joint effusion. No marrow oedema, contusion or fracture.\n\nIMPRESSION:\nOblique undersurface tear of the body and posterior horn of the medial meniscus.",
+    "required_any": [["oblique undersurface tear"], ["body and posterior horn"], ["acl and pcl are intact", "acl: intact"]],
+    "forbidden": ["lateral meniscus tear", "no joint effusion", "marrow oedema is present"],
+    "measurements": [],
+    "laterality": ["right"],
+    "section_order": ["findings", "impression"]
+  },
+  {
+    "id": "ct_kub_left_ureteric_calculus",
+    "template": "CT_KUB.txt",
+    "transcript": "Noncontrast CT KUB. There is a 4 mm calculus in the distal left ureter, 2 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. No right renal calculus or hydronephrosis.",
+    "reference_report": "FINDINGS:\nA 4 mm calculus lies in the distal left ureter, 2 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. No right renal calculus or hydronephrosis.\n\nIMPRESSION:\nObstructing 4 mm distal left ureteric calculus with mild left hydroureteronephrosis.",
+    "required_any": [["distal left ureter"], ["mild left hydroureteronephrosis"]],
+    "forbidden": ["distal right ureteric calculus", "no left hydronephrosis"],
+    "measurements": ["4 mm", "2 cm"],
+    "laterality": ["left", "right"],
+    "section_order": ["findings", "impression"]
+  },
+  {
+    "id": "mri_brain_left_infarct",
+    "template": "MRI_Brain.txt",
+    "transcript": "MRI brain. Small acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No haemorrhagic transformation. No mass effect or hydrocephalus.",
+    "reference_report": "FINDINGS:\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No haemorrhagic transformation. No mass effect or hydrocephalus.\n\nIMPRESSION:\nSmall 8 mm acute left thalamic infarct. No haemorrhagic transformation.",
+    "required_any": [["acute infarct"], ["left thalamus", "left thalamic"], ["no haemorrhagic transformation", "no hemorrhagic transformation"]],
+    "forbidden": ["right thalamic infarct", "haemorrhagic transformation is present"],
+    "measurements": ["8 mm"],
+    "laterality": ["left"],
+    "section_order": ["findings", "impression"]
+  },
+  {
+    "id": "cxr_right_pneumothorax",
+    "template": "CXR.txt",
+    "transcript": "Portable AP chest radiograph. Small right apical pneumothorax measuring 12 mm. No mediastinal shift. Left lung is clear. Heart size is normal.",
+    "reference_report": "FINDINGS:\nSmall right apical pneumothorax measuring 12 mm. No mediastinal shift. Left lung is clear. Heart size is normal.\n\nIMPRESSION:\nSmall 12 mm right apical pneumothorax. No tension features.",
+    "required_any": [["right apical pneumothorax"], ["no mediastinal shift", "no tension features"]],
+    "forbidden": ["left pneumothorax", "no pneumothorax"],
+    "measurements": ["12 mm"],
+    "laterality": ["right", "left"],
+    "section_order": ["findings", "impression"]
+  }
+]

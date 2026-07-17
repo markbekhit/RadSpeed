@@ -126,13 +126,20 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **74 Python tests** run on every push and pull request. Coverage includes
+- **79 Python tests + 4 Chromium E2E workflows** run before deployment and on
+  pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
   streaming output cleanup, and the encrypted desktop transcription pipeline.
 - The transcription pipeline tests exercise real Fernet encryption/decryption
   and temporary-file cleanup around mocked external model calls. They also
   protect the last good report when formatting fails.
+- Browser tests start an isolated mock-mode server and exercise public
+  Impressions validation/generation, authenticated audio-segment transcription
+  through streamed formatting, mobile overflow, and authentication rejection.
+- A six-case synthetic clinical corpus gates dictated concepts, negation,
+  measurements, laterality, and section order. Reference validation runs in CI;
+  the deployed production model is evaluated weekly and on demand.
 
 ## Roadmap — sequenced
 

@@ -46,7 +46,12 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **Gemini multimodal path in web mode** — `mm_gemini()` in transcriber.py uses `genai.upload_file()` directly. Web mode currently ignores `multimodal_pref=True`. Web UI should either: (a) show a warning when multimodal is enabled and route to it, or (b) always use standard ASR in web mode. Needs a decision and implementation.
 
-- [ ] **Playwright E2E tests (web UI)** — Once web UI ships, add: full dictation flow test (open → mic → record → stop → transcription → format → report), error recovery (mic denied, API down), FHIR download. Deferred until web UI is stable.
+- [x] **Playwright E2E tests (web UI)** — Four Chromium workflows now run
+  against an isolated mock-mode server: public Impressions validation and
+  generation, authenticated synthetic audio segment → transcription → streamed
+  report, mobile overflow, and rejected authentication. CI retains traces and
+  screenshots on failure. Browser microphone permission and FHIR download can
+  be added when those specific paths change.
 
 - [x] **LLM and template pipeline tests** — `tests/test_format.py` covers the
   retry loop, JSON fallback chain, tool-call parsing, recommendation analysis,
@@ -66,6 +71,6 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 ## Known Issues (Fix Anytime)
 
 - Coverage is strongest around transcription, formatting/templates, silent
-  failures, and HL7 file-drop handling. Web endpoint/browser E2E coverage and
-  production LLM quality evaluation against a curated clinical corpus remain
-  future work.
+  failures, browser workflows, clinical fact preservation, and HL7 file-drop
+  handling. The clinical corpus is intentionally small (six high-risk synthetic
+  cases) and should grow whenever a real formatting regression is discovered.

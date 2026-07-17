@@ -10,7 +10,7 @@ import time
 import uuid
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 router = APIRouter(prefix="/mock/v1")
 
@@ -82,6 +82,11 @@ IMPRESSION:
 1. No acute cardiopulmonary abnormality.
 """
 
+_CANNED_IMPRESSION = """\
+- No acute cardiopulmonary abnormality.
+- No focal consolidation, pleural effusion or pneumothorax.
+"""
+
 _TEMPLATE_SELECTION = {"template": "CT_Chest.txt", "guideline": None}
 
 
@@ -106,6 +111,27 @@ def _wrap(message: dict) -> dict:
 async def mock_chat(request: Request):
     body = await request.json()
     tools = body.get("tools", [])
+
+    if body.get("stream"):
+        def _stream():
+            for token in _CANNED_IMPRESSION.splitlines(keepends=True):
+                chunk = {
+                    "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": "gpt-mock",
+                    "choices": [
+                        {
+                            "index": 0,
+                            "delta": {"content": token},
+                            "finish_reason": None,
+                        }
+                    ],
+                }
+                yield f"data: {json.dumps(chunk)}\n\n"
+            yield "data: [DONE]\n\n"
+
+        return StreamingResponse(_stream(), media_type="text/event-stream")
 
     if tools:
         # Step 1: template/guideline selection via tool call

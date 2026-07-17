@@ -100,3 +100,14 @@ Use a purpose-built connector first. Use Chrome when login state is required,
 and a headless or isolated browser for public pages and repeatable QA. gstack
 skills may be used when installed and suited to the task; they are not a reason
 to avoid a better available browser tool.
+
+## Testing
+
+- Run `python -m unittest discover -v` for the Python suite.
+- Run `pytest e2e --browser chromium` for browser workflows; these tests launch
+  an isolated mock-mode server and must not call external model providers.
+- Run `python -m evals.clinical_quality` for the offline clinical corpus check.
+  The `--live` mode is for the configured production environment and may call
+  the text-model provider using synthetic cases only.
+- See `TESTING.md` for setup, layers, and conventions. Every bug fix needs a
+  regression test, and test fixtures must never contain patient information.

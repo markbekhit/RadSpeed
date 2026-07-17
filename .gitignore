@@ -8,6 +8,8 @@ dist/
 build/
 .env
 .venv/
+.pytest_cache/
+test-results/
 *.log
 .DS_Store
 .gstack/

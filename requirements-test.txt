@@ -1,0 +1,4 @@
+-r requirements-web.txt
+
+pytest>=8.0.0
+pytest-playwright>=0.7.0
