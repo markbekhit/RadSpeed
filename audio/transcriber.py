@@ -70,7 +70,11 @@ def transcribe_audio(encrypted_mp3_path, decryption_key):
         else:
             content = " "
 
-        spellings_match = re.search(r'\[correct spellings\](.*?)\[correct spellings\]', content)
+        spellings_match = re.search(
+            r'\[correct spellings\](.*?)\[correct spellings\]',
+            content,
+            re.DOTALL,
+        )
         prompt_spellings = spellings_match.group(1).strip() if spellings_match else " "
 
         with open(decrypted_mp3_path, "rb") as decrypted_file:
@@ -97,6 +101,12 @@ def transcribe_audio(encrypted_mp3_path, decryption_key):
             transcription = transcription_result.text
             update_status("Performing AI analysis.🤖")
             formatted_text = format_text(transcription)
+            if formatted_text is None:
+                # format_text already surfaced the specific model/template
+                # failure.  Do not replace it with a generic NoneType error,
+                # and keep the last successfully generated report available.
+                logger.error("Report formatting failed; preserving previous report.")
+                return
             stripped_text = strip_markdown(formatted_text)
 
             # Encrypt the report and store it in config

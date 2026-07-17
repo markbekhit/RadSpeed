@@ -15,6 +15,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-web.txt
+
+      - name: Install test runtime
+        run: python -m pip install -r requirements-web.txt
+
+      - name: Run Python test suite
+        run: |
+          set -o pipefail
+          python -m unittest discover -v 2>&1 | tee python-tests.log
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-test-diagnostics
+          path: python-tests.log
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

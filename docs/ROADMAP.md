@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-04-29
+Updated: 2026-07-18
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -123,6 +123,16 @@ deployment and partner sign-on, not new code.
   volume for users.db + session secret; running at
   `https://dictation.markbekhit.com` (fly app `voxrad-v-hkvq`, region `syd`).
 - **Docker** — `docker compose up -d` for self-hosted.
+
+### Automated quality coverage
+
+- **74 Python tests** run on every push and pull request. Coverage includes
+  silent-failure diagnostics, HL7 file-drop hardening, template selection,
+  all bundled template rendering, patient/style prompt construction,
+  streaming output cleanup, and the encrypted desktop transcription pipeline.
+- The transcription pipeline tests exercise real Fernet encryption/decryption
+  and temporary-file cleanup around mocked external model calls. They also
+  protect the last good report when formatting fails.
 
 ## Roadmap — sequenced
 

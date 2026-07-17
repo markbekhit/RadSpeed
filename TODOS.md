@@ -48,7 +48,14 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **Playwright E2E tests (web UI)** — Once web UI ships, add: full dictation flow test (open → mic → record → stop → transcription → format → report), error recovery (mic denied, API down), FHIR download. Deferred until web UI is stable.
 
-- [ ] **LLM quality evals for format.py** — The retry loop, JSON fallback chain, and tool-call parsing in `llm/format.py` are the highest-risk code in the repo. Need eval tests: mock LLM responses at each retry, test JSON fallback triggers, test function-call vs JSON path selection. Priority over mechanical security tests.
+- [x] **LLM and template pipeline tests** — `tests/test_format.py` covers the
+  retry loop, JSON fallback chain, tool-call parsing, recommendation analysis,
+  and split-template format. `tests/test_template_rendering.py` exercises all
+  bundled templates, user overrides, patient/style prompt construction,
+  keyword selection, fallback rendering, and streamed reasoning removal.
+  `tests/test_transcription_pipeline.py` covers encrypted audio through mocked
+  ASR and formatting to encrypted report output, including cleanup and failure
+  preservation. The full 74-test Python suite now runs in GitHub Actions.
 
 - [ ] **Per-user API key tokens** — Upgrade from shared password to per-user tokens stored in settings.ini. Required for proper audit logging and multi-radiologist accountability.
 
@@ -58,4 +65,7 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 ## Known Issues (Fix Anytime)
 
-- No test coverage anywhere in the codebase.
+- Coverage is strongest around transcription, formatting/templates, silent
+  failures, and HL7 file-drop handling. Web endpoint/browser E2E coverage and
+  production LLM quality evaluation against a curated clinical corpus remain
+  future work.
