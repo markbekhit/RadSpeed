@@ -19,7 +19,7 @@ jobs:
         run: |
           set -o pipefail
           flyctl ssh console -a voxrad-v-hkvq -C \
-            "cd /app && python -m evals.clinical_quality --live --minimum-pass-rate 0.80" \
+            "/bin/sh -lc 'cd /app && python -m evals.clinical_quality --live --minimum-pass-rate 0.80'" \
             2>&1 | tee clinical-eval.log
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
