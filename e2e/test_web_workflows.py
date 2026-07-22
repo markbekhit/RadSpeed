@@ -156,8 +156,11 @@ def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
     page.locator("#worklist-select").select_option("mwl_ACC-A")
     expect(page.locator("#patient-name")).to_have_value("Alice Example")
     expect(page.locator("#body-part")).to_have_value("Left knee")
+    expect(page.locator("#patient-summary")).to_contain_text("Alice Example")
+    expect(page.locator("#patient-context-details")).not_to_have_attribute("open", "")
 
     page.locator("#transcription").fill("Unfinished dictation")
+    page.locator("#patient-context-details > summary").click()
     page.once("dialog", lambda dialog: dialog.dismiss())
     page.locator("#worklist-select").select_option("mwl_ACC-B")
     expect(page.locator("#worklist-select")).to_have_value("mwl_ACC-A")
@@ -181,6 +184,32 @@ def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
     expect(page.locator("#body-part")).to_have_value("Chest")
     expect(page.locator("#report-raw")).to_have_value("")
     expect(page.locator("#transcription")).to_have_value("")
+    assert errors == []
+
+
+def test_followup_prompt_and_manual_score_insertion(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.goto(base_url)
+    page.evaluate(
+        """() => {
+          setReport("**IMPRESSION:**\\nIndeterminate pulmonary nodule. Follow-up CT chest in 12 months is recommended.");
+          setUI("done");
+        }"""
+    )
+    expect(page.locator("#followup-suggest-panel")).to_contain_text(
+        "Follow-up CT chest in 12 months", timeout=5_000
+    )
+    expect(page.locator("#followup-suggest-panel").get_by_role("button", name="Track")).to_be_visible()
+
+    page.locator("#btn-scores").click()
+    page.locator("#score-system").select_option("ACR TI-RADS")
+    page.locator("#score-category").select_option("TR5")
+    page.locator("#score-target").fill("Right thyroid nodule")
+    expect(page.locator("#score-preview")).to_contain_text("TR5 — Highly suspicious")
+    page.locator("#score-insert").click()
+    expect(page.locator("#report-raw")).to_have_value(
+        re.compile(r"Right thyroid nodule: TR5 — Highly suspicious")
+    )
     assert errors == []
 
 

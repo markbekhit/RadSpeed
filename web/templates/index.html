@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
   <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
 </head>
-<body data-ws-token="{{ ws_token }}" data-paste-format="{{ paste_format }}">
+<body data-ws-token="{{ ws_token }}" data-paste-format="{{ paste_format }}" data-oauth-mode="{{ 'true' if oauth_mode else 'false' }}">
 
 <header>
   <div>
@@ -17,6 +17,8 @@
   </div>
   <div class="ml-auto" style="display:flex;align-items:center;gap:10px;">
     <span style="font-size:12px;color:var(--muted);">{{ username }}</span>
+    <button id="btn-scores" class="btn btn-ghost btn-sm" type="button" title="Insert a radiologist-selected standardised assessment">Scores</button>
+    <button id="btn-followups" class="btn btn-ghost btn-sm" type="button" title="Open your follow-up register">Follow-ups <span id="followup-count" class="header-count" style="display:none;"></span></button>
     <a href="/settings" class="btn btn-ghost btn-sm" title="Settings">&#9881; Settings</a>
     {% if oauth_mode %}<a href="/logout" class="btn btn-ghost btn-sm" title="Sign out">&#10005; Sign out</a>{% endif %}
   </div>
@@ -41,8 +43,8 @@
       <button id="btn-template-edit" class="btn btn-ghost btn-sm" type="button" title="View / edit templates" style="flex-shrink:0;margin-bottom:1px;">&#9998; Edit</button>
     </div>
 
-    <details style="margin-top:10px;" open>
-      <summary>Patient Context</summary>
+    <details id="patient-context-details" style="margin-top:10px;" open>
+      <summary><span>Patient Context</span><span id="patient-summary" class="patient-summary">No case loaded</span></summary>
 
       <div id="worklist-panel" class="mt-8" style="display:none;">
         <div style="display:flex;gap:6px;align-items:flex-end;">
@@ -63,6 +65,14 @@
           <button type="button" class="btn btn-ghost btn-sm worklist-chip" data-modality="XR">XR</button>
           <button type="button" class="btn btn-ghost btn-sm worklist-chip" data-modality="OTHER">Other</button>
         </div>
+      </div>
+      <div id="prior-panel" class="prior-panel mt-8" style="display:none;">
+        <label class="fhir-label" for="prior-select">Prior RadSpeed report for comparison</label>
+        <select id="prior-select">
+          <option value="">Do not include a prior</option>
+        </select>
+        <div id="prior-preview" class="prior-preview" style="display:none;"></div>
+        <p class="field-note">A prior is used only after you select it. RadSpeed will not copy old findings into the current report.</p>
       </div>
 
       <div class="fhir-grid mt-8">
@@ -190,6 +200,8 @@
     </div>
     <!-- QA flag panel -->
     <div id="qa-panel" class="qa-panel" style="display:none;"></div>
+    <!-- Explicit follow-up language found in the report; never auto-tracked. -->
+    <div id="followup-suggest-panel" class="followup-suggest-panel" style="display:none;"></div>
     <!-- Rendered markdown view (default) -->
     <div id="report-rendered" class="report-rendered"></div>
     <!-- Raw edit textarea (shown when editing) -->
@@ -227,6 +239,55 @@
       <div class="row" style="justify-content:flex-end;gap:8px;margin-top:14px;">
         <button id="amend-cancel" class="btn btn-ghost btn-sm">Cancel</button>
         <button id="amend-confirm" class="btn btn-success btn-sm">Save amendment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Follow-up register ── -->
+<div id="followup-modal" class="tmpl-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Follow-up register">
+  <div class="simple-modal">
+    <div class="tmpl-header">
+      <div>
+        <h2 style="margin:0;font-size:1.1em;">Follow-up register</h2>
+        <div class="field-note">Radiologist-confirmed tasks only. This register does not notify referrers or patients.</div>
+      </div>
+      <button id="followup-modal-close" class="btn btn-ghost btn-sm" type="button">&times;</button>
+    </div>
+    <div class="simple-modal-body">
+      <div class="followup-form">
+        <div class="fhir-grid">
+          <div><label class="fhir-label" for="followup-patient">Patient</label><input id="followup-patient" type="text" autocomplete="off" /></div>
+          <div><label class="fhir-label" for="followup-accession">Accession</label><input id="followup-accession" type="text" autocomplete="off" /></div>
+          <div><label class="fhir-label" for="followup-due">Due date (optional)</label><input id="followup-due" type="date" /></div>
+        </div>
+        <label class="fhir-label" for="followup-recommendation">Recommendation</label>
+        <textarea id="followup-recommendation" rows="3" placeholder="e.g. Follow-up CT chest in 12 months"></textarea>
+        <div class="row mt-8"><button id="followup-save" class="btn btn-secondary btn-sm" type="button">Track follow-up</button></div>
+      </div>
+      <div class="audit-section-title">Outstanding</div>
+      <div id="followup-list"><div class="field-note">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Standardised assessment inserter ── -->
+<div id="score-modal" class="tmpl-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Standardised assessment inserter">
+  <div class="simple-modal" style="max-width:620px;height:auto;max-height:88vh;">
+    <div class="tmpl-header">
+      <div>
+        <h2 style="margin:0;font-size:1.1em;">Insert standardised assessment</h2>
+        <div class="field-note">You choose the system and category. RadSpeed does not calculate the score or management.</div>
+      </div>
+      <button id="score-modal-close" class="btn btn-ghost btn-sm" type="button">&times;</button>
+    </div>
+    <div class="simple-modal-body">
+      <div class="settings-field"><label for="score-system">System</label><select id="score-system"></select></div>
+      <div class="settings-field"><label for="score-category">Category</label><select id="score-category"></select></div>
+      <div class="settings-field"><label for="score-target">Target / observation (optional)</label><input id="score-target" type="text" placeholder="e.g. Right breast mass, segment 6 observation" autocomplete="off" /></div>
+      <div id="score-preview" class="score-preview"></div>
+      <div class="row mt-8" style="justify-content:flex-end;">
+        <button id="score-insert" class="btn btn-secondary btn-sm" type="button">Insert into report</button>
       </div>
     </div>
   </div>

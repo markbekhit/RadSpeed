@@ -1151,6 +1151,88 @@ function _inferUIMode() {
 }
 
 // ---------------------------------------------------------------------------
+// Case focus — compact patient identity + explicitly selected local prior
+// ---------------------------------------------------------------------------
+let _priorReports = [];
+let _priorRefreshToken = 0;
+
+function updatePatientSummary({ collapse = false } = {}) {
+  const summary = $("patient-summary");
+  if (!summary) return;
+  const name = ($("patient-name")?.value || "").trim();
+  const dob = ($("patient-dob")?.value || "").trim();
+  const mrn = ($("patient-id")?.value || "").trim();
+  const accession = ($("accession")?.value || "").trim();
+  const study = [$("modality")?.value, $("body-part")?.value]
+    .map((v) => (v || "").trim()).filter(Boolean).join(" ");
+  const bits = [name, dob ? `DOB ${dob}` : "", mrn ? `MRN ${mrn}` : "",
+    accession ? `#${accession}` : "", study].filter(Boolean);
+  summary.textContent = bits.length ? bits.join(" · ") : "No case loaded";
+  const details = $("patient-context-details");
+  if (collapse && details && bits.length) details.open = false;
+}
+
+function _resetPriors({ invalidate = true } = {}) {
+  if (invalidate) _priorRefreshToken++;
+  _priorReports = [];
+  const panel = $("prior-panel");
+  const select = $("prior-select");
+  const preview = $("prior-preview");
+  if (select) select.innerHTML = '<option value="">Do not include a prior</option>';
+  if (preview) { preview.textContent = ""; preview.style.display = "none"; }
+  if (panel) panel.style.display = "none";
+}
+
+async function refreshPriorReports() {
+  const patientId = ($("patient-id")?.value || "").trim();
+  const accession = ($("accession")?.value || "").trim();
+  const token = ++_priorRefreshToken;
+  _resetPriors({ invalidate: false });
+  if (!patientId) return;
+  try {
+    const qs = new URLSearchParams({ patient_id: patientId });
+    if (accession) qs.set("exclude_accession", accession);
+    const resp = await fetch(`/api/reports/priors?${qs}`);
+    if (!resp.ok || token !== _priorRefreshToken) return;
+    const data = await resp.json();
+    if (token !== _priorRefreshToken) return;
+    _priorReports = data.reports || [];
+    if (!_priorReports.length) return;
+    const select = $("prior-select");
+    for (const report of _priorReports) {
+      const option = document.createElement("option");
+      option.value = String(report.id);
+      const date = report.signed_at || report.created_at || "Unknown date";
+      const study = [report.modality, report.body_part].filter(Boolean).join(" ");
+      option.textContent = [date.slice(0, 10), study, report.accession ? `#${report.accession}` : ""]
+        .filter(Boolean).join(" · ");
+      select.appendChild(option);
+    }
+    $("prior-panel").style.display = "";
+  } catch (_) { /* Prior lookup is optional; reporting must remain available. */ }
+}
+
+function onPriorSelected() {
+  const selected = _priorReports.find((r) => String(r.id) === $("prior-select").value);
+  const preview = $("prior-preview");
+  if (!selected) {
+    preview.textContent = "";
+    preview.style.display = "none";
+    return;
+  }
+  preview.textContent = selected.report_text || "";
+  preview.style.display = "";
+}
+
+function _selectedPriorPayload() {
+  const selected = _priorReports.find((r) => String(r.id) === $("prior-select")?.value);
+  return selected ? {
+    comparison_report: selected.report_text || null,
+    comparison_date: selected.signed_at || selected.created_at || null,
+  } : { comparison_report: null, comparison_date: null };
+}
+
+// ---------------------------------------------------------------------------
 // FHIR patient lookup — populates patient context fields from RIS
 // ---------------------------------------------------------------------------
 async function lookupPatient() {
@@ -1177,6 +1259,8 @@ async function lookupPatient() {
     if (data.modality)            $("modality").value            = data.modality;
     if (data.body_part)           $("body-part").value           = data.body_part;
     if (data.referring_physician) $("referring-physician").value = data.referring_physician;
+    updatePatientSummary({ collapse: true });
+    await refreshPriorReports();
     setStatus("Patient details populated from FHIR RIS.", "success");
   } catch (err) {
     setStatus(`FHIR lookup failed: ${err.message}`, "error");
@@ -1347,6 +1431,8 @@ function applyWorklistOrder() {
   _activeWorklistOrderId = id;
   const auditBtn = $("btn-audit");
   if (auditBtn) auditBtn.disabled = !(order.accession || "").trim();
+  updatePatientSummary({ collapse: true });
+  refreshPriorReports();
   setStatus(`Loaded order ${order.accession || order.order_id}`, "active");
 }
 
@@ -1389,6 +1475,7 @@ async function formatReport() {
     body_part:            $("body-part").value.trim()            || null,
     referring_physician:  $("referring-physician").value.trim()  || null,
     radiologist:          $("radiologist").value.trim()          || null,
+    ..._selectedPriorPayload(),
   };
 
   setUI("formatting");
@@ -1462,6 +1549,7 @@ async function formatReport() {
           // Deterministic QA is fast and advisory. Run it automatically so the
           // radiologist only has to act when a flag is raised.
           runQaCheck({ quiet: true });
+          refreshFollowupSuggestions($("report-raw").value);
           $("report-rendered").scrollIntoView({ behavior: "smooth", block: "start" });
         } else if (msg.error) {
           throw new Error(msg.error);
@@ -1499,6 +1587,7 @@ function setReport(markdown) {
   $("report-rendered").innerHTML = renderMarkdown(markdown);
   if (_reportEditMode) _setReportEditMode(false);
   _markReportChanged();
+  refreshFollowupSuggestions(markdown);
 }
 
 function _setReportEditMode(editing) {
@@ -1516,6 +1605,7 @@ function toggleReportEdit() {
   } else {
     $("report-rendered").innerHTML = renderMarkdown($("report-raw").value);
     _setReportEditMode(false);
+    refreshFollowupSuggestions($("report-raw").value);
   }
 }
 
@@ -1684,6 +1774,7 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
   state.reportCopied = false;
+  state.reportLlmOutput = "";
 
   // Patient context — preserve radiologist name so they don't retype it each case.
   const fields = [
@@ -1695,6 +1786,18 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
     const el = $(id);
     if (el) el.value = "";
   }
+  updatePatientSummary();
+  const patientDetails = $("patient-context-details");
+  if (patientDetails) patientDetails.open = true;
+  _resetPriors();
+  const followupSuggest = $("followup-suggest-panel");
+  if (followupSuggest) { followupSuggest.innerHTML = ""; followupSuggest.style.display = "none"; }
+  for (const id of ["followup-patient", "followup-accession", "followup-due", "followup-recommendation", "score-target"]) {
+    const el = $(id);
+    if (el) el.value = "";
+  }
+  if ($("followup-modal")) $("followup-modal").style.display = "none";
+  if ($("score-modal")) $("score-modal").style.display = "none";
 
   // Worklist — clear selection and disable archive button
   const wl = $("worklist-select");
@@ -1723,6 +1826,268 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
   // Focus the transcription textarea so the user can start immediately
   const t = $("transcription");
   if (t) t.focus();
+}
+
+// ---------------------------------------------------------------------------
+// Radiologist-confirmed follow-up register
+// ---------------------------------------------------------------------------
+async function refreshFollowupSuggestions(reportText) {
+  const panel = $("followup-suggest-panel");
+  if (!panel) return;
+  const epoch = state.caseEpoch;
+  panel.innerHTML = "";
+  panel.style.display = "none";
+  if (!(reportText || "").trim()) return;
+  try {
+    const resp = await fetch("/api/followups/suggest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ report_text: reportText }),
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    // A late response must never put patient A's recommendation banner into
+    // patient B's newly reset case or an amended report.
+    if (epoch !== state.caseEpoch || ($("report-raw")?.value || "") !== reportText) return;
+    const suggestions = data.suggestions || [];
+    if (!suggestions.length) return;
+    const heading = document.createElement("strong");
+    heading.textContent = "Explicit follow-up language detected — track if appropriate";
+    panel.appendChild(heading);
+    for (const suggestion of suggestions) {
+      const row = document.createElement("div");
+      row.className = "followup-suggestion";
+      const text = document.createElement("span");
+      text.textContent = suggestion.recommendation;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-secondary btn-sm";
+      button.textContent = "Track";
+      button.addEventListener("click", () => openFollowupModal(suggestion.recommendation));
+      row.append(text, button);
+      panel.appendChild(row);
+    }
+    panel.style.display = "";
+  } catch (_) { /* advisory feature only */ }
+}
+
+function closeFollowupModal() {
+  $("followup-modal").style.display = "none";
+}
+
+async function openFollowupModal(recommendation = "") {
+  $("followup-patient").value = ($("patient-name")?.value || "").trim();
+  $("followup-accession").value = ($("accession")?.value || "").trim();
+  if (recommendation) $("followup-recommendation").value = recommendation;
+  $("followup-modal").style.display = "flex";
+  await loadFollowups();
+}
+
+async function loadFollowups() {
+  const list = $("followup-list");
+  const count = $("followup-count");
+  try {
+    const resp = await fetch("/api/followups?status=open");
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: "Follow-up register unavailable." }));
+      if (list) list.textContent = err.detail || "Follow-up register unavailable.";
+      if (count) count.style.display = "none";
+      return;
+    }
+    const data = await resp.json();
+    const items = data.followups || [];
+    if (count) {
+      count.textContent = String(items.length);
+      count.style.display = items.length ? "" : "none";
+    }
+    if (!list) return;
+    list.innerHTML = "";
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "field-note";
+      empty.textContent = "No outstanding follow-ups.";
+      list.appendChild(empty);
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    for (const item of items) {
+      const card = document.createElement("div");
+      card.className = "followup-item" + (item.due_date && item.due_date < today ? " overdue" : "");
+      const header = document.createElement("div");
+      header.className = "followup-item-header";
+      const patient = document.createElement("strong");
+      patient.textContent = item.patient_name || item.patient_id || "Patient not recorded";
+      const meta = document.createElement("span");
+      meta.className = "field-note";
+      meta.textContent = [item.accession ? `#${item.accession}` : "", item.due_date ? `Due ${item.due_date}` : "No due date"]
+        .filter(Boolean).join(" · ");
+      header.append(patient, meta);
+      const recommendation = document.createElement("div");
+      recommendation.className = "followup-item-recommendation";
+      recommendation.textContent = item.recommendation;
+      const actions = document.createElement("div");
+      actions.className = "row";
+      for (const [status, label] of [["completed", "Complete"], ["dismissed", "Dismiss"]]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = status === "completed" ? "btn btn-success btn-sm" : "btn btn-ghost btn-sm";
+        button.textContent = label;
+        button.addEventListener("click", () => updateFollowupStatus(item.id, status));
+        actions.appendChild(button);
+      }
+      card.append(header, recommendation, actions);
+      list.appendChild(card);
+    }
+  } catch (err) {
+    if (list) list.textContent = `Follow-up register unavailable: ${err.message}`;
+  }
+}
+
+async function saveFollowup() {
+  const recommendation = $("followup-recommendation").value.trim();
+  if (!recommendation) {
+    setStatus("Enter a follow-up recommendation first.", "error");
+    return;
+  }
+  const button = $("followup-save");
+  button.disabled = true;
+  try {
+    const resp = await fetch("/api/followups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recommendation,
+        report_id: _signedReportId,
+        patient_id: ($("patient-id")?.value || "").trim() || null,
+        patient_name: $("followup-patient").value.trim() || null,
+        accession: $("followup-accession").value.trim() || null,
+        due_date: $("followup-due").value || null,
+      }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || resp.statusText);
+    }
+    $("followup-recommendation").value = "";
+    $("followup-due").value = "";
+    setStatus("Follow-up added to your register.", "success");
+    await loadFollowups();
+  } catch (err) {
+    setStatus(`Could not track follow-up: ${err.message}`, "error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function updateFollowupStatus(id, status) {
+  try {
+    const resp = await fetch(`/api/followups/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || resp.statusText);
+    }
+    await loadFollowups();
+  } catch (err) {
+    setStatus(`Could not update follow-up: ${err.message}`, "error");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Radiologist-selected standardised assessment inserter
+// ---------------------------------------------------------------------------
+const _SCORE_SYSTEMS = {
+  "BI-RADS": [
+    ["BI-RADS 0", "Incomplete"], ["BI-RADS 1", "Negative"],
+    ["BI-RADS 2", "Benign"], ["BI-RADS 3", "Probably benign"],
+    ["BI-RADS 4", "Suspicious"], ["BI-RADS 4A", "Low suspicion for malignancy"],
+    ["BI-RADS 4B", "Moderate suspicion for malignancy"],
+    ["BI-RADS 4C", "High suspicion for malignancy"],
+    ["BI-RADS 5", "Highly suggestive of malignancy"],
+    ["BI-RADS 6", "Known biopsy-proven malignancy"],
+  ],
+  "PI-RADS v2.1": [
+    ["PI-RADS 1", "Very low likelihood of clinically significant cancer"],
+    ["PI-RADS 2", "Low likelihood of clinically significant cancer"],
+    ["PI-RADS 3", "Intermediate likelihood of clinically significant cancer"],
+    ["PI-RADS 4", "High likelihood of clinically significant cancer"],
+    ["PI-RADS 5", "Very high likelihood of clinically significant cancer"],
+  ],
+  "LI-RADS CT/MRI v2018": [
+    ["LR-NC", "Not categorizable"], ["LR-1", "Definitely benign"],
+    ["LR-2", "Probably benign"], ["LR-3", "Intermediate probability of malignancy"],
+    ["LR-4", "Probably HCC"], ["LR-5", "Definitely HCC"],
+    ["LR-M", "Probably or definitely malignant, not necessarily HCC"],
+    ["LR-TIV", "Tumor in vein"],
+  ],
+  "ACR TI-RADS": [
+    ["TR1", "Benign"], ["TR2", "Not suspicious"], ["TR3", "Mildly suspicious"],
+    ["TR4", "Moderately suspicious"], ["TR5", "Highly suspicious"],
+  ],
+};
+
+function _updateScoreCategories() {
+  const system = $("score-system").value;
+  const category = $("score-category");
+  category.innerHTML = "";
+  for (const [code, label] of _SCORE_SYSTEMS[system] || []) {
+    const option = document.createElement("option");
+    option.value = code;
+    option.dataset.label = label;
+    option.textContent = `${code} — ${label}`;
+    category.appendChild(option);
+  }
+  _updateScorePreview();
+}
+
+function _scoreLine() {
+  const option = $("score-category").selectedOptions[0];
+  if (!option) return "";
+  const target = $("score-target").value.trim();
+  return `${target ? target + ": " : ""}${option.value} — ${option.dataset.label}.`;
+}
+
+function _updateScorePreview() {
+  $("score-preview").textContent = _scoreLine();
+}
+
+function openScoreModal() {
+  const system = $("score-system");
+  if (!system.options.length) {
+    for (const name of Object.keys(_SCORE_SYSTEMS)) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      system.appendChild(option);
+    }
+  }
+  _updateScoreCategories();
+  $("score-modal").style.display = "flex";
+}
+
+function closeScoreModal() { $("score-modal").style.display = "none"; }
+
+function insertScore() {
+  const existing = ($("report-raw")?.value || "").trim();
+  if (!existing) {
+    setStatus("Generate or begin a report before inserting an assessment.", "error");
+    return;
+  }
+  const line = _scoreLine();
+  if (!line) return;
+  const editingSignedReport = _signedReportId !== null;
+  setReport(`${existing}\n\n**STANDARDISED ASSESSMENT:**\n${line}`);
+  setUI("done");
+  setStatus(
+    editingSignedReport
+      ? "Assessment inserted. Use Amend to save this change to the signed report."
+      : "Radiologist-selected assessment inserted. Confirm it before sign-off.",
+    "success"
+  );
+  closeScoreModal();
 }
 
 // ---------------------------------------------------------------------------
@@ -2705,6 +3070,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-edit-toggle").addEventListener("click", toggleReportEdit);
   $("btn-lookup").addEventListener("click", lookupPatient);
   if ($("btn-next-case")) $("btn-next-case").addEventListener("click", () => nextCase());
+
+  // Keep the active patient visible when the detailed form is collapsed.
+  let _priorDebounce = null;
+  for (const id of ["patient-name", "patient-dob", "patient-id", "accession", "modality", "body-part"]) {
+    const field = $(id);
+    if (!field) continue;
+    field.addEventListener("input", () => {
+      updatePatientSummary();
+      if (id === "patient-id" || id === "accession") {
+        clearTimeout(_priorDebounce);
+        _priorDebounce = setTimeout(refreshPriorReports, 350);
+      }
+    });
+  }
+  if ($("prior-select")) $("prior-select").addEventListener("change", onPriorSelected);
+
+  // Follow-up register and standardised assessment inserter.
+  if ($("btn-followups")) $("btn-followups").addEventListener("click", () => openFollowupModal());
+  if ($("followup-modal-close")) $("followup-modal-close").addEventListener("click", closeFollowupModal);
+  if ($("followup-modal")) $("followup-modal").addEventListener("click", (e) => {
+    if (e.target === $("followup-modal")) closeFollowupModal();
+  });
+  if ($("followup-save")) $("followup-save").addEventListener("click", saveFollowup);
+  if ($("btn-scores")) $("btn-scores").addEventListener("click", openScoreModal);
+  if ($("score-modal-close")) $("score-modal-close").addEventListener("click", closeScoreModal);
+  if ($("score-modal")) $("score-modal").addEventListener("click", (e) => {
+    if (e.target === $("score-modal")) closeScoreModal();
+  });
+  if ($("score-system")) $("score-system").addEventListener("change", _updateScoreCategories);
+  if ($("score-category")) $("score-category").addEventListener("change", _updateScorePreview);
+  if ($("score-target")) $("score-target").addEventListener("input", _updateScorePreview);
+  if ($("score-insert")) $("score-insert").addEventListener("click", insertScore);
+  updatePatientSummary();
+  if (document.body.dataset.oauthMode === "true") loadFollowups();
 
   // Phase 1 / 2: sign-off, amendments, audit, QA
   if ($("btn-qa")) $("btn-qa").addEventListener("click", runQaCheck);

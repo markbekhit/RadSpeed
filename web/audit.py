@@ -40,6 +40,7 @@ EVENT_TYPES = (
     "sign_off", "amend",
     "export_hl7", "export_sr", "export_fhir",
     "qa_check", "qa_dismiss",
+    "followup_create", "followup_update",
     "vocab_add", "style_apply",
 )
 
@@ -376,6 +377,46 @@ def list_reports_for_user(user_id: int, limit: int = 100) -> list[dict]:
             "WHERE user_id = ? ORDER BY id DESC LIMIT ?",
             (user_id, int(limit)),
         ).fetchall()
+    return [_serialise_report_row(r) for r in rows]
+
+
+def list_prior_reports_for_patient(
+    *,
+    user_id: int,
+    patient_id: str,
+    exclude_accession: Optional[str] = None,
+    limit: int = 20,
+) -> list[dict]:
+    """Return the latest signed RadSpeed report for each prior accession.
+
+    Patient and user scoping are mandatory: prior reports contain PHI and must
+    never be discoverable across radiologist accounts.  An amendment supersedes
+    its earlier version for comparison purposes.
+    """
+    clean_patient_id = (patient_id or "").strip()
+    if not clean_patient_id:
+        return []
+    sql = (
+        f"SELECT {_REPORT_COLS} FROM reports r "
+        "WHERE r.user_id = ? AND r.patient_id = ? "
+        "AND r.status IN ('final', 'amended') "
+        "AND NOT EXISTS ("
+        "  SELECT 1 FROM reports newer "
+        "  WHERE newer.user_id = r.user_id "
+        "    AND newer.patient_id = r.patient_id "
+        "    AND COALESCE(newer.accession, '') = COALESCE(r.accession, '') "
+        "    AND newer.status IN ('final', 'amended') "
+        "    AND newer.id > r.id"
+        ") "
+    )
+    args: list = [user_id, clean_patient_id]
+    if exclude_accession:
+        sql += "AND COALESCE(r.accession, '') <> ? "
+        args.append(exclude_accession.strip())
+    sql += "ORDER BY COALESCE(r.signed_at, r.created_at) DESC, r.id DESC LIMIT ?"
+    args.append(min(max(int(limit), 1), 100))
+    with _conn() as db:
+        rows = db.execute(sql, args).fetchall()
     return [_serialise_report_row(r) for r in rows]
 
 

@@ -24,6 +24,7 @@ import tempfile
 import threading
 import time
 import uuid
+from datetime import date
 from typing import Optional
 
 from fastapi import Body, Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
@@ -74,10 +75,18 @@ from web.audit import (
     init_audit_db,
     list_audit_events,
     list_reports_for_accession,
+    list_prior_reports_for_patient,
     list_reports_for_user,
     log_event,
     save_report_version,
     verify_chain,
+)
+from web.followups import (
+    create_followup,
+    init_followup_db,
+    list_followups,
+    suggest_followups,
+    update_followup,
 )
 from web.qa import run_qa_checks
 from web.stt_providers import get_streaming_provider
@@ -96,6 +105,7 @@ security = HTTPBasic(auto_error=False)
 # Initialise user + audit databases on startup (noop if already created)
 init_db()
 init_audit_db()
+init_followup_db()
 
 _BASE_DIR = os.path.dirname(__file__)
 app.mount(
@@ -1653,6 +1663,9 @@ class FormatRequest(BaseModel):
     body_part: Optional[str] = None
     referring_physician: Optional[str] = None
     radiologist: Optional[str] = None
+    # A prior is included only after explicit radiologist selection in the UI.
+    comparison_report: Optional[str] = None
+    comparison_date: Optional[str] = None
 
 
 def _hl7_outbox_dir() -> Optional[str]:
@@ -1697,6 +1710,8 @@ def _patient_context(req: "FormatRequest") -> Optional[dict]:
         "body_part": req.body_part,
         "referring_physician": req.referring_physician,
         "radiologist": req.radiologist,
+        "comparison_report": req.comparison_report,
+        "comparison_date": req.comparison_date,
     }.items() if v}
     return ctx or None
 
@@ -2234,12 +2249,151 @@ def api_list_reports(
     return {"reports": list_reports_for_user(user_id, limit=100)}
 
 
+@app.get("/api/reports/priors")
+def api_list_prior_reports(
+    patient_id: str,
+    exclude_accession: Optional[str] = None,
+    user: dict = Depends(_verify_auth),
+):
+    """List this radiologist's signed local reports for the same MRN."""
+    user_id = user.get("id")
+    if user_id is None:
+        return {"reports": []}
+    if not patient_id.strip():
+        return {"reports": []}
+    return {
+        "reports": list_prior_reports_for_patient(
+            user_id=user_id,
+            patient_id=patient_id,
+            exclude_accession=exclude_accession,
+            limit=20,
+        )
+    }
+
+
 @app.get("/api/reports/{report_id}")
 def api_get_report(report_id: int, user: dict = Depends(_verify_auth)):
     rep = get_report(report_id, user_id=user.get("id"))
     if not rep:
         raise HTTPException(status_code=404, detail="Report not found")
     return rep
+
+
+class FollowupSuggestRequest(BaseModel):
+    report_text: str
+
+
+class FollowupCreateRequest(BaseModel):
+    recommendation: str
+    report_id: Optional[int] = None
+    patient_id: Optional[str] = None
+    patient_name: Optional[str] = None
+    accession: Optional[str] = None
+    finding: Optional[str] = None
+    due_date: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class FollowupUpdateRequest(BaseModel):
+    status: Optional[str] = None
+    due_date: Optional[str] = None
+    notes: Optional[str] = None
+
+
+def _followup_user_id(user: dict) -> int:
+    user_id = user.get("id")
+    if user_id is None:
+        raise HTTPException(
+            status_code=403,
+            detail="Follow-up tracking requires an authenticated user (OAuth login).",
+        )
+    return int(user_id)
+
+
+def _validate_due_date(value: Optional[str]) -> Optional[str]:
+    clean = (value or "").strip()
+    if clean:
+        try:
+            date.fromisoformat(clean)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="due_date must be a valid YYYY-MM-DD date") from exc
+    return clean or None
+
+
+@app.post("/api/followups/suggest")
+def api_suggest_followups(req: FollowupSuggestRequest, user: dict = Depends(_verify_auth)):
+    """Find explicit follow-up language; never creates a task automatically."""
+    return {"suggestions": suggest_followups(req.report_text)}
+
+
+@app.get("/api/followups")
+def api_list_followups(
+    status: Optional[str] = "open",
+    user: dict = Depends(_verify_auth),
+):
+    user_id = _followup_user_id(user)
+    try:
+        return {"followups": list_followups(user_id, status=status or None)}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/followups")
+def api_create_followup(req: FollowupCreateRequest, user: dict = Depends(_verify_auth)):
+    user_id = _followup_user_id(user)
+    if req.report_id is not None and not get_report(req.report_id, user_id=user_id):
+        raise HTTPException(status_code=404, detail="Report not found")
+    try:
+        saved = create_followup(
+            user_id=user_id,
+            recommendation=req.recommendation,
+            report_id=req.report_id,
+            patient_id=req.patient_id or None,
+            patient_name=req.patient_name or None,
+            accession=req.accession or None,
+            finding=req.finding or None,
+            due_date=_validate_due_date(req.due_date),
+            notes=req.notes or None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    log_event(
+        user_id=user_id,
+        event_type="followup_create",
+        accession=req.accession or None,
+        report_id=req.report_id,
+        metadata={"followup_id": saved["id"], "due_date": saved["due_date"]},
+    )
+    return saved
+
+
+@app.patch("/api/followups/{followup_id}")
+def api_update_followup(
+    followup_id: int,
+    req: FollowupUpdateRequest,
+    user: dict = Depends(_verify_auth),
+):
+    user_id = _followup_user_id(user)
+    try:
+        saved = update_followup(
+            followup_id,
+            user_id,
+            status=req.status,
+            due_date=_validate_due_date(req.due_date) if req.due_date is not None else None,
+            notes=req.notes,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not saved:
+        raise HTTPException(status_code=404, detail="Follow-up not found")
+    log_event(
+        user_id=user_id,
+        event_type="followup_update",
+        accession=saved.get("accession"),
+        report_id=saved.get("report_id"),
+        metadata={"followup_id": followup_id, "status": saved["status"]},
+    )
+    return saved
 
 
 @app.get("/api/audit-log")

@@ -13,7 +13,8 @@ coverage. The test data is synthetic and must never contain patient information.
   starts an isolated local server with `VOXRAD_MOCK_MODE=1`, uses HTTP Basic
   Auth, and exercises public Impressions plus authenticated transcription and
   streamed formatting. It also covers keyboard-first reporting, automatic
-  laterality-aware QA, and atomic worklist case switching. External model
+  laterality-aware QA, atomic worklist case switching, compact patient focus,
+  deterministic follow-up prompting, and manual score insertion. External model
   calls are routed to local mock endpoints.
 - **Clinical quality:** `python -m evals.clinical_quality`
   validates the reviewed synthetic references. Use

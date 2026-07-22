@@ -8,7 +8,7 @@ Built with [Tauri 2](https://tauri.app/) (Rust + WebView2).
 
 ## End-user install
 
-1. Go to the [Releases](https://github.com/markbekhit/voxrad/releases) page and find the latest `desktop-v*` release.
+1. Go to the [Releases](https://github.com/markbekhit/RadSpeed/releases) page and find the latest `desktop-v*` release.
 2. Download `RadSpeed_x.x.x_x64-setup.exe` (NSIS) or `RadSpeed_x.x.x_x64_en-US.msi` (MSI — use this for group-policy/silent installs).
 3. Run the installer. Windows SmartScreen may warn "Unknown publisher" — click **More info → Run anyway**. (Code signing removes this warning; see [Phase 3.1](#phase-31-code-signing) below.)
 4. RadSpeed appears in the system tray (bottom-right of the taskbar).
@@ -157,11 +157,15 @@ Store the `.pfx` as a base64 GitHub Secret and decode it in the workflow before 
 
 ---
 
-## Auto-update (future)
+## Auto-update
 
-Tauri's built-in updater requires:
-1. A signing keypair (see above)
-2. A JSON endpoint listing the latest version and download URLs
-3. `tauri.conf.json` `plugins.updater` block pointing at that endpoint
+The companion checks for updates ten seconds after launch and also exposes
+**Check for updates** in the tray menu. Updates are downloaded from the latest
+GitHub Release, verified with the Tauri updater public key, installed, and the
+app restarts into the new version.
 
-This is deferred until Phase 3.1 is complete (signing keys configured).
+The release workflow publishes the NSIS updater executable, its `.sig`, MSI
+installer artifacts, and `update.json`. Tauri updater signatures protect update
+integrity; they are separate from a commercial Windows Authenticode certificate,
+which is still required to replace the SmartScreen “Unknown publisher” warning
+with a verified publisher identity.

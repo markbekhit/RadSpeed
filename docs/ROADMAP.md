@@ -64,6 +64,18 @@ These are confirmed in code on `main` as of this update — not aspirations.
 - **Atomic worklist case switching** — moving to another order clears the
   completed case and replaces the whole patient context; unfinished work is
   protected so demographics cannot be mixed across two orders.
+- **Compact active-patient focus** — loaded demographics collapse to a pinned
+  patient / MRN / accession / study banner, keeping identity visible while
+  returning vertical space to the report.
+- **Local prior comparison** — signed RadSpeed reports for the same MRN are
+  surfaced per user. A prior reaches the formatting prompt only after explicit
+  selection and is strongly delimited as reference-only context.
+- **Radiologist-owned follow-up register** — explicit recommendation language
+  is highlighted after generation, but tracking begins only after confirmation.
+  Outstanding tasks are user-scoped, due-date aware and auditable.
+- **Standardised assessment inserter** — manually selected BI-RADS, PI-RADS
+  v2.1, LI-RADS CT/MRI v2018 and ACR TI-RADS categories emit a consistent
+  report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
@@ -135,7 +147,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **80 Python tests + 7 Chromium E2E workflows** run before deployment and on
+- **84 Python tests + 8 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -172,7 +184,8 @@ that navigate from FINDINGS to IMPRESSION in the user's specific
 PowerScribe template. Default is `goto_impression` with empty JumpKeys,
 which falls back gracefully to the `after_selection` behaviour.
 
-Next iteration would be a Tauri-packaged signed binary (Phase 3 territory).
+The native Tauri companion has now superseded this proof-of-concept for routine
+use; the script remains available as a lightweight fallback.
 
 ### Phase 1 (just landed): Audit log + sign-off + amendments
 
@@ -219,38 +232,47 @@ only setups, and useful belt-and-braces verification anywhere.
 - An LLM cross-check pass for things regex can't see (e.g. a lesion that
   legitimately spans both sides) is a future iteration if users ask for it.
 
-### Phase 3 (next, Q3-2026): Windows desktop overlay
+### Phase 3 (in progress, Q3-2026): Windows desktop overlay
 
 Reach the AU/NZ PowerScribe **desktop** install base, not just web. The
 AHK helper proved demand; the native companion makes it shippable to a
 practice rather than a tinkerer.
 
-- Native Windows companion (likely Tauri or Electron + native Win32 / UI
-  Automation bindings).
-- Window-text monitoring (mirrors Scriptor's approach — no audio tap, no
-  microphone control).
-- Clipboard injection into the active dictation field.
-- Side panel hosts the existing RadSpeed web pipeline via a local web view.
+- **Shipped:** native Tauri 2 tray companion, global hotkey, clipboard capture,
+  PowerScribe jump-key paste modes, embedded RadSpeed web view, local settings,
+  signed updater artifacts and automatic updates. Version 0.2.25 points new
+  installs at `https://radspeed.com.au`.
+- **Remaining external dependency:** commercial Authenticode / EV certificate
+  for a verified Windows publisher identity and removal of the SmartScreen
+  “Unknown publisher” warning. Tauri update signing is already configured but
+  is not a substitute for Authenticode.
+- **Later if demanded by practices:** richer Win32 UI Automation/window-text
+  monitoring. The current clipboard approach avoids audio capture and has the
+  smaller integration/security surface.
 - Pricing: per-radiologist subscription. Ride on top of practice's existing
   PowerScribe contract.
 
-### Phase 4 (Q4-2026 / 2027 H1): Critical findings tracking
+### Phase 4 (foundation shipped; integration next): Critical findings tracking
 
 Rad AI Continuity parity for the AU/NZ market.
 
-- Flag reports with significant incidentals (deterministic + LLM hybrid).
-- Persist follow-up table keyed by patient + finding.
-- Notification channel to ordering provider (email + in-app).
-- Closure tracking: "Was the recommended follow-up actually done?"
+- **Shipped:** conservative deterministic detection of explicit follow-up
+  language, radiologist confirmation, persistent user-scoped register, optional
+  due dates, complete/dismiss actions and audit events.
+- **Next:** validated notification channel to the ordering provider and reliable
+  reconciliation against incoming orders/results. Notifications are deliberately
+  not sent until practice routing, responsibility and escalation rules exist.
+- **Later:** hybrid incidental-finding detection and closure analytics.
 
-### Phase 5 (later): Structured scoring widgets
+### Phase 5 (foundation shipped; calculators later): Structured scoring widgets
 
-- Convert bundled BIRADS / LIRADS / PIRADS / TIRADS / Fleischner guidelines
-  from reference markdown into form-style entry blocks.
-- Each block emits a guideline-correct report fragment.
-- Currently the guidelines ship as files and are loaded into the impressions
-  generator's system prompt; this phase makes them interactive in the main
-  workstation.
+- **Shipped:** interactive manual category inserter for BI-RADS, PI-RADS v2.1,
+  LI-RADS CT/MRI v2018 and ACR TI-RADS. The radiologist remains the classifier;
+  the widget standardises wording only.
+- **Next:** validated feature-entry calculators one system at a time, with
+  source/version display, explainable intermediate scoring and regression cases.
+  Fleischner management remains guideline-reference driven until a sufficiently
+  complete and clinically reviewed input model is built.
 
 ## Explicitly NOT doing (and why)
 
