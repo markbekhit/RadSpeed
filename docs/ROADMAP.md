@@ -121,7 +121,8 @@ deployment and partner sign-on, not new code.
 
 - **Fly.io** — auto-deploy on push to `main` via GitHub Actions; persistent
   volume for users.db + session secret; running at
-  `https://dictation.markbekhit.com` (fly app `voxrad-v-hkvq`, region `syd`).
+  `https://radspeed.com.au` (fly app `voxrad-v-hkvq`, region `syd`). The former
+  `https://dictation.markbekhit.com` hostname remains as a transition alias.
 - **Docker** — `docker compose up -d` for self-hosted.
 
 ### Automated quality coverage
@@ -257,7 +258,7 @@ Rad AI Continuity parity for the AU/NZ market.
 ## Notes for future Claude sessions
 
 - `main` is the deployment branch — push to main triggers fly.io auto-deploy
-  to `dictation.markbekhit.com`.
+  to `radspeed.com.au`.
 - The Impressions page lives at `/impressions` (public, no auth).
 - The PACS/RIS/EHR integration framework is ALREADY SHIPPED on main (HL7
   ORU/ORM, DICOM SR, MWL bridge, FHIR R4). Don't re-plan it as a future

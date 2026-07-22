@@ -31,7 +31,7 @@ This is a **solo project**. Work directly on `main` — do not create feature
 branches, do not work in worktrees, do not open PRs unless the owner
 explicitly asks for one.
 
-- Pushing to `main` auto-deploys to `dictation.markbekhit.com` via fly.io
+- Pushing to `main` auto-deploys to `radspeed.com.au` via fly.io
   (see CI/CD below). Always pull main before starting work
   (`git pull origin main`) so you see the actual current state of the
   codebase. The repo is large and active; assumptions about what's shipped

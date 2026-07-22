@@ -34,7 +34,7 @@ async function load() {
 
 function readForm() {
   return {
-    api_base:        $("api-base").value.trim() || "https://dictation.markbekhit.com",
+    api_base:        $("api-base").value.trim() || "https://radspeed.com.au",
     hotkey:          $("hotkey").value.trim()   || "ctrl+i",
     use_guidelines:  $("use-guidelines").checked,
     paste_mode:      $("paste-mode").value,
@@ -73,7 +73,7 @@ async function save() {
 }
 
 async function testConnection() {
-  const apiBase = $("api-base").value.trim() || "https://dictation.markbekhit.com";
+  const apiBase = $("api-base").value.trim() || "https://radspeed.com.au";
   setTestStatus("Testing…");
   try {
     await invoke("cmd_test_api", { apiBase });

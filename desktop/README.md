@@ -19,7 +19,7 @@ On first launch the settings window opens automatically. Fill in:
 
 | Field | Value |
 |---|---|
-| **Server URL** | `https://dictation.markbekhit.com` (or your self-hosted URL) |
+| **Server URL** | `https://radspeed.com.au` (or your self-hosted URL) |
 | **Bearer token** | Leave blank unless your server requires one |
 | **Hotkey** | Default `ctrl+i` — change if it conflicts with PowerScribe |
 | **Paste mode** | `goto_impression` (recommended) or `after_selection` |

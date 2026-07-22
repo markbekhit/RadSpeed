@@ -42,7 +42,7 @@ pub struct Settings {
 }
 
 fn default_api_base() -> String {
-    "https://dictation.markbekhit.com".to_string()
+    "https://radspeed.com.au".to_string()
 }
 fn default_hotkey() -> String {
     "ctrl+i".to_string()
@@ -121,7 +121,7 @@ mod tests {
     #[test]
     fn defaults_are_safe() {
         let s = Settings::default();
-        assert_eq!(s.api_base, "https://dictation.markbekhit.com");
+        assert_eq!(s.api_base, "https://radspeed.com.au");
         assert_eq!(s.hotkey, "ctrl+i");
         assert!(s.use_guidelines);
         assert_eq!(s.paste_mode, "goto_impression");

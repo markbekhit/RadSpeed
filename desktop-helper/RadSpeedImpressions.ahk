@@ -30,7 +30,7 @@ LoadSettings() {
     global Settings
     Settings := Map(
         "Hotkey",          "^i",
-        "ApiUrl",          "https://dictation.markbekhit.com/api/impressions/text",
+        "ApiUrl",          "https://radspeed.com.au/api/impressions/text",
         "WithGuidelines",  "true",
         "PasteMode",       "goto_impression",
         "JumpKeys",        "{Tab}",
@@ -84,7 +84,7 @@ WriteDefaultSettings() {
 
 [RadSpeed]
 Hotkey=^i
-ApiUrl=https://dictation.markbekhit.com/api/impressions/text
+ApiUrl=https://radspeed.com.au/api/impressions/text
 WithGuidelines=true
 PasteMode=goto_impression
 JumpKeys={Tab}
@@ -110,7 +110,7 @@ ReloadScript(*) {
 }
 
 OpenWebTool(*) {
-    Run("https://dictation.markbekhit.com/impressions")
+    Run("https://radspeed.com.au/impressions")
 }
 
 ExitScript(*) {

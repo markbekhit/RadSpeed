@@ -92,7 +92,7 @@ goes. Use whatever combination lands on IMPRESSION.
   the shortcut's Compatibility properties to always run as admin).
 - **Clipboard**: the helper saves and restores your clipboard around each
   request, so pasting Ctrl+I doesn't trash whatever you had copied.
-- **Network**: requires internet access to `dictation.markbekhit.com`. If
+- **Network**: requires internet access to `radspeed.com.au`. If
   your site blocks it on the clinical network, a local self-hosted RadSpeed
   is an option (point `ApiUrl` at it).
 
