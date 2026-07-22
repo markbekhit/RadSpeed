@@ -12,7 +12,9 @@ coverage. The test data is synthetic and must never contain patient information.
 - **Browser E2E:** `pytest e2e --browser chromium`
   starts an isolated local server with `VOXRAD_MOCK_MODE=1`, uses HTTP Basic
   Auth, and exercises public Impressions plus authenticated transcription and
-  streamed formatting. External model calls are routed to local mock endpoints.
+  streamed formatting. It also covers keyboard-first reporting, automatic
+  laterality-aware QA, and atomic worklist case switching. External model
+  calls are routed to local mock endpoints.
 - **Clinical quality:** `python -m evals.clinical_quality`
   validates the reviewed synthetic references. Use
   `python -m evals.clinical_quality --live --minimum-pass-rate 0.80` only in an

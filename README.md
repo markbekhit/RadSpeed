@@ -42,6 +42,11 @@ worklist, and standards-based export back to the RIS. A legacy desktop
   waiting-time labels, one-click archive
 - 📋 **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N)
+- ⌨️ **Keyboard-first workflow** — Alt/Option+R record/pause,
+  Alt/Option+S stop, Ctrl/Cmd+Enter generate, Ctrl/Cmd+Shift+C copy, and
+  Alt/Option+N next case
+- 🛡️ **Automatic deterministic QA** — laterality, gender, unit, and anatomy
+  checks run after generation and before sign-off; flags never rewrite text
 - 🎨 **Reporting style preferences** — British/American spelling, grade
   numerals, measurement units, impression format, laterality, date format
 - 👤 **Patient context** — name, DOB, MRN, accession, modality, body part,

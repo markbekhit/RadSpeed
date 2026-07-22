@@ -115,16 +115,23 @@
     <div class="card-title">Dictation</div>
 
     <div class="record-row">
-      <button id="btn-record" class="btn btn-primary">
+      <button id="btn-record" class="btn btn-primary" title="Record / pause / resume (Alt/Option+R)">
         <span>&#9654;</span> Record
       </button>
-      <button id="btn-stop" class="btn btn-danger" disabled>
+      <button id="btn-stop" class="btn btn-danger" disabled title="Stop and generate report (Alt/Option+S)">
         <span>&#9632;</span> Stop
       </button>
       <span id="rec-dot" class="rec-dot" style="display:none;"></span>
       <span id="streaming-dot" class="streaming-dot" style="display:none;" title="Streaming STT active"></span>
       <span id="timer">0:00</span>
       <canvas id="waveform"></canvas>
+    </div>
+    <div class="shortcut-strip" aria-label="Keyboard shortcuts">
+      <span><kbd>Alt/Option+R</kbd> record/pause</span>
+      <span><kbd>Alt/Option+S</kbd> stop</span>
+      <span><kbd>Ctrl/Cmd+Enter</kbd> generate</span>
+      <span><kbd>Ctrl/Cmd+Shift+C</kbd> copy</span>
+      <span><kbd>Alt/Option+N</kbd> next case</span>
     </div>
   </div>
 
@@ -151,7 +158,7 @@
     <textarea id="transcription" rows="5" placeholder="Transcription will appear here after recording…"></textarea>
     <p class="voice-edit-hint">&#128161; Select any text above, then press Record to replace it by voice.</p>
     <div class="row mt-8">
-      <button id="btn-format" class="btn btn-secondary" disabled style="font-size:0.8rem;padding:6px 12px;opacity:0.7;">
+      <button id="btn-format" class="btn btn-secondary" disabled title="Generate from this transcription (Ctrl/Cmd+Enter)" style="font-size:0.8rem;padding:6px 12px;opacity:0.7;">
         <span>&#9881;</span> Re-format
       </button>
     </div>
@@ -226,9 +233,13 @@
 </div>
 
 <footer>
+  {% if oauth_mode %}
+  &#128274; Signed in securely. Reports may contain health information: handle them according to your organisation's privacy policy.
+  {% else %}
   &#9888; RadSpeed Web uses HTTP Basic Auth.
   Credentials are sent in cleartext over plain HTTP — run behind HTTPS in production.
   Reports contain PHI: treat this server accordingly.
+  {% endif %}
 </footer>
 
 <!-- ── Template Editor Modal ── -->

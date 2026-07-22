@@ -45,6 +45,7 @@ def radspeed_server(tmp_path_factory):
             "VOXRAD_TRANSCRIPTION_API_KEY": "synthetic-test-key",
             "VOXRAD_TRANSCRIPTION_BASE_URL": f"{base_url}/mock/v1",
             "VOXRAD_TRANSCRIPTION_MODEL": "whisper-mock",
+            "VOXRAD_MWL_AGENT_TOKEN": "synthetic-mwl-test-token",
         }
     )
 

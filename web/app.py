@@ -2527,6 +2527,11 @@ def api_worklist_push(
     inbox = _hl7_inbox_dir()
     if not inbox:
         raise HTTPException(status_code=500, detail="HL7 inbox not configured on server")
+    try:
+        os.makedirs(inbox, exist_ok=True)
+    except OSError as exc:
+        logger.warning("Could not create MWL inbox %s: %s", inbox, exc)
+        raise HTTPException(status_code=500, detail="Could not initialise worklist inbox") from exc
 
     orders = payload.get("orders") if isinstance(payload, dict) else None
     if not isinstance(orders, list):

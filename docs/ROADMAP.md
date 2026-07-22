@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-07-18
+Updated: 2026-07-22
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -58,6 +58,12 @@ These are confirmed in code on `main` as of this update — not aspirations.
   (`stream_format_text`, `format_text(patient_context=...)`).
 - **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N).
+- **Keyboard-first reporting loop** — Alt/Option+R record/pause,
+  Alt/Option+S stop, Ctrl/Cmd+Enter generate, Ctrl/Cmd+Shift+C copy, and
+  Alt/Option+N next case. Shortcuts are shown beside the recorder.
+- **Atomic worklist case switching** — moving to another order clears the
+  completed case and replaces the whole patient context; unfinished work is
+  protected so demographics cannot be mixed across two orders.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
@@ -115,7 +121,10 @@ deployment and partner sign-on, not new code.
   modality-anatomy checks. Flag-only, never rewrites.
 - **`POST /api/qa-check`** — runs all checks, returns a flat list of
   severity-tagged flags.
-- UI: "QA Check" button → flag panel above the report; per-flag dismiss.
+- QA runs automatically after generation and again before sign-off, while
+  remaining advisory and never rewriting the report. Laterality is inferred
+  from body-part labels such as "Right knee". The manual "QA Check" button
+  remains available; each flag is dismissible.
 
 ### Deployment
 
@@ -126,7 +135,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **79 Python tests + 4 Chromium E2E workflows** run before deployment and on
+- **80 Python tests + 7 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -204,6 +213,9 @@ only setups, and useful belt-and-braces verification anywhere.
 - `POST /api/qa-check` — flag-only, never rewrites the report.
 - UI: "QA Check" button → flag panel above the report. Each flag is
   dismissible; severity-coloured (error / warning / info).
+- The deterministic pass now runs automatically after report generation and
+  before sign-off. It infers ordered laterality from body-part context, so
+  "Right knee" versus a left-only report is flagged without extra data entry.
 - An LLM cross-check pass for things regex can't see (e.g. a lesion that
   legitimately spans both sides) is a future iteration if users ask for it.
 

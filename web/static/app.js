@@ -1062,8 +1062,10 @@ async function submitAudioSegment(chunks, isFinal) {
         if (updated !== null) {
           $("report-raw").value = updated;
           $("report-rendered").innerHTML = renderMarkdown(updated);
+          _markReportChanged();
           setUI(_inferUIMode());
           setStatus("Voice edit applied.", "success");
+          runQaCheck({ quiet: true });
           if (data.suggest_vocab) showVocabSuggest(data.suggest_vocab);
           if (data.suggest_setting) showStyleSuggest(data.suggest_setting);
         } else {
@@ -1079,6 +1081,8 @@ async function submitAudioSegment(chunks, isFinal) {
         el.focus();
         if (editTarget.elId === "report-raw") {
           $("report-rendered").innerHTML = renderMarkdown(el.value);
+          _markReportChanged();
+          runQaCheck({ quiet: true });
         }
         state.voiceEditTarget = null;
         if (wasMidRecording && state.isRecording) {
@@ -1187,6 +1191,7 @@ async function lookupPatient() {
 // ---------------------------------------------------------------------------
 let _worklistOrders = [];
 let _worklistFilter = "";
+let _activeWorklistOrderId = "";
 const _KNOWN_MODALITIES = new Set(["CT", "MR", "US", "XR"]);
 
 function _waitingTime(receivedAt) {
@@ -1287,22 +1292,61 @@ function applyWorklistOrder() {
   if (!select) return;
   const id = select.value;
   archiveBtn.disabled = !id;
-  if (!id) return;
+  if (!id) {
+    _activeWorklistOrderId = "";
+    return;
+  }
+  if (id === _activeWorklistOrderId) return;
   const order = _worklistOrders.find((o) => o.order_id === id);
   if (!order) return;
 
-  const setIfEmpty = (elId, val) => {
-    if (!val) return;
+  if (fbState.isRecording) {
+    select.value = _activeWorklistOrderId;
+    archiveBtn.disabled = !_activeWorklistOrderId;
+    setStatus("Stop report refinement before switching orders.", "error");
+    return;
+  }
+
+  // Changing the selected order is a case transition, not a partial form fill.
+  // Keeping non-empty fields here can silently combine patient A's demographics
+  // with patient B's accession. Protect unfinished work, then reset atomically.
+  const hasTranscript = !!($("transcription")?.value || "").trim();
+  const hasReport = !!($("report-raw")?.value || "").trim();
+  if (state.isRecording || hasTranscript || hasReport) {
+    const protectedWork = state.isRecording
+      || (hasReport && !state.reportCopied && !_signedReportId)
+      || (hasTranscript && !hasReport);
+    if (protectedWork) {
+      const ok = window.confirm(
+        "This case has unfinished work.\n\n" +
+        "Switch orders and discard it?"
+      );
+      if (!ok) {
+        select.value = _activeWorklistOrderId;
+        archiveBtn.disabled = !_activeWorklistOrderId;
+        return;
+      }
+    }
+    nextCase({ force: true });
+    // nextCase clears the dropdown as part of its atomic reset.
+    select.value = id;
+    archiveBtn.disabled = false;
+  }
+
+  const setField = (elId, val) => {
     const el = $(elId);
-    if (el && !el.value.trim()) el.value = val;
+    if (el) el.value = val || "";
   };
-  setIfEmpty("patient-name",         order.patient_name);
-  setIfEmpty("patient-dob",          order.patient_dob);
-  setIfEmpty("patient-id",           order.patient_id);
-  setIfEmpty("accession",            order.accession);
-  setIfEmpty("modality",             order.modality);
-  setIfEmpty("body-part",            order.body_part);
-  setIfEmpty("referring-physician",  order.referring_physician);
+  setField("patient-name",         order.patient_name);
+  setField("patient-dob",          order.patient_dob);
+  setField("patient-id",           order.patient_id);
+  setField("accession",            order.accession);
+  setField("modality",             order.modality);
+  setField("body-part",            order.body_part || order.procedure);
+  setField("referring-physician",  order.referring_physician);
+  _activeWorklistOrderId = id;
+  const auditBtn = $("btn-audit");
+  if (auditBtn) auditBtn.disabled = !(order.accession || "").trim();
   setStatus(`Loaded order ${order.accession || order.order_id}`, "active");
 }
 
@@ -1353,6 +1397,7 @@ async function formatReport() {
   // Clear report area and start streaming into it
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
+  _qaCheckedReport = "";
   _setReportEditMode(false);
 
   // Tie this run to the current case; abort a prior in-flight format.
@@ -1414,6 +1459,9 @@ async function formatReport() {
           if (typeof _clearQaPanel === "function") _clearQaPanel();
           setUI("done");
           setStatus("Report ready." + fhirNote, "success");
+          // Deterministic QA is fast and advisory. Run it automatically so the
+          // radiologist only has to act when a flag is raised.
+          runQaCheck({ quiet: true });
           $("report-rendered").scrollIntoView({ behavior: "smooth", block: "start" });
         } else if (msg.error) {
           throw new Error(msg.error);
@@ -1450,7 +1498,7 @@ function setReport(markdown) {
   $("report-raw").value = markdown;
   $("report-rendered").innerHTML = renderMarkdown(markdown);
   if (_reportEditMode) _setReportEditMode(false);
-  state.reportCopied = false;  // fresh report — not yet on the clipboard
+  _markReportChanged();
 }
 
 function _setReportEditMode(editing) {
@@ -1651,6 +1699,7 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
   // Worklist — clear selection and disable archive button
   const wl = $("worklist-select");
   if (wl) wl.value = "";
+  _activeWorklistOrderId = "";
   const arch = $("btn-worklist-archive");
   if (arch) arch.disabled = true;
 
@@ -1664,6 +1713,7 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
 
   // Phase 1: clear sign-off state and QA flags
   _signedReportId = null;
+  _qaCheckedReport = "";
   _setReportStatus("draft");
   _clearQaPanel();
 
@@ -1707,7 +1757,16 @@ async function signOffReport() {
     setStatus("Nothing to sign off.", "error");
     return;
   }
-  if (!confirm("Sign off this report as FINAL? Further edits will create a versioned amendment.")) return;
+  // Recheck after any edit. The pass remains advisory, but surfacing its flags
+  // here avoids a separate QA click and keeps sign-off clinically deliberate.
+  if (_qaCheckedReport !== text) await runQaCheck({ quiet: true });
+  const pendingQaFlags = document.querySelectorAll("#qa-panel .qa-flag").length;
+  const qaNote = pendingQaFlags
+    ? `QA has ${pendingQaFlags} unresolved flag${pendingQaFlags === 1 ? "" : "s"}.\n\n`
+    : "";
+  if (!confirm(
+    qaNote + "Sign off this report as FINAL? Further edits will create a versioned amendment."
+  )) return;
 
   const body = {
     report_text: text,
@@ -1879,6 +1938,22 @@ function _clearQaPanel() {
   p.innerHTML = "";
 }
 
+let _qaCheckedReport = "";
+
+function _markReportChanged() {
+  state.reportCopied = false;
+  _qaCheckedReport = "";
+  _clearQaPanel();
+}
+
+function _orderedSideFromBodyPart(bodyPart) {
+  const text = String(bodyPart || "").toLowerCase();
+  if (/\bbilat(?:eral)?\b/.test(text)) return "bilateral";
+  if (/\bleft\b/.test(text)) return "left";
+  if (/\bright\b/.test(text)) return "right";
+  return null;
+}
+
 function _renderQaPanel(flags) {
   const p = $("qa-panel");
   if (!p) return;
@@ -1921,22 +1996,23 @@ function _renderQaPanel(flags) {
   });
 }
 
-async function runQaCheck() {
+async function runQaCheck({ quiet = false } = {}) {
   const text = ($("report-raw")?.value || "").trim();
   if (!text) {
-    setStatus("Nothing to check.", "error");
-    return;
+    if (!quiet) setStatus("Nothing to check.", "error");
+    return [];
   }
-  // Best-effort: send the patient context we have. The server only uses what's
-  // populated; gender / ordered side aren't currently wired in the UI but the
-  // body_part field is the most common deterministic check.
+  // Best-effort: send the patient context we have. Infer ordered laterality
+  // from body-part labels such as "Right Knee" so the deterministic check can
+  // catch an opposite-side report without another field or click.
   const body = {
     report_text: text,
     accession: $("accession")?.value.trim() || null,
     body_part: $("body-part")?.value.trim() || null,
+    ordered_side: _orderedSideFromBodyPart($("body-part")?.value),
   };
   try {
-    setStatus("Running QA checks…", "active");
+    if (!quiet) setStatus("Running QA checks…", "active");
     const resp = await fetch("/api/qa-check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1947,14 +2023,24 @@ async function runQaCheck() {
       throw new Error(err.detail || resp.statusText);
     }
     const data = await resp.json();
-    _renderQaPanel(data.flags || []);
-    if ((data.flags || []).length === 0) {
-      setStatus("QA: no flags raised.", "success");
+    // Ignore a stale response if the report changed while QA was running.
+    if ((($("report-raw")?.value || "").trim()) !== text) return [];
+    const flags = data.flags || [];
+    _qaCheckedReport = text;
+    if (flags.length === 0 && quiet) {
+      _clearQaPanel();
     } else {
-      setStatus(`QA: ${data.flags.length} flag${data.flags.length === 1 ? "" : "s"} raised.`, "active");
+      _renderQaPanel(flags);
     }
+    if (flags.length === 0) {
+      if (!quiet) setStatus("QA: no flags raised.", "success");
+    } else {
+      setStatus(`QA: ${flags.length} flag${flags.length === 1 ? "" : "s"} raised.`, "active");
+    }
+    return flags;
   } catch (err) {
-    setStatus(`QA check failed: ${err.message}`, "error");
+    if (!quiet) setStatus(`QA check failed: ${err.message}`, "error");
+    return null;
   }
 }
 
@@ -2095,6 +2181,7 @@ async function _onFeedbackStop() {
     setReport(data.report);
     _resetFeedbackUI();
     setStatus("Report updated.", "success");
+    runQaCheck({ quiet: true });
   } catch (err) {
     _resetFeedbackUI();
     setStatus(`Feedback error: ${err.message}`, "error");
@@ -2434,7 +2521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Editing the report after a copy re-arms the unsaved-work guard.
   const _reportRaw = $("report-raw");
-  if (_reportRaw) _reportRaw.addEventListener("input", () => { state.reportCopied = false; });
+  if (_reportRaw) _reportRaw.addEventListener("input", _markReportChanged);
 
   // Warn before navigating away from an uncopied, unsigned report or a
   // non-empty transcription — closing/refreshing the tab otherwise loses it.
@@ -2639,6 +2726,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const btn = $("btn-audit");
     if (btn) btn.disabled = !($("accession").value || "").trim();
   });
+  if ($("body-part")) $("body-part").addEventListener("input", () => {
+    _qaCheckedReport = "";
+    _clearQaPanel();
+  });
 
   // HL7 worklist
   if ($("worklist-select")) {
@@ -2701,6 +2792,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     tx.addEventListener("focus", () => { _txSnapshot = tx.value; });
 
     tx.addEventListener("input", () => {
+      // Pasted or typed dictation should be format-ready just like speech-to-
+      // text output. Previously the Re-format button stayed disabled unless a
+      // recording session had changed the UI mode first.
+      if (!state.isRecording && !($("report-raw")?.value || "").trim()) {
+        setUI(tx.value.trim() ? "transcribed" : "idle");
+      }
       clearTimeout(_txDebounceTimer);
       _txDebounceTimer = setTimeout(async () => {
         const current = tx.value;
@@ -2759,11 +2856,45 @@ document.addEventListener("DOMContentLoaded", async () => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); tmplSave(); }
       return;
     }
-    // Alt+N — Next Case. Fires even while focused in the report/transcription
-    // fields, since the whole point is to clear them quickly.
-    if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === "n" || e.key === "N")) {
+    if (e.repeat) return;
+    const commandKey = e.ctrlKey || e.metaKey;
+
+    // Ctrl/Cmd+Shift+C — copy the current report. This shortcut has long been
+    // advertised in the button tooltip; wire it for a truly keyboard-first loop.
+    if (commandKey && e.shiftKey && e.code === "KeyC") {
+      if (!($("report-raw")?.value || "").trim()) return;
+      e.preventDefault();
+      copyReport();
+      return;
+    }
+
+    // Ctrl/Cmd+Enter — generate or regenerate from pasted/edited dictation.
+    if (commandKey && !e.shiftKey && e.key === "Enter") {
+      if (state.isRecording || !($("transcription")?.value || "").trim()) return;
+      e.preventDefault();
+      formatReport();
+      return;
+    }
+
+    // Alt/Option+R toggles Record/Pause/Resume; Alt/Option+S stops.
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === "KeyR") {
+      e.preventDefault();
+      onRecordClick();
+      return;
+    }
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === "KeyS") {
+      if (!state.isRecording) return;
+      e.preventDefault();
+      stopRecording();
+      return;
+    }
+
+    // Alt/Option+N — Next Case. Fires even while focused in the report or
+    // transcription field, since the whole point is to transition quickly.
+    if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === "KeyN") {
       e.preventDefault();
       nextCase();
+      return;
     }
   });
 
