@@ -121,8 +121,7 @@ deployment and partner sign-on, not new code.
 
 - **Fly.io** — auto-deploy on push to `main` via GitHub Actions; persistent
   volume for users.db + session secret; running at
-  `https://radspeed.com.au` (fly app `voxrad-v-hkvq`, region `syd`). The former
-  `https://dictation.markbekhit.com` hostname remains as a transition alias.
+  `https://radspeed.com.au` (fly app `voxrad-v-hkvq`, region `syd`).
 - **Docker** — `docker compose up -d` for self-hosted.
 
 ### Automated quality coverage

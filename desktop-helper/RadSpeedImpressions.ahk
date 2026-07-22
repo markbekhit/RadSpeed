@@ -49,6 +49,12 @@ LoadSettings() {
             Settings[key] := val
         }
     }
+    ; The former production hostname no longer resolves. Migrate existing
+    ; installs while leaving custom/self-hosted URLs untouched.
+    if (Settings["ApiUrl"] = "https://dictation.markbekhit.com/api/impressions/text") {
+        Settings["ApiUrl"] := "https://radspeed.com.au/api/impressions/text"
+        IniWrite(Settings["ApiUrl"], SettingsFile, "RadSpeed", "ApiUrl")
+    }
 }
 
 WriteDefaultSettings() {

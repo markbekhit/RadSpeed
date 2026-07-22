@@ -8,6 +8,8 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
 const FILE_NAME: &str = "config.json";
+const DEFAULT_API_BASE: &str = "https://radspeed.com.au";
+const LEGACY_API_BASE: &str = "https://dictation.markbekhit.com";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Settings {
@@ -42,7 +44,14 @@ pub struct Settings {
 }
 
 fn default_api_base() -> String {
-    "https://radspeed.com.au".to_string()
+    DEFAULT_API_BASE.to_string()
+}
+
+fn migrate_legacy_api_base(mut settings: Settings) -> Settings {
+    if settings.api_base.trim_end_matches('/') == LEGACY_API_BASE {
+        settings.api_base = DEFAULT_API_BASE.to_string();
+    }
+    settings
 }
 fn default_hotkey() -> String {
     "ctrl+i".to_string()
@@ -92,10 +101,12 @@ pub fn load(app: &AppHandle) -> Settings {
         return Settings::default();
     }
     match std::fs::read_to_string(&path) {
-        Ok(text) => serde_json::from_str::<Settings>(&text).unwrap_or_else(|e| {
-            log::warn!("settings: parse error ({e}), using defaults");
-            Settings::default()
-        }),
+        Ok(text) => migrate_legacy_api_base(
+            serde_json::from_str::<Settings>(&text).unwrap_or_else(|e| {
+                log::warn!("settings: parse error ({e}), using defaults");
+                Settings::default()
+            }),
+        ),
         Err(e) => {
             log::warn!("settings: read error ({e}), using defaults");
             Settings::default()
@@ -121,12 +132,28 @@ mod tests {
     #[test]
     fn defaults_are_safe() {
         let s = Settings::default();
-        assert_eq!(s.api_base, "https://radspeed.com.au");
+        assert_eq!(s.api_base, DEFAULT_API_BASE);
         assert_eq!(s.hotkey, "ctrl+i");
         assert!(s.use_guidelines);
         assert_eq!(s.paste_mode, "goto_impression");
         assert_eq!(s.jump_keys, "tab");
         assert!(s.bearer_token.is_empty());
+    }
+
+    #[test]
+    fn legacy_cloud_url_is_migrated() {
+        for legacy in [LEGACY_API_BASE, "https://dictation.markbekhit.com/"] {
+            let mut settings = Settings::default();
+            settings.api_base = legacy.to_string();
+            assert_eq!(migrate_legacy_api_base(settings).api_base, DEFAULT_API_BASE);
+        }
+
+        let mut custom = Settings::default();
+        custom.api_base = "https://self-hosted.example".to_string();
+        assert_eq!(
+            migrate_legacy_api_base(custom).api_base,
+            "https://self-hosted.example"
+        );
     }
 
     #[test]
