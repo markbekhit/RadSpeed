@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import AsyncIterator, List
+from urllib.parse import quote
 
 import websockets
 import websockets.exceptions
@@ -9,12 +10,12 @@ from .base import StreamingSTTProvider, TranscriptEvent
 
 logger = logging.getLogger(__name__)
 
-# Max keywords Deepgram accepts in the URL
+# Max keyterms Deepgram accepts in the URL
 _MAX_KEYWORDS = 100
 
 
 class DeepgramProvider(StreamingSTTProvider):
-    """Deepgram Nova-2 real-time streaming STT provider.
+    """Deepgram Nova-3 Medical real-time streaming STT provider.
 
     Uses the Deepgram WebSocket live transcription API.
     Sends raw linear16 PCM audio; receives JSON transcript events.
@@ -28,12 +29,13 @@ class DeepgramProvider(StreamingSTTProvider):
         params = (
             f"encoding=linear16&sample_rate={sample_rate}&channels=1"
             f"&punctuate=true&interim_results=true"
-            f"&endpointing=800&model=nova-2-medical&smart_format=true"
+            f"&endpointing=800&model=nova-3-medical&smart_format=true"
         )
-        # Keyword boosting — each term submitted as ?keywords=term:boost
+        # Keyterm prompting — Nova-3 replaced the Nova-2 ?keywords=term:boost
+        # syntax with ?keyterm=term (no boost weights).
         if keywords:
             kw_str = "&".join(
-                f"keywords={k.replace(' ', '%20')}:2"
+                f"keyterm={quote(k)}"
                 for k in keywords[:_MAX_KEYWORDS]
             )
             params += "&" + kw_str

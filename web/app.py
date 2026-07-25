@@ -535,7 +535,9 @@ def _build_keyword_list(template_name: Optional[str], user: Optional[dict] = Non
 
     Prefers the [correct spellings] block from the selected template;
     falls back to extracting terms from _RADIOLOGY_PROMPT.
-    User-learned vocab terms are appended at the end.
+    User-learned vocab terms come first: both streaming providers cap
+    keyterms at 100, so terms the user explicitly corrected must not be
+    the ones truncated away.
     """
     text = _RADIOLOGY_PROMPT
     if template_name:
@@ -546,13 +548,14 @@ def _build_keyword_list(template_name: Optional[str], user: Optional[dict] = Non
         if match:
             text = match.group(1).strip()
     parts = re.split(r"[,\n.]+", text)
-    keywords = [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
+    template_terms = [p.strip() for p in parts if p.strip() and len(p.strip()) > 2]
+    keywords = []
     if user:
-        user_vocab = _load_user_vocab(user)
-        for term in user_vocab:
-            if term not in keywords:
-                keywords.append(term)
-    return keywords[:200]
+        keywords = list(_load_user_vocab(user))
+    for term in template_terms:
+        if term not in keywords:
+            keywords.append(term)
+    return keywords[:100]
 
 
 # Mount mock OpenAI-compatible routes when running without real API keys.

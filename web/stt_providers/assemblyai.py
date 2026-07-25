@@ -10,13 +10,15 @@ from .base import StreamingSTTProvider, TranscriptEvent
 
 logger = logging.getLogger(__name__)
 
-_MAX_KEYWORDS = 200
+# keyterms_prompt accepts at most 100 terms of up to 50 characters each.
+_MAX_KEYWORDS = 100
+_MAX_KEYTERM_CHARS = 50
 
 
 class AssemblyAIProvider(StreamingSTTProvider):
-    """AssemblyAI Universal-2 real-time streaming STT provider.
+    """AssemblyAI Universal-3.5 Pro real-time streaming STT provider.
 
-    Uses the AssemblyAI WebSocket streaming API.
+    Uses the AssemblyAI WebSocket streaming API (v3).
     Sends raw linear16 PCM audio as binary; receives JSON transcript events.
     """
 
@@ -25,19 +27,23 @@ class AssemblyAIProvider(StreamingSTTProvider):
         self._closed = False
 
     async def connect(self, api_key: str, sample_rate: int, keywords: List[str]) -> None:
-        # AssemblyAI Universal-3 Real-Time Pro with medical domain optimisation.
-        # Valid speech_model values (streaming v3): universal-streaming-english,
-        # universal-streaming-multilingual, u3-rt-pro, whisper-rt, u3-pro (deprecated)
+        # AssemblyAI Universal-3.5 Pro with medical domain optimisation.
+        # Valid speech_model values (streaming v3): universal-3-5-pro,
+        # universal-streaming-english, universal-streaming-multilingual
         url = (
             f"wss://streaming.assemblyai.com/v3/ws"
-            f"?sample_rate_hertz={sample_rate}"
+            f"?sample_rate={sample_rate}"
             f"&encoding=pcm_s16le"
-            f"&speech_model=u3-rt-pro"
+            f"&speech_model=universal-3-5-pro"
             f"&domain=medical-v1"
         )
         if keywords:
-            word_boost = ",".join(k for k in keywords[:_MAX_KEYWORDS])
-            url += f"&word_boost={quote(word_boost)}&boost_param=high"
+            # v3 replaced word_boost with keyterms_prompt: a JSON-encoded
+            # array passed in the query string.
+            keyterms = [
+                k[:_MAX_KEYTERM_CHARS] for k in keywords[:_MAX_KEYWORDS]
+            ]
+            url += f"&keyterms_prompt={quote(json.dumps(keyterms))}"
 
         logger.info("[assemblyai] connecting to %s", url[:120])
         self._ws = await websockets.connect(
