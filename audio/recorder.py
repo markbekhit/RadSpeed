@@ -25,6 +25,11 @@ start_time = None
 recording_thread = None
 pause_event = threading.Event()
 
+# `paused` and `audio_data` are shared by the UI and recording threads.
+# Keep compound reads/writes behind one lock so stopping or pausing cannot race
+# with a callback appending a final chunk.
+_state_lock = threading.Lock()
+
 # `latest_audio_chunk` is written by the audio callback thread and read by
 # the waveform-visualiser callback on the main thread.  A lock prevents torn
 # reads/writes of the numpy array reference.
@@ -32,9 +37,45 @@ _chunk_lock = threading.Lock()
 latest_audio_chunk = None
 
 
+def _reset_recording_state():
+    """Reset mutable recorder state before a new capture."""
+    global paused, audio_data
+    with _state_lock:
+        paused = False
+        audio_data = []
+
+
+def _set_paused(value):
+    """Atomically update the pause flag."""
+    global paused
+    with _state_lock:
+        paused = bool(value)
+
+
+def _is_paused():
+    """Return the pause flag under the recorder-state lock."""
+    with _state_lock:
+        return paused
+
+
+def _append_audio_chunk(data):
+    """Append a chunk only while the capture is active and not paused."""
+    with _state_lock:
+        if not _recording_event.is_set() or paused:
+            return False
+        audio_data.append(data)
+        return True
+
+
+def _audio_snapshot():
+    """Return a stable shallow copy for post-processing."""
+    with _state_lock:
+        return list(audio_data)
+
+
 def record_audio():
     """Starts audio recording with encryption."""
-    global recording_thread, audio_data, paused
+    global recording_thread
 
     # Check for API keys
     if config.multimodal_pref and config.MM_API_KEY is None:
@@ -44,9 +85,8 @@ def record_audio():
         update_status("Please Save/Unlock your Transcription and Text Model API keys in Settings.")
         return
 
-    _recording_event.set()
-    paused = False
-    audio_data = []
+    _reset_recording_state()
+    pause_event.set()
     config.current_encryption_key = None
     config.current_encrypted_mp3_path = None
 
@@ -67,6 +107,7 @@ def record_audio():
         update_status("Selected audio device not found. Please check settings.")
         return
 
+    _recording_event.set()
     recording_thread = threading.Thread(target=background_recording, args=(device_index,), daemon=True)
     recording_thread.start()
     update_status("Recording 🔴")
@@ -74,10 +115,9 @@ def record_audio():
 
 
 def pause_audio():
-    global paused, pause_event
     from ui.main_window import record_button, stop_button, pause_button, canvas
-    if not paused:
-        paused = True
+    if not _is_paused():
+        _set_paused(True)
         pause_event.clear()
         pause_button.config(text="Resume")
         record_button['state'] = 'disabled'
@@ -86,7 +126,7 @@ def pause_audio():
         stop_waveform_simulation(canvas)
         draw_straight_line(canvas)
     else:
-        paused = False
+        _set_paused(False)
         pause_event.set()
         pause_button.config(text="Pause")
         record_button['state'] = 'disabled'
@@ -96,7 +136,7 @@ def pause_audio():
 
 
 def background_recording(device_index=None):
-    global audio_data, start_time, paused, latest_audio_chunk
+    global start_time, latest_audio_chunk
     fs = 44100
     start_time = time.time()
 
@@ -110,12 +150,14 @@ def background_recording(device_index=None):
             logger.info("Recording started.")
             loop_counter = 0
             while _recording_event.is_set():
-                if paused:
-                    pause_event.wait()
+                pause_event.wait()
+                if not _recording_event.is_set():
+                    break
                 data, overflowed = stream.read(fs)
                 if overflowed:
                     logger.warning("Audio buffer overflowed.")
-                audio_data.append(data)
+                if not _append_audio_chunk(data):
+                    continue
                 with _chunk_lock:
                     latest_audio_chunk = data
                 logger.debug("Chunk %d: shape=%s, overflowed=%s", loop_counter, data.shape, overflowed)
@@ -174,7 +216,7 @@ def is_silent_recording(wav_data, threshold=_SILENCE_PEAK_THRESHOLD):
 
 
 def complete_stop_recording():
-    global audio_data, start_time
+    global start_time
     logger.debug("complete_stop_recording called.")
     sd.stop()
     from ui.main_window import record_button, stop_button, canvas
@@ -183,8 +225,9 @@ def complete_stop_recording():
     draw_straight_line(canvas)
 
     fs = 44100
-    if audio_data:
-        wav_data = np.concatenate(audio_data, axis=0)
+    chunks = _audio_snapshot()
+    if chunks:
+        wav_data = np.concatenate(chunks, axis=0)
 
         if is_silent_recording(wav_data):
             logger.error("Recording contained only silence — likely denied mic permission or muted input.")

@@ -126,6 +126,37 @@ class TestSilentRecordingDetection(unittest.TestCase):
         self.assertTrue(any("microphone permission" in m.lower() for m in messages),
                         f"no mic-permission message in {messages}")
 
+    def test_recorder_state_blocks_chunks_while_paused_or_stopped(self):
+        chunk = np.ones((16, 1), dtype=np.float32)
+        recorder._reset_recording_state()
+        recorder._recording_event.set()
+        try:
+            self.assertTrue(recorder._append_audio_chunk(chunk))
+            recorder._set_paused(True)
+            self.assertFalse(recorder._append_audio_chunk(chunk))
+            recorder._set_paused(False)
+            recorder._recording_event.clear()
+            self.assertFalse(recorder._append_audio_chunk(chunk))
+            self.assertEqual(len(recorder._audio_snapshot()), 1)
+        finally:
+            recorder._recording_event.clear()
+            recorder._set_paused(False)
+
+    def test_audio_snapshot_is_stable_after_future_appends(self):
+        first = np.ones((4, 1), dtype=np.float32)
+        second = np.ones((4, 1), dtype=np.float32) * 2
+        recorder._reset_recording_state()
+        recorder._recording_event.set()
+        try:
+            recorder._append_audio_chunk(first)
+            snapshot = recorder._audio_snapshot()
+            recorder._append_audio_chunk(second)
+            self.assertEqual(len(snapshot), 1)
+            self.assertEqual(len(recorder._audio_snapshot()), 2)
+        finally:
+            recorder._recording_event.clear()
+
+
 
 # ---------------------------------------------------------------------------
 # 2. Stale API keys — text model and Gemini
