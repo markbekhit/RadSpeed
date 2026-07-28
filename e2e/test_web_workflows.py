@@ -39,9 +39,24 @@ def test_public_impressions_generation_and_validation(page: Page, base_url: str)
     assert errors == []
 
 
-def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
+def test_public_landing_page_keeps_impressions_and_sign_in_visible(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(base_url)
+    expect(
+        page.get_by_role("heading", name="Radiology reporting built around the way you dictate.")
+    ).to_be_visible()
+    expect(page.get_by_role("link", name="Try Impressions", exact=True).first).to_have_attribute(
+        "href", "/impressions"
+    )
+    expect(page.get_by_role("link", name="Sign in", exact=True).first).to_have_attribute(
+        "href", "/app"
+    )
+    assert errors == []
+
+
+def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.goto(f"{base_url}/app")
     expect(page.get_by_role("heading", name="RadSpeed")).to_be_visible()
     expect(page.locator("#template-select option")).not_to_have_count(1)
 
@@ -71,7 +86,7 @@ def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: st
         if request.url.endswith("/api/qa-check")
         else None,
     )
-    page.goto(base_url)
+    page.goto(f"{base_url}/app")
 
     expect(page.locator(".shortcut-strip")).to_contain_text("Ctrl/Cmd+Enter")
     page.locator("#transcription").fill(
@@ -104,7 +119,7 @@ def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: st
 
 def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
     errors = _console_errors(page)
-    page.goto(base_url)
+    page.goto(f"{base_url}/app")
     page.locator("#body-part").fill("Right knee")
     page.evaluate(
         """() => {
@@ -121,7 +136,7 @@ def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
 
 def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
     errors = _console_errors(page)
-    page.goto(base_url)
+    page.goto(f"{base_url}/app")
     response = page.request.post(
         f"{base_url}/api/worklist/push",
         headers={"X-VoxRad-Agent-Token": "synthetic-mwl-test-token"},
@@ -189,7 +204,7 @@ def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
 
 def test_followup_prompt_and_manual_score_insertion(page: Page, base_url: str):
     errors = _console_errors(page)
-    page.goto(base_url)
+    page.goto(f"{base_url}/app")
     page.evaluate(
         """() => {
           setReport("**IMPRESSION:**\\nIndeterminate pulmonary nodule. Follow-up CT chest in 12 months is recommended.");
@@ -223,12 +238,24 @@ def test_mobile_impressions_has_no_horizontal_overflow(page: Page, base_url: str
     assert dimensions["scrollWidth"] <= dimensions["clientWidth"]
 
 
+def test_mobile_landing_has_no_horizontal_overflow(page: Page, base_url: str):
+    page.set_viewport_size({"width": 375, "height": 812})
+    page.goto(base_url)
+    expect(
+        page.get_by_role("heading", name="Radiology reporting built around the way you dictate.")
+    ).to_be_visible()
+    dimensions = page.evaluate(
+        "() => ({scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth})"
+    )
+    assert dimensions["scrollWidth"] <= dimensions["clientWidth"]
+
+
 def test_main_app_rejects_bad_basic_auth(browser: Browser, base_url: str):
     context = browser.new_context(
         http_credentials={"username": "voxrad", "password": "wrong-password"}
     )
     try:
-        response = context.request.get(base_url)
+        response = context.request.get(f"{base_url}/app")
         assert response.status == 401
         assert response.json()["detail"] == "Incorrect password"
     finally:

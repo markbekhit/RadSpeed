@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="RadSpeed is practical radiology reporting software for dictation, structured reports, personal style refinement, advisory QA and auditable sign-off." />
+  <meta name="theme-color" content="#050a12" />
+  <link rel="canonical" href="https://radspeed.com.au/" />
+  <meta property="og:title" content="RadSpeed · Radiology reporting that works the way you dictate" />
+  <meta property="og:description" content="Dictate, structure, review and sign off radiology reports in one focused workflow." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/" />
+  <title>RadSpeed · Radiology reporting that works the way you dictate</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/landing.css?v={{ static_version }}" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="/" aria-label="RadSpeed home">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </span>
+        <span>RadSpeed</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="#workflow">Workflow</a>
+        <a href="#capabilities">Capabilities</a>
+        <a href="#governance">Governance</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="text-link" href="/impressions">Try Impressions</a>
+        <a class="button button-small button-outline" href="/app">Sign in</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero">
+      <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span>Built for radiologists</p>
+          <h1>Radiology reporting built around the way you dictate.</h1>
+          <p class="hero-lede">
+            Move from voice to a structured, reviewable report without losing your phrasing,
+            your preferred format or your place in the worklist.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="/impressions">
+              Try Impressions
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg>
+            </a>
+            {% if google_enabled %}
+            <a class="button button-secondary" href="/auth/google">
+              <svg class="provider-icon" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.77 24c0-1.6.27-3.14.76-4.59l-7.98-6.19A24 24 0 0 0 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+              Sign in with Google
+            </a>
+            {% elif microsoft_enabled %}
+            <a class="button button-secondary" href="/auth/microsoft">Sign in with Microsoft</a>
+            {% else %}
+            <a class="button button-secondary" href="/app">Open RadSpeed</a>
+            {% endif %}
+          </div>
+          <p class="hero-note">Impressions is free to try without an account.</p>
+        </div>
+
+        <div class="workstation" aria-label="Illustration of the RadSpeed reporting workflow">
+          <div class="workstation-topbar">
+            <span class="workstation-brand">RadSpeed</span>
+            <span class="status-pill"><i></i> Dictation ready</span>
+          </div>
+          <div class="workstation-body">
+            <div class="case-rail">
+              <p class="ui-label">Current study</p>
+              <strong>MR Knee</strong>
+              <span>Right · Synthetic case</span>
+              <div class="rail-rule"></div>
+              <p class="ui-label">Template</p>
+              <span class="template-chip">MRI Knee</span>
+              <p class="ui-label rail-spaced">Prior</p>
+              <span>None selected</span>
+            </div>
+            <div class="report-pane">
+              <div class="report-toolbar">
+                <div class="record-state">
+                  <span class="record-dot"></span>
+                  <span>0:38</span>
+                  <span class="waveform" aria-hidden="true">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                  </span>
+                </div>
+                <span class="preliminary">Preliminary</span>
+              </div>
+              <div class="report-content">
+                <p class="ui-label">Findings</p>
+                <p>Medial and lateral menisci are intact. Cruciate and collateral ligaments are intact.</p>
+                <p>Small joint effusion. No focal chondral defect.</p>
+                <p class="ui-label report-section">Impression</p>
+                <p class="highlight-line"><span>1</span> Small knee joint effusion.</p>
+                <p class="highlight-line"><span>2</span> No meniscal or ligament tear.</p>
+              </div>
+              <div class="qa-bar">
+                <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10 3 3 7-7"/></svg> Advisory QA complete</span>
+                <span>Review &amp; sign off <b>→</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof-strip" aria-label="RadSpeed capabilities">
+      <div><strong>40</strong><span>bundled report templates</span></div>
+      <div><strong>Your style</strong><span>spelling, structure and phrasing</span></div>
+      <div><strong>Browser + Windows</strong><span>focused reporting workflow</span></div>
+      <div><strong>Auditable</strong><span>sign-off and amendments</span></div>
+    </section>
+
+    <section class="section workflow-section" id="workflow">
+      <div class="section-intro">
+        <p class="eyebrow"><span></span>One reporting loop</p>
+        <h2>Dictate. Refine. Sign off.</h2>
+        <p>RadSpeed keeps the clinical decision with the radiologist and removes avoidable friction around it.</p>
+      </div>
+
+      <ol class="workflow-list">
+        <li>
+          <span class="step-number">01</span>
+          <div>
+            <h3>Dictate naturally</h3>
+            <p>Record in the browser or use the Windows companion. RadSpeed supports provider-based speech transcription and learns vocabulary from your corrections.</p>
+          </div>
+          <span class="step-signal" aria-hidden="true"></span>
+        </li>
+        <li>
+          <span class="step-number">02</span>
+          <div>
+            <h3>Shape the report</h3>
+            <p>Generate into one of 40 bundled templates, or use your own. Personal settings control spelling, measurements, laterality and impression format.</p>
+          </div>
+          <span class="step-signal" aria-hidden="true"></span>
+        </li>
+        <li>
+          <span class="step-number">03</span>
+          <div>
+            <h3>Review with context</h3>
+            <p>Check patient details, a deliberately selected prior and advisory QA before copying or signing off the report.</p>
+          </div>
+          <span class="step-signal" aria-hidden="true"></span>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section capabilities-section" id="capabilities">
+      <div class="section-intro wide">
+        <p class="eyebrow"><span></span>Built for the reporting room</p>
+        <h2>Practical tools, kept in one place.</h2>
+      </div>
+
+      <div class="capability-row">
+        <div class="capability-index">A</div>
+        <div class="capability-copy">
+          <h3>Reports that follow your conventions</h3>
+          <p>Choose the template and fine-tune the result with granular preferences. Voice refinement and correction learning help RadSpeed adapt without silently changing your report.</p>
+        </div>
+        <div class="capability-tags" aria-label="Reporting features">
+          <span>Custom templates</span><span>Vocabulary</span><span>Style preferences</span>
+        </div>
+      </div>
+
+      <div class="capability-row">
+        <div class="capability-index">B</div>
+        <div class="capability-copy">
+          <h3>Context without automatic carry-forward</h3>
+          <p>Load worklist details and choose a prior when it matters. A prior is included only after deliberate selection, with safeguards against copying old findings into the new report.</p>
+        </div>
+        <div class="capability-tags" aria-label="Context features">
+          <span>Patient banner</span><span>Selected priors</span><span>Next case</span>
+        </div>
+      </div>
+
+      <div class="capability-row">
+        <div class="capability-index">C</div>
+        <div class="capability-copy">
+          <h3>A bridge into existing workflows</h3>
+          <p>Use smart paste and keyboard shortcuts today. HL7, DICOM SR, worklist and FHIR foundations are available for configured practice integrations.</p>
+        </div>
+        <div class="capability-tags" aria-label="Workflow features">
+          <span>Smart paste</span><span>Windows companion</span><span>Integration-ready</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section impressions-section">
+      <div class="impressions-copy">
+        <p class="eyebrow"><span></span>A useful first step</p>
+        <h2>Findings in.<br />Impression out.</h2>
+        <p>
+          Paste findings and generate a concise, guideline-aware impression.
+          Adjust style preferences in your browser and try it without creating an account.
+        </p>
+        <a class="button button-primary" href="/impressions">
+          Open RadSpeed Impressions
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg>
+        </a>
+        <small>Generated text requires radiologist review before clinical use.</small>
+      </div>
+
+      <div class="impressions-demo" aria-label="Synthetic example of the RadSpeed Impressions tool">
+        <div class="demo-column">
+          <span class="ui-label">Findings</span>
+          <p>There is a 14 mm spiculated right upper lobe pulmonary nodule. No mediastinal lymphadenopathy or pleural effusion.</p>
+        </div>
+        <div class="demo-arrow" aria-hidden="true">→</div>
+        <div class="demo-column result">
+          <span class="ui-label">Impression</span>
+          <p>Suspicious 14 mm right upper lobe pulmonary nodule. Further evaluation is recommended.</p>
+          <span class="review-label"><i></i> Ready for review</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section governance-section" id="governance">
+      <div class="governance-heading">
+        <p class="eyebrow"><span></span>Clinical governance</p>
+        <h2>Assistance should stay visible and reviewable.</h2>
+      </div>
+      <div class="governance-points">
+        <article>
+          <span>01</span>
+          <h3>Advisory QA</h3>
+          <p>Deterministic checks can flag laterality, gender, units, anatomy and modality mismatches for review.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>Versioned reports</h3>
+          <p>Sign-off, amendments and a tamper-evident event history preserve the reporting trail.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Radiologist confirmed</h3>
+          <p>Follow-up tracking and standardised assessment wording are deliberately confirmed by the radiologist.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div>
+        <p class="eyebrow"><span></span>Start where it is useful</p>
+        <h2>Try the impression tool, or return to your reporting desk.</h2>
+      </div>
+      <div class="final-actions">
+        <a class="button button-primary" href="/impressions">Try Impressions</a>
+        <a class="button button-secondary" href="/app">Sign in to RadSpeed</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </span>
+      <span>RadSpeed</span>
+    </a>
+    <p>Practical radiology reporting software for AU/NZ workflows.</p>
+    <nav aria-label="Footer navigation">
+      <a href="/impressions">Impressions</a>
+      <a href="/app">Sign in</a>
+    </nav>
+  </footer>
+</body>
+</html>

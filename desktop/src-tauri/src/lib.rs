@@ -133,8 +133,9 @@ pub fn run() {
             // Build the full-app window (loads the RadSpeed web app in WebView2).
             // Hidden until the user clicks "Open RadSpeed" in the tray menu.
             let api_base = settings::load(app.handle()).api_base;
-            let app_url = url::Url::parse(&api_base)
+            let mut app_url = url::Url::parse(&api_base)
                 .unwrap_or_else(|_| url::Url::parse("https://radspeed.com.au").unwrap());
+            app_url.set_path("/app");
             let app_window = tauri::WebviewWindowBuilder::new(
                 app,
                 "app",

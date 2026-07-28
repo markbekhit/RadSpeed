@@ -60,6 +60,7 @@ from web.auth_oauth import (
     get_user_style,
     google_auth_url,
     google_enabled,
+    get_session_user,
     init_db,
     microsoft_auth_url,
     microsoft_enabled,
@@ -567,6 +568,8 @@ if os.environ.get("VOXRAD_MOCK_MODE"):
 
 @app.get("/login")
 def login_page(request: Request):
+    if oauth_enabled() and get_session_user(request):
+        return RedirectResponse("/app")
     return _jinja.TemplateResponse(
         request,
         "login.html",
@@ -606,7 +609,7 @@ def auth_google_callback(request: Request, code: str = "", state: str = "", erro
     db_user = get_or_create_user(info["email"], info["name"], "google")
     set_session_user(request, db_user)
     log_event(user_id=db_user.get("id"), event_type="login", metadata={"provider": "google"})
-    return RedirectResponse("/")
+    return RedirectResponse("/app")
 
 
 @app.get("/auth/microsoft")
@@ -635,16 +638,32 @@ def auth_microsoft_callback(request: Request, code: str = "", state: str = "", e
     db_user = get_or_create_user(info["email"], info["name"], "microsoft")
     set_session_user(request, db_user)
     log_event(user_id=db_user.get("id"), event_type="login", metadata={"provider": "microsoft"})
-    return RedirectResponse("/")
+    return RedirectResponse("/app")
 
 
 @app.get("/logout")
 def logout(request: Request):
     clear_session(request)
-    return RedirectResponse("/login")
+    return RedirectResponse("/")
 
 
 @app.get("/")
+def landing_page(request: Request):
+    if oauth_enabled() and get_session_user(request):
+        return RedirectResponse("/app")
+    return _jinja.TemplateResponse(
+        request,
+        "landing.html",
+        {
+            "request": request,
+            "google_enabled": google_enabled(),
+            "microsoft_enabled": microsoft_enabled(),
+            "static_version": _STATIC_VERSION,
+        },
+    )
+
+
+@app.get("/app")
 def index(request: Request, user: dict = Depends(_verify_auth)):
     _username = _get_username(user)
     _style = _user_style(user) or {}
