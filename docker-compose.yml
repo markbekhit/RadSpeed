@@ -19,6 +19,10 @@ services:
       VOXRAD_TRANSCRIPTION_API_KEY: "${VOXRAD_TRANSCRIPTION_API_KEY:-}"
       VOXRAD_TEXT_API_KEY: "${VOXRAD_TEXT_API_KEY:-}"
       VOXRAD_MM_API_KEY: "${VOXRAD_MM_API_KEY:-}"
+      VOXRAD_TRANSCRIPTION_BASE_URL: "${VOXRAD_TRANSCRIPTION_BASE_URL:-https://api.groq.com/openai/v1}"
+      VOXRAD_TRANSCRIPTION_MODEL: "${VOXRAD_TRANSCRIPTION_MODEL:-whisper-large-v3-turbo}"
+      VOXRAD_TEXT_BASE_URL: "${VOXRAD_TEXT_BASE_URL:-https://api.openai.com/v1}"
+      VOXRAD_TEXT_MODEL: "${VOXRAD_TEXT_MODEL:-gpt-5.6-sol}"
 
       # ── Encrypted-key passwords (alternative to plaintext keys above) ──────
       # Used only when encrypted key files exist in /root/.voxrad.

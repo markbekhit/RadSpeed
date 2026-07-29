@@ -2,6 +2,7 @@ import logging
 from openai import OpenAI, AuthenticationError
 from ui.utils import update_status
 from config.config import config
+from llm.model_compat import completion_options
 import os
 import json
 import re
@@ -206,7 +207,7 @@ def _select_template(transcript: str, attempt: int = 1) -> Optional[str]:
         response = client.chat.completions.create(
             model=config.SELECTED_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature = 0.1
+            **completion_options(config.SELECTED_MODEL, temperature=0.1),
             )
         logger.debug(f"Attempt {attempt}: JSON fallback response received: {response}")
         if response.choices and response.choices[0].message.content:
@@ -576,7 +577,7 @@ def _create_structured_report(
                 {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _source_prompt(source_kind) + _build_style_preamble(style) + _spellings_lexicon_block(template_content) + f"\nThis is the report template:\n{template_for_llm}\n"},
                 {"role": "user", "content": _source_user_message(transcript, source_kind)}
             ],
-            temperature=0.1
+            **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
         if response.choices and response.choices[0].message.content:
             return capitalize_after_colon(response.choices[0].message.content)
@@ -668,7 +669,7 @@ def _analyze_recommendation_needs(structured_report: str, attempt: int = 1) -> T
         response = client.chat.completions.create(
             model=config.SELECTED_MODEL,
             messages=[{"role": "user", "content": prompt}],
-             temperature = 0.1
+            **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
 
         if response.choices and response.choices[0].message.content:
@@ -758,7 +759,7 @@ def _generate_recommendations(structured_report: str, guides: List[str]) -> Opti
                 "role": "user",
                 "content": structured_report
             }],
-            temperature=0.1
+            **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
         if response.choices and response.choices[0].message.content:
             return response.choices[0].message.content
@@ -929,7 +930,7 @@ def _stream_create_structured_report(
             {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _source_prompt(source_kind) + _build_style_preamble(style) + f"\nThis is the report template:\n{template_for_llm}\n"},
             {"role": "user", "content": _source_user_message(transcript, source_kind)}
         ],
-        temperature=0.1,
+        **completion_options(config.SELECTED_MODEL, temperature=0.1),
     )
     in_think = False
     think_buf = ""
@@ -1045,7 +1046,7 @@ def apply_report_feedback(report: str, feedback: str, selected_text: str = "") -
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=0.1,
+            **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
         return capitalize_after_colon(resp.choices[0].message.content.strip())
     except Exception as e:

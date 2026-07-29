@@ -14,6 +14,7 @@ from llm.worksheet import (
     extract_worksheet_findings,
     validate_worksheet_images,
 )
+from config.config import config
 
 
 def _completion(text: str):
@@ -90,6 +91,26 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
             self.assertEqual(
                 extract_worksheet_findings(image), "NO_EXTRACTABLE_FINDINGS"
             )
+
+    def test_gpt5_worksheet_request_uses_supported_completion_parameters(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            "Right kidney: 10.8 cm."
+        )
+        image = validate_worksheet_images([b"\x89PNG\r\n\x1a\nsynthetic"])
+
+        old_model = config.SELECTED_MODEL
+        config.SELECTED_MODEL = "gpt-5.6-sol"
+        try:
+            with patch("llm.worksheet.OpenAI", return_value=client):
+                extract_worksheet_findings(image)
+        finally:
+            config.SELECTED_MODEL = old_model
+
+        request = client.chat.completions.create.call_args.kwargs
+        self.assertNotIn("temperature", request)
+        self.assertNotIn("max_tokens", request)
+        self.assertEqual(request["max_completion_tokens"], 3000)
 
 
 class WorksheetFormattingSafetyTests(unittest.TestCase):

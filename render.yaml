@@ -9,6 +9,14 @@ services:
         generateValue: true
       - key: VOXRAD_WORKING_DIR
         value: /data/working
+      - key: VOXRAD_TRANSCRIPTION_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: VOXRAD_TRANSCRIPTION_MODEL
+        value: whisper-large-v3-turbo
+      - key: VOXRAD_TEXT_BASE_URL
+        value: https://api.openai.com/v1
+      - key: VOXRAD_TEXT_MODEL
+        value: gpt-5.6-sol
       # Transcription — Groq (https://console.groq.com, free tier)
       # - key: VOXRAD_TRANSCRIPTION_API_KEY
       #   value: gsk_...

@@ -32,11 +32,12 @@ worklist, and standards-based export back to the RIS. A legacy desktop
 ## ✨ What's in here
 
 ### Radiologist workstation (web)
-- 🎤 **Streaming STT** — Deepgram Nova-2-Medical or AssemblyAI with medical
-  vocabulary boost; falls back to Groq Whisper segment mode when no
-  streaming key is configured
-- 📝 **LLM report formatting** — OpenAI-compatible endpoint (OpenAI,
-  Gemini, Groq, local Ollama / vLLM, etc.) with user-editable templates
+- 🎤 **Streaming STT** — Deepgram Nova-3 Medical or AssemblyAI Universal-3
+  Pro with Medical Mode and radiology keyterm prompting; falls back to Groq
+  Whisper Large V3 Turbo when no streaming key is configured
+- 📝 **LLM report formatting** — GPT-5.6 Sol in production, with an
+  OpenAI-compatible endpoint for alternative providers and local models,
+  plus user-editable templates
 - 🎯 **Voice refinement** — select a passage, speak corrections, regenerate
 - 🗂 **Worklist panel** — modality filter chips (CT/MR/US/XR/Other),
   waiting-time labels, one-click archive

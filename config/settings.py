@@ -3,6 +3,7 @@ import logging
 import os
 import configparser
 from config.config import config
+from config.model_defaults import DEFAULT_TEXT_MODEL, DEFAULT_TRANSCRIPTION_MODEL
 from utils.encryption import get_password_from_user, load_transcription_key, load_text_key, load_mm_key
 from ui.utils import update_status
 
@@ -62,9 +63,9 @@ def load_settings(web_mode: bool = False):
     if "DEFAULT" in config_parser:
         config.save_directory = config_parser["DEFAULT"].get("WorkingDirectory", os.path.dirname(config_path))
         config.TRANSCRIPTION_BASE_URL = config_parser["DEFAULT"].get("TranscriptionBaseURL", "https://api.groq.com/openai/v1")
-        config.SELECTED_TRANSCRIPTION_MODEL = config_parser["DEFAULT"].get("SelectedTranscriptionModel", "whisper-large-v3-turbo")
+        config.SELECTED_TRANSCRIPTION_MODEL = config_parser["DEFAULT"].get("SelectedTranscriptionModel", DEFAULT_TRANSCRIPTION_MODEL)
         config.BASE_URL = config_parser["DEFAULT"].get("TextBaseURL", "https://api.openai.com/v1")
-        config.SELECTED_MODEL = config_parser["DEFAULT"].get("SelectedModel", "gpt-4o-mini")
+        config.SELECTED_MODEL = config_parser["DEFAULT"].get("SelectedModel", DEFAULT_TEXT_MODEL)
         config.multimodal_pref = config_parser["DEFAULT"].getboolean("MultimodalPref", False)
         config.multimodal_model = config_parser["DEFAULT"].get("MultimodalModel", None)
         config.audio_device = config_parser['DEFAULT'].get('AudioDevice', config.audio_device)
@@ -75,9 +76,9 @@ def load_settings(web_mode: bool = False):
         logger.warning("'DEFAULT' section not found in settings.ini. Using default values.")
         config.save_directory = os.path.dirname(config_path)
         config.TRANSCRIPTION_BASE_URL = "https://api.groq.com/openai/v1"
-        config.SELECTED_TRANSCRIPTION_MODEL = "whisper-large-v3-turbo"
+        config.SELECTED_TRANSCRIPTION_MODEL = DEFAULT_TRANSCRIPTION_MODEL
         config.BASE_URL = "https://api.openai.com/v1"
-        config.SELECTED_MODEL = "gpt-4o-mini"
+        config.SELECTED_MODEL = DEFAULT_TEXT_MODEL
 
     if "HL7" in config_parser:
         h = config_parser["HL7"]

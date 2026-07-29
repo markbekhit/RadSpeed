@@ -6,6 +6,8 @@ from urllib.parse import quote
 import websockets
 import websockets.exceptions
 
+from config.model_defaults import DEEPGRAM_STREAMING_MODEL
+
 from .base import StreamingSTTProvider, TranscriptEvent
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,8 @@ class DeepgramProvider(StreamingSTTProvider):
         params = (
             f"encoding=linear16&sample_rate={sample_rate}&channels=1"
             f"&punctuate=true&interim_results=true"
-            f"&endpointing=800&model=nova-3-medical&smart_format=true"
+            f"&endpointing=800&model={DEEPGRAM_STREAMING_MODEL}"
+            f"&version=latest&smart_format=true"
         )
         # Keyterm prompting — Nova-3 replaced the Nova-2 ?keywords=term:boost
         # syntax with ?keyterm=term (no boost weights).

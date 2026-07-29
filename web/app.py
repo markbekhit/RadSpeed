@@ -53,6 +53,7 @@ from llm.format import (
     stream_format_text,
 )
 from llm.impressions import stream_impression
+from llm.model_compat import completion_options
 from llm.worksheet import (
     MAX_WORKSHEET_IMAGE_BYTES,
     MAX_WORKSHEET_IMAGES,
@@ -930,7 +931,7 @@ beyond fixing the erroneous word itself.\
 def _correct_asr_text(raw: str) -> str:
     """Pass raw Whisper output through a fast LLM to fix medical terminology errors.
 
-    Uses the text LLM (GPT-4o-mini / configured model). Skips correction if
+    Uses the configured text LLM. Skips correction if
     the text LLM is not configured or if the text is very short (≤ 3 words).
     """
     if not config.TEXT_API_KEY:
@@ -946,8 +947,11 @@ def _correct_asr_text(raw: str) -> str:
                 {"role": "system", "content": _CORRECTION_SYSTEM},
                 {"role": "user", "content": raw},
             ],
-            temperature=0.0,
-            max_tokens=len(words) + 30,  # corrected text won't be longer
+            **completion_options(
+                config.SELECTED_MODEL,
+                temperature=0.0,
+                max_tokens=len(words) + 30,  # corrected text won't be longer
+            ),
         )
         corrected = resp.choices[0].message.content.strip()
         # Safety: if the LLM somehow returns nothing or drastically expands the
@@ -3131,8 +3135,8 @@ async def ws_transcribe(websocket: WebSocket, token: str = ""):
 
         full_text = " ".join(finals).strip()
         # Run synchronous LLM call in a thread so it doesn't block the event loop.
-        # Cap at 8 s — if the LLM is slow/unavailable, send the raw Deepgram text
-        # (which is already high quality from Nova-2 medical) rather than hanging.
+        # Cap at 8 s — if the LLM is slow/unavailable, send the raw streaming
+        # transcript rather than hanging.
         if full_text:
             try:
                 corrected = await asyncio.wait_for(

@@ -6,6 +6,8 @@ from urllib.parse import quote
 import websockets
 import websockets.exceptions
 
+from config.model_defaults import ASSEMBLYAI_STREAMING_MODEL
+
 from .base import StreamingSTTProvider, TranscriptEvent
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ _MAX_KEYTERM_CHARS = 50
 
 
 class AssemblyAIProvider(StreamingSTTProvider):
-    """AssemblyAI Universal-3.5 Pro real-time streaming STT provider.
+    """AssemblyAI Universal-3 Pro real-time streaming STT provider.
 
     Uses the AssemblyAI WebSocket streaming API (v3).
     Sends raw linear16 PCM audio as binary; receives JSON transcript events.
@@ -27,15 +29,18 @@ class AssemblyAIProvider(StreamingSTTProvider):
         self._closed = False
 
     async def connect(self, api_key: str, sample_rate: int, keywords: List[str]) -> None:
-        # AssemblyAI Universal-3.5 Pro with medical domain optimisation.
-        # Valid speech_model values (streaming v3): universal-3-5-pro,
-        # universal-streaming-english, universal-streaming-multilingual
+        # AssemblyAI Universal-3 Pro with medical domain optimisation.
+        # Medical-mode silence values follow AssemblyAI's current guidance for
+        # clinical dictation, where natural pauses are longer than voice-agent
+        # turns.
         url = (
             f"wss://streaming.assemblyai.com/v3/ws"
             f"?sample_rate={sample_rate}"
             f"&encoding=pcm_s16le"
-            f"&speech_model=universal-3-5-pro"
+            f"&speech_model={ASSEMBLYAI_STREAMING_MODEL}"
             f"&domain=medical-v1"
+            f"&min_turn_silence=800"
+            f"&max_turn_silence=3600"
         )
         if keywords:
             # v3 replaced word_boost with keyterms_prompt: a JSON-encoded

@@ -23,6 +23,7 @@ from openai import OpenAI
 
 from config.config import config
 from llm.format import _build_style_preamble
+from llm.model_compat import completion_options
 
 logger = logging.getLogger(__name__)
 
@@ -384,7 +385,7 @@ def stream_impression(
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
         ],
-        temperature=0.1,
+        **completion_options(config.SELECTED_MODEL, temperature=0.1),
     )
 
     in_think = False

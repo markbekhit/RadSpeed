@@ -121,6 +121,10 @@ All configuration is done via environment variables in `.env`.
 |---|---|---|
 | `VOXRAD_PORT` | `8765` | Host port to bind |
 | `VOXRAD_WORKING_DIR` | `/data/working` | Path inside container for templates, guidelines, reports |
+| `VOXRAD_TRANSCRIPTION_BASE_URL` | `https://api.groq.com/openai/v1` | Batch transcription endpoint |
+| `VOXRAD_TRANSCRIPTION_MODEL` | `whisper-large-v3-turbo` | Groq segment transcription model |
+| `VOXRAD_TEXT_BASE_URL` | `https://api.openai.com/v1` | Report-generation endpoint |
+| `VOXRAD_TEXT_MODEL` | `gpt-5.6-sol` | Report, impression and worksheet-vision model |
 | `VOXRAD_MM_API_KEY` | _(empty)_ | Gemini API key (only if multimodal mode is used) |
 
 ### Using local models

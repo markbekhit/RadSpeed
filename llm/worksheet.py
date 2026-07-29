@@ -17,6 +17,7 @@ from typing import Iterable, Optional
 from openai import OpenAI
 
 from config.config import config
+from llm.model_compat import completion_options
 
 logger = logging.getLogger(__name__)
 
@@ -168,9 +169,12 @@ def extract_worksheet_findings(
             {"role": "system", "content": _WORKSHEET_SYSTEM_PROMPT},
             {"role": "user", "content": content},
         ],
-        temperature=0.0,
-        max_tokens=3000,
         timeout=90,
+        **completion_options(
+            config.SELECTED_MODEL,
+            temperature=0.0,
+            max_tokens=3000,
+        ),
     )
     if not response.choices or not response.choices[0].message.content:
         raise RuntimeError("The image model returned no worksheet findings.")

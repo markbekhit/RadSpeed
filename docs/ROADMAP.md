@@ -37,9 +37,14 @@ These are confirmed in code on `main` as of this update — not aspirations.
 
 ### Radiologist workstation (web)
 
-- **Multi-provider streaming STT** — Deepgram Nova-2 Medical, AssemblyAI
-  Universal-3 Medical, Groq Whisper segment fallback. Voice editing by
-  selection works including the short-utterance edge case
+- **Current production models** — GPT-5.6 Sol for report generation and
+  worksheet vision; Deepgram Nova-3 Medical or AssemblyAI Universal-3 Pro
+  Medical Mode for streaming STT; Groq Whisper Large V3 Turbo as the segment
+  fallback. Provider model IDs are centralised and routine deployments
+  preserve the operator-owned production model secret.
+- **Multi-provider streaming STT** — Deepgram Nova-3 Medical, AssemblyAI
+  Universal-3 Pro Medical Mode, Groq Whisper Large V3 Turbo segment fallback.
+  Voice editing by selection works including the short-utterance edge case
   (`web/stt_providers/`, `web/app.py` /ws/transcribe).
 - **Voice refinement** — select a passage, speak corrections, regenerate.
 - **Vocab learning loop** — repeated edits become per-user keyword boosts in
@@ -154,7 +159,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **92 Python tests + 11 Chromium E2E workflows** run before deployment and on
+- **99 Python tests + 11 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
