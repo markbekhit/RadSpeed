@@ -305,13 +305,17 @@ You are an advanced LLM, extensively trained in understanding dictated radiology
 
 _WORKSHEET_SOURCE_PROMPT = """\
 
-**Worksheet-source safety override — MANDATORY:**
+**Worksheet-source safety override — MANDATORY AND FINAL:**
 The source text below was extracted from screenshots of a sonographer worksheet,
-not dictated as a complete radiologist report. For this request, this override
-supersedes rule 5 above:
+not dictated as a complete radiologist report. For this request, this final
+override supersedes rule 5 above and any conflicting reporting-style instruction:
 - An unmentioned, blank or unmarked worksheet field is unknown/not documented,
   never normal. Do NOT add normal descriptors for structures absent from the
   source notes.
+- Copy every documented measurement verbatim, including its number, decimal
+  precision, unit, dimensional separator and dimension order. Never convert,
+  round or restyle worksheet measurements (for example, keep "14 mm" as
+  "14 mm", not "1.4 cm").
 - Include only documented worksheet observations and measurements. Preserve
   every "[UNCERTAIN: ...]" marker visibly so the radiologist can resolve it.
 - Never turn a printed form option or reference value into a patient finding.
@@ -574,7 +578,7 @@ def _create_structured_report(
         response = client.chat.completions.create(
             model=config.SELECTED_MODEL,
             messages=[
-                {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _source_prompt(source_kind) + _build_style_preamble(style) + _spellings_lexicon_block(template_content) + f"\nThis is the report template:\n{template_for_llm}\n"},
+                {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _build_style_preamble(style) + _source_prompt(source_kind) + _spellings_lexicon_block(template_content) + f"\nThis is the report template:\n{template_for_llm}\n"},
                 {"role": "user", "content": _source_user_message(transcript, source_kind)}
             ],
             **completion_options(config.SELECTED_MODEL, temperature=0.1),
@@ -927,7 +931,7 @@ def _stream_create_structured_report(
         model=config.SELECTED_MODEL,
         stream=True,
         messages=[
-            {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _source_prompt(source_kind) + _build_style_preamble(style) + f"\nThis is the report template:\n{template_for_llm}\n"},
+            {"role": "system", "content": _REPORT_SYSTEM_PROMPT + _build_style_preamble(style) + _source_prompt(source_kind) + f"\nThis is the report template:\n{template_for_llm}\n"},
             {"role": "user", "content": _source_user_message(transcript, source_kind)}
         ],
         **completion_options(config.SELECTED_MODEL, temperature=0.1),

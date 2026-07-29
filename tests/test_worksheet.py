@@ -132,6 +132,12 @@ class WorksheetFormattingSafetyTests(unittest.TestCase):
         self.assertIn("supersedes rule 5", system)
         self.assertIn("never normal", system)
         self.assertIn("Do NOT add normal descriptors", system)
+        self.assertIn("Copy every documented measurement verbatim", system)
+        self.assertIn('keep "14 mm" as', system)
+        self.assertGreater(
+            system.index("Worksheet-source safety override"),
+            system.index("Report measurements"),
+        )
         self.assertIn("sonographer worksheet screenshots", user)
 
     def test_dictation_mode_keeps_existing_completion_behaviour(self):

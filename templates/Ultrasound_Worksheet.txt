@@ -17,7 +17,8 @@ pelvicaliectasis, hydronephrosis, hydroureter, ureteric jet, post-void residual,
 
 ### ===== AI INSTRUCTIONS (advanced) ===== ###
 - This template is specifically for source notes extracted from a sonographer worksheet screenshot.
-- Preserve every documented measurement, unit, laterality, selected negative, selected normal, abnormal status, technical limitation and free-text annotation.
+- Preserve every documented measurement verbatim, including its number, decimal precision, unit, dimensional separator and dimension order, along with laterality, selected negative, selected normal, abnormal status, technical limitation and free-text annotation.
+- Worksheet measurement fidelity overrides general reporting-style preferences: never convert units, round values or restyle multi-dimensional measurements.
 - Resolve table values using their row, column and section headers. Combine a selected status with its adjacent comment so that labels such as "Present" or "Abnormal" are never left without the finding they refer to.
 - A blank or unmarked worksheet field is unknown, not normal. Do not add structures, normal defaults, technique, comparison or clinical history that were not documented.
 - "Not well seen", "not assessed" and similar selections are limitations, not normal findings. State them explicitly in Findings.
