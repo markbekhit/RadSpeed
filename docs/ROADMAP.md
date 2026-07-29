@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-07-22
+Updated: 2026-07-29
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -58,6 +58,13 @@ These are confirmed in code on `main` as of this update — not aspirations.
   (`stream_format_text`, `format_text(patient_context=...)`).
 - **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N).
+- **Sonographer worksheet screenshots** — paste, choose or drop up to four
+  overlapping worksheet snips. A table-aware vision pass binds measurements
+  and marks to their row/column/laterality headers, excludes identifiers and
+  unchecked options, then generates a report through a worksheet-native
+  template. Blank or unmarked fields remain unknown rather than being filled
+  with normal defaults. Images are processed in memory and are not persisted
+  by RadSpeed.
 - **Keyboard-first reporting loop** — Alt/Option+R record/pause,
   Alt/Option+S stop, Ctrl/Cmd+Enter generate, Ctrl/Cmd+Shift+C copy, and
   Alt/Option+N next case. Shortcuts are shown beside the recorder.
@@ -147,7 +154,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **84 Python tests + 8 Chromium E2E workflows** run before deployment and on
+- **92 Python tests + 11 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -157,7 +164,8 @@ deployment and partner sign-on, not new code.
   protect the last good report when formatting fails.
 - Browser tests start an isolated mock-mode server and exercise public
   Impressions validation/generation, authenticated audio-segment transcription
-  through streamed formatting, mobile overflow, and authentication rejection.
+  through streamed formatting, worksheet screenshot paste-to-report,
+  mobile overflow, and authentication rejection.
 - A six-case synthetic clinical corpus gates dictated concepts, negation,
   measurements, laterality, and section order. Reference validation runs in CI;
   the deployed production model is evaluated weekly and on demand.

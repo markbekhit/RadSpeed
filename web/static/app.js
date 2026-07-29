@@ -58,6 +58,9 @@ const state = {
   // can't land in the next patient's case.
   caseEpoch: 0,
   formatAbort: null,
+  // Dictation mode may complete missing template anatomy with normal defaults.
+  // Worksheet mode never does: blank/unmarked worksheet cells remain unknown.
+  sourceKind: "dictation",
 };
 
 // Suppress our own programmatic cursor moves from triggering the selectionchange handler.
@@ -498,6 +501,7 @@ function resumeRecording() {
 async function startRecording() {
   if (state.isRecording) return; // Stop button ends recording
   state.isPaused = false;
+  if (!($("transcription")?.value || "").trim()) state.sourceKind = "dictation";
 
   // Belt-and-suspenders: re-read selections at click time.
   // _grabVoiceEdit() on pointerdown is the primary path; this catches keyboard
@@ -1454,6 +1458,171 @@ async function archiveWorklistOrder() {
 }
 
 // ---------------------------------------------------------------------------
+// Sonographer worksheet screenshots
+// ---------------------------------------------------------------------------
+const WORKSHEET_MAX_IMAGES = 4;
+const WORKSHEET_MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+let _worksheetImages = []; // [{file, url}]
+let _worksheetBusy = false;
+
+function _formatBytes(bytes) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function _renderWorksheetPreviews() {
+  const list = $("worksheet-preview-list");
+  const zone = $("worksheet-drop-zone");
+  if (!list || !zone) return;
+  list.innerHTML = "";
+
+  _worksheetImages.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "worksheet-preview";
+
+    const image = document.createElement("img");
+    image.src = item.url;
+    image.alt = `Worksheet screenshot ${index + 1}`;
+
+    const meta = document.createElement("div");
+    meta.className = "worksheet-preview-meta";
+    meta.textContent = `Screenshot ${index + 1} · ${_formatBytes(item.file.size)}`;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "worksheet-preview-remove";
+    remove.setAttribute("aria-label", `Remove worksheet screenshot ${index + 1}`);
+    remove.textContent = "×";
+    remove.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const [removed] = _worksheetImages.splice(index, 1);
+      if (removed) URL.revokeObjectURL(removed.url);
+      _renderWorksheetPreviews();
+    });
+
+    card.append(image, meta, remove);
+    list.appendChild(card);
+  });
+
+  const hasImages = _worksheetImages.length > 0;
+  zone.classList.toggle("has-images", hasImages);
+  $("btn-worksheet-clear").disabled = !hasImages || _worksheetBusy;
+  $("btn-worksheet-generate").disabled = !hasImages || _worksheetBusy;
+}
+
+function clearWorksheetImages() {
+  for (const item of _worksheetImages) URL.revokeObjectURL(item.url);
+  _worksheetImages = [];
+  const input = $("worksheet-file-input");
+  if (input) input.value = "";
+  _renderWorksheetPreviews();
+}
+
+function addWorksheetImages(files) {
+  let added = 0;
+  let rejected = "";
+  for (const file of Array.from(files || [])) {
+    if (!file || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      rejected = "Use PNG, JPEG or WebP screenshots.";
+      continue;
+    }
+    if (file.size > WORKSHEET_MAX_IMAGE_BYTES) {
+      rejected = "Each worksheet screenshot must be 8 MB or smaller.";
+      continue;
+    }
+    if (_worksheetImages.length >= WORKSHEET_MAX_IMAGES) {
+      rejected = `Use no more than ${WORKSHEET_MAX_IMAGES} screenshots per worksheet.`;
+      break;
+    }
+    _worksheetImages.push({ file, url: URL.createObjectURL(file) });
+    added++;
+  }
+  _renderWorksheetPreviews();
+  if (rejected) {
+    setStatus(rejected, "error");
+  } else if (added) {
+    setStatus(
+      `${_worksheetImages.length} worksheet screenshot${_worksheetImages.length === 1 ? "" : "s"} ready. Add another or generate the report.`,
+      "active"
+    );
+  }
+}
+
+async function generateFromWorksheet() {
+  if (_worksheetBusy || !_worksheetImages.length) return;
+  if (state.isRecording) {
+    setStatus("Stop the current recording before generating from a worksheet.", "error");
+    return;
+  }
+  if (_signedReportId !== null) {
+    setStatus(
+      "This report is already signed. Start the next case before using a new worksheet.",
+      "error"
+    );
+    return;
+  }
+
+  const existingReport = ($("report-raw")?.value || "").trim();
+  if (existingReport && !state.reportCopied && !_signedReportId) {
+    const ok = window.confirm(
+      "This case already has an uncopied report.\n\n" +
+      "Replace it with a report generated from the worksheet?"
+    );
+    if (!ok) return;
+  }
+
+  _worksheetBusy = true;
+  _renderWorksheetPreviews();
+  setUI("processing");
+  setStatus("Reading worksheet tables and annotations…", "active");
+
+  const form = new FormData();
+  for (const item of _worksheetImages) form.append("images", item.file, item.file.name || "worksheet.png");
+  const modality = ($("modality")?.value || "").trim();
+  const bodyPart = ($("body-part")?.value || "").trim();
+  if (modality) form.append("modality", modality);
+  if (bodyPart) form.append("body_part", bodyPart);
+
+  try {
+    const response = await fetch("/api/worksheet/extract", {
+      method: "POST",
+      body: form,
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(error.detail || response.statusText);
+    }
+    const data = await response.json();
+    const findings = String(data.findings || "").trim();
+    if (!findings) throw new Error("No worksheet findings were returned.");
+
+    const transcription = $("transcription");
+    const existing = transcription.value.trim();
+    const sourceBlock = `WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:\n${findings}`;
+    transcription.value = existing ? `${existing}\n\n${sourceBlock}` : sourceBlock;
+    const templateSelect = $("template-select");
+    if (templateSelect && !templateSelect.value) {
+      const worksheetOption = Array.from(templateSelect.options)
+        .find((option) => option.value === "Ultrasound_Worksheet.txt");
+      if (worksheetOption) templateSelect.value = worksheetOption.value;
+    }
+    state.sourceKind = "worksheet";
+    state.sessionId = null;
+    clearWorksheetImages();
+
+    setUI("transcribed");
+    setStatus("Worksheet read. Generating the structured report…", "active");
+    await formatReport();
+  } catch (error) {
+    setUI(_inferUIMode());
+    setStatus(`Worksheet error: ${error.message}`, "error");
+  } finally {
+    _worksheetBusy = false;
+    _renderWorksheetPreviews();
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Format — streaming SSE
 // ---------------------------------------------------------------------------
 async function formatReport() {
@@ -1467,6 +1636,7 @@ async function formatReport() {
     transcription,
     template_name: $("template-select").value || null,
     session_id: state.sessionId || null,
+    source_kind: state.sourceKind,
     patient_name:         $("patient-name").value.trim()        || null,
     patient_dob:          $("patient-dob").value.trim()         || null,
     patient_id:           $("patient-id").value.trim()          || null,
@@ -1775,6 +1945,8 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
   $("report-rendered").innerHTML = "";
   state.reportCopied = false;
   state.reportLlmOutput = "";
+  state.sourceKind = "dictation";
+  clearWorksheetImages();
 
   // Patient context — preserve radiologist name so they don't retype it each case.
   const fields = [
@@ -3070,6 +3242,53 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-edit-toggle").addEventListener("click", toggleReportEdit);
   $("btn-lookup").addEventListener("click", lookupPatient);
   if ($("btn-next-case")) $("btn-next-case").addEventListener("click", () => nextCase());
+
+  // Worksheet screenshot paste / choose / drag-and-drop.
+  const worksheetZone = $("worksheet-drop-zone");
+  const worksheetInput = $("worksheet-file-input");
+  if (worksheetZone && worksheetInput) {
+    worksheetZone.addEventListener("click", () => worksheetInput.click());
+    worksheetZone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        worksheetInput.click();
+      }
+    });
+    worksheetInput.addEventListener("change", () => {
+      addWorksheetImages(worksheetInput.files);
+      worksheetInput.value = "";
+    });
+    $("btn-worksheet-choose").addEventListener("click", () => worksheetInput.click());
+    $("btn-worksheet-clear").addEventListener("click", clearWorksheetImages);
+    $("btn-worksheet-generate").addEventListener("click", generateFromWorksheet);
+
+    for (const eventName of ["dragenter", "dragover"]) {
+      worksheetZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        worksheetZone.classList.add("drag-over");
+      });
+    }
+    for (const eventName of ["dragleave", "drop"]) {
+      worksheetZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        worksheetZone.classList.remove("drag-over");
+      });
+    }
+    worksheetZone.addEventListener("drop", (event) => {
+      addWorksheetImages(event.dataTransfer?.files || []);
+    });
+
+    document.addEventListener("paste", (event) => {
+      const files = Array.from(event.clipboardData?.items || [])
+        .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+        .map((item) => item.getAsFile())
+        .filter(Boolean);
+      if (!files.length) return;
+      event.preventDefault();
+      addWorksheetImages(files);
+      worksheetZone.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
 
   // Keep the active patient visible when the detailed form is collapsed.
   let _priorDebounce = null;

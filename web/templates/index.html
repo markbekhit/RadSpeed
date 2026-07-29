@@ -120,6 +120,44 @@
     </details>
   </div>
 
+  <!-- ── Sonographer worksheet screenshots ── -->
+  <div class="card" id="worksheet-card">
+    <div class="card-title">Sonographer Worksheet</div>
+    <div
+      id="worksheet-drop-zone"
+      class="worksheet-drop-zone"
+      tabindex="0"
+      role="button"
+      aria-label="Paste, choose or drop sonographer worksheet screenshots"
+    >
+      <div class="worksheet-drop-icon" aria-hidden="true">&#128247;</div>
+      <div>
+        <strong>Paste a worksheet snip here</strong>
+        <div class="field-note">
+          After using the Windows Snipping Tool, press Ctrl+V. You can add up to four overlapping screenshots for long or complex tables.
+        </div>
+      </div>
+    </div>
+    <input
+      id="worksheet-file-input"
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      multiple
+      style="display:none;"
+    />
+    <div id="worksheet-preview-list" class="worksheet-preview-list" aria-live="polite"></div>
+    <div class="worksheet-actions">
+      <button id="btn-worksheet-choose" class="btn btn-ghost btn-sm" type="button">&#8613; Choose screenshots</button>
+      <button id="btn-worksheet-clear" class="btn btn-ghost btn-sm" type="button" disabled>Clear</button>
+      <button id="btn-worksheet-generate" class="btn btn-secondary" type="button" disabled>
+        &#10024; Generate report from worksheet
+      </button>
+    </div>
+    <p class="field-note worksheet-privacy">
+      Snip only the findings and measurement area where practical. Images are processed once by the configured RadSpeed model and are not stored by RadSpeed.
+    </p>
+  </div>
+
   <!-- ── Recording ── -->
   <div class="card">
     <div class="card-title">Dictation</div>

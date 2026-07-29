@@ -42,6 +42,7 @@ EVENT_TYPES = (
     "qa_check", "qa_dismiss",
     "followup_create", "followup_update",
     "vocab_add", "style_apply",
+    "worksheet_extract",
 )
 
 

@@ -77,6 +77,55 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
+def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    format_payloads: list[dict] = []
+
+    def capture_format_request(request):
+        if request.url.endswith("/format/stream") and request.post_data_json:
+            format_payloads.append(request.post_data_json)
+
+    page.on("request", capture_format_request)
+    page.goto(f"{base_url}/app")
+    expect(page.locator("#worksheet-drop-zone")).to_contain_text(
+        "Paste a worksheet snip here"
+    )
+
+    page.evaluate(
+        """() => {
+          const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZJfQAAAAASUVORK5CYII=";
+          const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+          const file = new File([bytes], "renal-worksheet.png", { type: "image/png" });
+          const data = new DataTransfer();
+          data.items.add(file);
+          document.dispatchEvent(new ClipboardEvent("paste", {
+            clipboardData: data,
+            bubbles: true,
+            cancelable: true,
+          }));
+        }"""
+    )
+
+    expect(page.locator(".worksheet-preview")).to_have_count(1)
+    expect(page.locator("#btn-worksheet-generate")).to_be_enabled()
+    page.locator("#btn-worksheet-generate").click()
+
+    expect(page.locator("#transcription")).to_have_value(
+        re.compile("WORKSHEET SOURCE NOTES.*Left kidney", re.DOTALL),
+        timeout=10_000,
+    )
+    expect(page.locator("#report-rendered")).to_contain_text(
+        "No acute cardiopulmonary abnormality", timeout=15_000
+    )
+    expect(page.locator("#status")).to_contain_text("Report ready")
+    expect(page.locator("#template-select")).to_have_value("Ultrasound_Worksheet.txt")
+    assert format_payloads and format_payloads[-1]["source_kind"] == "worksheet"
+    assert format_payloads[-1]["template_name"] == "Ultrasound_Worksheet.txt"
+    assert errors == []
+
+
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):
     errors = _console_errors(page)
     qa_requests: list[str] = []

@@ -25,7 +25,7 @@ import threading
 import time
 import uuid
 from datetime import date
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import Body, Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.requests import Request
@@ -34,7 +34,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from openai import OpenAI
+from openai import AuthenticationError, OpenAI
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -53,6 +53,13 @@ from llm.format import (
     stream_format_text,
 )
 from llm.impressions import stream_impression
+from llm.worksheet import (
+    MAX_WORKSHEET_IMAGE_BYTES,
+    MAX_WORKSHEET_IMAGES,
+    WorksheetImageError,
+    extract_worksheet_findings,
+    validate_worksheet_images,
+)
 from web.auth_oauth import (
     exchange_google_code,
     exchange_microsoft_code,
@@ -1676,6 +1683,7 @@ class FormatRequest(BaseModel):
     transcription: str
     template_name: Optional[str] = None
     session_id: Optional[str] = None
+    source_kind: Literal["dictation", "worksheet"] = "dictation"
     # Patient context fields
     patient_name: Optional[str] = None
     patient_dob: Optional[str] = None
@@ -1738,6 +1746,98 @@ def _patient_context(req: "FormatRequest") -> Optional[dict]:
     return ctx or None
 
 
+@app.post("/api/worksheet/extract")
+async def extract_worksheet(
+    images: list[UploadFile] = File(...),
+    modality: Optional[str] = Form(None),
+    body_part: Optional[str] = Form(None),
+    user: dict = Depends(_verify_auth),
+):
+    """Extract entered observations from pasted sonographer worksheet images.
+
+    Image bytes are kept in memory only for this request, sent to the configured
+    text/vision model, and never written to RadSpeed's data volume.
+    """
+    if not images or len(images) > MAX_WORKSHEET_IMAGES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Use between 1 and {MAX_WORKSHEET_IMAGES} worksheet screenshots.",
+        )
+
+    if _MOCK_MODE:
+        for image in images:
+            await image.read(MAX_WORKSHEET_IMAGE_BYTES + 1)
+            await image.close()
+        return {
+            "findings": (
+                "Study / renal ultrasound: Worksheet observations.\n"
+                "Right kidney: 10.8 cm; no pelvicaliectasis documented.\n"
+                "Left kidney: 10.2 cm; mild pelvicaliectasis documented.\n"
+                "Bladder / post-void residual: 24 mL.\n"
+                "Ureteric jets: Bilateral jets documented."
+            ),
+            "image_count": len(images),
+        }
+
+    if not config.TEXT_API_KEY:
+        raise HTTPException(
+            status_code=503, detail="Text/vision model API key not loaded on server."
+        )
+
+    payloads: list[bytes] = []
+    try:
+        for image in images:
+            # Bound each in-memory read even if a caller bypasses the browser
+            # limit. Starlette may spool larger uploads to disk, but RadSpeed
+            # never needs to load more than the accepted limit into memory.
+            payloads.append(await image.read(MAX_WORKSHEET_IMAGE_BYTES + 1))
+    finally:
+        for image in images:
+            await image.close()
+
+    try:
+        validated = validate_worksheet_images(payloads)
+        findings = extract_worksheet_findings(
+            validated,
+            modality=modality,
+            body_part=body_part,
+        )
+    except WorksheetImageError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except AuthenticationError as exc:
+        logger.error("Text model API key rejected during worksheet extraction.")
+        raise HTTPException(
+            status_code=503,
+            detail="Text/vision model API key was rejected. Update it in Settings.",
+        ) from exc
+    except Exception as exc:
+        # Do not log provider error text: some providers may echo part of the
+        # request, and worksheet screenshots can contain health information.
+        logger.error(
+            "Worksheet extraction failed (%s).", type(exc).__name__, exc_info=True
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="Could not read the worksheet screenshots. Try a clearer or tighter snip.",
+        ) from exc
+
+    if findings == "NO_EXTRACTABLE_FINDINGS":
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "No entered worksheet findings were detected. Include the marked "
+                "findings or measurement area and try again."
+            ),
+        )
+
+    log_event(
+        user_id=user.get("id"),
+        event_type="worksheet_extract",
+        metadata={"image_count": len(validated), "chars": len(findings)},
+    )
+    return {"findings": findings, "image_count": len(validated)}
+
+
 @app.post("/format")
 def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
     """Format a transcription into a structured radiology report."""
@@ -1764,6 +1864,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
                 req.transcription,
                 patient_context=_patient_context(req),
                 style=_style,
+                source_kind=req.source_kind,
             )
         finally:
             config.global_md_text_content = old_template
@@ -1883,6 +1984,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
                 patient_context=_ctx,
                 style=_style,
                 template_content=_template_snapshot,
+                source_kind=req.source_kind,
             ):
                 if chunk:
                     full_report += chunk

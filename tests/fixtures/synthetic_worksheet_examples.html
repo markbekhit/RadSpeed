@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Synthetic sonographer worksheet examples</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; background: #d7dbe0; color: #111; font: 16px Arial, sans-serif; }
+    .sheet { width: 1120px; min-height: 760px; margin: 0 0 24px; padding: 38px 44px; background: white; }
+    h1 { margin: 0 0 6px; text-align: center; font: 700 28px Georgia, serif; }
+    .synthetic { margin-bottom: 20px; text-align: center; color: #555; font-size: 13px; }
+    .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 36px; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; }
+    th, td { border: 1px solid #333; padding: 9px 11px; text-align: left; vertical-align: top; }
+    th { background: #edf0f3; text-align: center; }
+    .mark { font-size: 22px; font-weight: 800; line-height: 1; }
+    .blank { color: transparent; }
+    .hand { color: #114a8b; font: 600 18px "Comic Sans MS", cursive; }
+    .note { min-height: 58px; padding: 10px 12px; border: 1px solid #333; }
+    .matrix td:not(:first-child), .matrix th:not(:first-child) { width: 13%; text-align: center; }
+    .measurements td:nth-child(2), .measurements td:nth-child(3) { text-align: center; }
+  </style>
+</head>
+<body>
+  <!-- All values are fictional and exist only to test table/laterality extraction. -->
+  <section class="sheet" id="renal-sheet">
+    <h1>Renal Ultrasound Worksheet</h1>
+    <div class="synthetic">SYNTHETIC TEST WORKSHEET — NO PATIENT DATA</div>
+    <div class="meta">
+      <div>History: <span class="hand">Chronic renal impairment</span></div>
+      <div>Study: <span class="hand">Renal tract ultrasound</span></div>
+      <div>☐ Acute renal failure &nbsp; ☒ Chronic renal insufficiency</div>
+      <div>☐ Haematuria &nbsp; ☐ Urinary tract infection</div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Structure / observation</th><th>RIGHT</th><th>LEFT</th><th>Comments</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Kidney length</td><td class="hand">10.8 cm</td><td class="hand">10.2 cm</td><td></td></tr>
+        <tr><td>Cortical thickness</td><td class="hand">14 mm</td><td class="hand">12 mm</td><td></td></tr>
+        <tr><td>Pelvicaliectasis</td><td>☒ No &nbsp; ☐ Yes</td><td>☐ No &nbsp; ☒ Mild</td><td class="hand">Left renal pelvis 9 mm AP</td></tr>
+        <tr><td>Calculus</td><td>☒ None seen</td><td>☐ None seen &nbsp; ☒ Present</td><td class="hand">6 mm lower-pole calculus on LEFT</td></tr>
+        <tr><td>Renal cyst</td><td>☐ None &nbsp; ☒ Present</td><td>☒ None &nbsp; ☐ Present</td><td class="hand">RIGHT upper-pole simple cyst 2.1 × 1.7 × 1.5 cm</td></tr>
+        <tr><td>Ureteric jet</td><td>☒ Present &nbsp; ☐ Absent</td><td>☒ Present &nbsp; ☐ Absent</td><td></td></tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr><th>Bladder pre-void volume</th><td class="hand">318 mL</td><th>Post-void residual</th><td class="hand">24 mL</td></tr>
+        <tr><th>Bladder wall</th><td class="hand">3 mm</td><th>Prostate volume</th><td class="hand">36 mL</td></tr>
+      </tbody>
+    </table>
+    <div><strong>Comments</strong></div>
+    <div class="note hand">No focal bladder wall lesion. Incidental mild prostatomegaly.</div>
+  </section>
+
+  <section class="sheet" id="obstetric-sheet">
+    <h1>Second Trimester Sonographer Worksheet</h1>
+    <div class="synthetic">SYNTHETIC TEST WORKSHEET — NO PATIENT DATA</div>
+    <div class="meta">
+      <div>Gestational age: <span class="hand">21 weeks 3 days</span></div>
+      <div>Number of fetuses: <span class="hand">Singleton</span></div>
+      <div>Presentation: <span class="hand">Cephalic</span></div>
+      <div>FHR: <span class="hand">148 bpm</span></div>
+      <div>Placenta: <span class="hand">Anterior, clear of internal os</span></div>
+      <div>Cervix: <span class="hand">3.6 cm, closed</span></div>
+    </div>
+    <table class="measurements">
+      <thead><tr><th>Biometry</th><th>Measurement</th><th>Centile</th></tr></thead>
+      <tbody>
+        <tr><td>BPD</td><td class="hand">52 mm</td><td class="hand">55th</td></tr>
+        <tr><td>HC</td><td class="hand">190 mm</td><td class="hand">48th</td></tr>
+        <tr><td>AC</td><td class="hand">166 mm</td><td class="hand">57th</td></tr>
+        <tr><td>FL</td><td class="hand">35 mm</td><td class="hand">42nd</td></tr>
+        <tr><td>Estimated fetal weight</td><td class="hand">432 g</td><td class="hand">51st</td></tr>
+      </tbody>
+    </table>
+    <table class="matrix">
+      <thead><tr><th>Fetal anatomy</th><th>Normal</th><th>Not well seen</th><th>Abnormal</th><th>Comment</th></tr></thead>
+      <tbody>
+        <tr><td>Cranium / intracranial anatomy</td><td class="mark">✓</td><td></td><td></td><td></td></tr>
+        <tr><td>Four-chamber heart</td><td class="mark">✓</td><td></td><td></td><td></td></tr>
+        <tr><td>RVOT</td><td></td><td class="mark">✓</td><td></td><td class="hand">Fetal position</td></tr>
+        <tr><td>LVOT</td><td class="mark">✓</td><td></td><td></td><td></td></tr>
+        <tr><td>Kidneys</td><td></td><td></td><td class="mark">✓</td><td class="hand">LEFT renal pelvis 6.2 mm</td></tr>
+        <tr><td>Spine</td><td class="mark">✓</td><td></td><td></td><td></td></tr>
+        <tr><td>Face / upper lip</td><td></td><td class="mark">✓</td><td></td><td class="hand">Repeat imaging recommended</td></tr>
+      </tbody>
+    </table>
+    <div><strong>Comments</strong></div>
+    <div class="note hand">Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.</div>
+  </section>
+</body>
+</html>

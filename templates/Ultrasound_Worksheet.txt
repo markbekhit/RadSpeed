@@ -1,0 +1,26 @@
+[correct spellings]
+pelvicaliectasis, hydronephrosis, hydroureter, ureteric jet, post-void residual, prostatomegaly, endometrium, myometrium, adnexa, chorionicity, amnionicity, biparietal diameter, head circumference, abdominal circumference, femur length, nuchal translucency, cisterna magna, cavum septi pellucidi, choroid plexus, pyelectasis, RVOT, LVOT
+[correct spellings]
+
+### ===== REPORT STRUCTURE ===== ###
+**EXAMINATION:**
+[Use the documented worksheet title or study type. If it is not documented, use "Ultrasound".]
+
+**CLINICAL DETAILS:**
+[Include only visibly selected or entered history/indication. If none is documented, write "Not provided on worksheet."]
+
+**FINDINGS:**
+[Organise all documented worksheet observations anatomically. Use short paragraphs or labelled lines rather than recreating the source table.]
+
+**IMPRESSION:**
+[Concise summary derived only from the documented worksheet observations.]
+
+### ===== AI INSTRUCTIONS (advanced) ===== ###
+- This template is specifically for source notes extracted from a sonographer worksheet screenshot.
+- Preserve every documented measurement, unit, laterality, selected negative, selected normal, abnormal status, technical limitation and free-text annotation.
+- Resolve table values using their row, column and section headers. Combine a selected status with its adjacent comment so that labels such as "Present" or "Abnormal" are never left without the finding they refer to.
+- A blank or unmarked worksheet field is unknown, not normal. Do not add structures, normal defaults, technique, comparison or clinical history that were not documented.
+- "Not well seen", "not assessed" and similar selections are limitations, not normal findings. State them explicitly in Findings.
+- Do not calculate diagnoses, gestational age, centiles, volumes, grading categories or management from measurements. Report entered calculations only when the worksheet itself documents them.
+- If an extraction contains an [UNCERTAIN: ...] marker, retain it visibly in Findings for radiologist review.
+- In Impression, summarise only documented abnormal observations and material limitations. If the worksheet contains only explicitly selected normal observations, state "No abnormality documented in the supplied worksheet." Do not interpret absence of an entry as absence of disease.

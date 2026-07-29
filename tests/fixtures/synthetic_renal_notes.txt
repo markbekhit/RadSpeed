@@ -1,0 +1,22 @@
+History: Chronic renal insufficiency
+Study: Renal tract ultrasound
+Kidney length right: 10.8 cm
+Kidney length left: 10.2 cm
+Cortical thickness right: 14 mm
+Cortical thickness left: 12 mm
+Pelvicaliectasis right: No
+Pelvicaliectasis left: Mild
+Pelvicaliectasis left comment: Left renal pelvis 9 mm AP
+Calculus right: None seen
+Calculus left: Present
+Calculus left comment: 6 mm lower-pole calculus on LEFT
+Renal cyst right: Present
+Renal cyst right comment: RIGHT upper-pole simple cyst 2.1 × 1.7 × 1.5 cm
+Renal cyst left: None
+Ureteric jet right: Present
+Ureteric jet left: Present
+Bladder pre-void volume: 318 mL
+Post-void residual: 24 mL
+Bladder wall thickness: 3 mm
+Prostate volume: 36 mL
+Comments: No focal bladder wall lesion. Incidental mild prostatomegaly.
