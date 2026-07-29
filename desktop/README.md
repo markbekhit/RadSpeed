@@ -32,6 +32,9 @@ Click **Save**, then **Test connection** to verify the server is reachable.
 2. Select the findings text.
 3. Press your configured hotkey (default **Ctrl+I**).
 4. The desktop app:
+   - Shows a top-centre status indicator immediately, keeps it visible while
+     RadSpeed is generating, then clearly reports success or failure without
+     taking keyboard focus from PowerScribe
    - Copies the selection
    - Sends it to RadSpeed cloud for LLM formatting
    - Navigates to the Impression field (using the configured jump keys)

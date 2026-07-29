@@ -7,6 +7,7 @@ use tauri::AppHandle;
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut};
 
 use crate::api;
+use crate::feedback;
 use crate::keyboard;
 use crate::settings::{self, Settings};
 use crate::tray;
@@ -170,6 +171,11 @@ pub fn run_impressions_flow(app: AppHandle) {
             &app,
             &format!("v{}: already running — press ignored", env!("CARGO_PKG_VERSION")),
         );
+        feedback::warning(
+            &app,
+            "Already generating",
+            "The first hotkey press is still running. This press was ignored.",
+        );
         return;
     }
     let app = Arc::new(app);
@@ -184,6 +190,7 @@ pub fn run_impressions_flow(app: AppHandle) {
                     app.as_ref(),
                     &format!("v{} ok: {summary}", env!("CARGO_PKG_VERSION")),
                 );
+                feedback::success(app.as_ref(), "Impression ready", &summary);
             }
             Err(e) => {
                 log::warn!("impressions flow failed: {e}");
@@ -191,12 +198,18 @@ pub fn run_impressions_flow(app: AppHandle) {
                     app.as_ref(),
                     &format!("v{} failed: {e}", env!("CARGO_PKG_VERSION")),
                 );
+                feedback::error(
+                    app.as_ref(),
+                    "RadSpeed could not complete that",
+                    feedback::friendly_error(&e),
+                );
             }
         }
     });
 }
 
 async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, String> {
+    feedback::working(app, "Hotkey received", "Copying selected findings…");
     tray::set_status(
         app,
         &format!("v{}: capturing FINDINGS…", env!("CARGO_PKG_VERSION")),
@@ -222,6 +235,11 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
             env!("CARGO_PKG_VERSION")
         ),
     );
+    feedback::working(
+        app,
+        "Generating impression",
+        &format!("Captured {findings_len} characters. Waiting for RadSpeed…"),
+    );
     let impression = api::fetch_impression(
         &settings.api_base,
         &findings,
@@ -238,6 +256,11 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
         // and instruct the user to paste manually.
         let payload = impression.trim_end().to_string();
         let payload_len = payload.len();
+        feedback::working(
+            app,
+            "Impression generated",
+            "Copying it to the clipboard…",
+        );
         keyboard::set_clipboard(&payload)
             .map_err(|e| format!("set_clipboard: {e}"))?;
         return Ok(format!(
@@ -260,6 +283,7 @@ async fn do_round_trip(settings: &Settings, app: &AppHandle) -> Result<String, S
         app,
         &format!("v{}: pasting {payload_len} chars…", env!("CARGO_PKG_VERSION")),
     );
+    feedback::working(app, "Impression generated", "Pasting into the report…");
     keyboard::paste_block(&payload).map_err(|e| format!("paste_block: {e}"))?;
 
     Ok(format!(

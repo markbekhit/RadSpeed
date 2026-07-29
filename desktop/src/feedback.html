@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RadSpeed status</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      user-select: none;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 7px;
+    }
+
+    .hud {
+      --tone: #4bbcf4;
+      width: 100%;
+      min-height: 72px;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 13px 18px;
+      border: 1px solid color-mix(in srgb, var(--tone) 72%, transparent);
+      border-radius: 14px;
+      background: rgba(7, 20, 33, 0.97);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.48);
+      color: #f4f8fb;
+    }
+
+    .hud[data-tone="success"] { --tone: #39d98a; }
+    .hud[data-tone="error"] { --tone: #ff6b72; }
+    .hud[data-tone="warning"] { --tone: #ffc857; }
+
+    .indicator {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--tone) 18%, transparent);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--tone);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--tone) 70%, transparent);
+    }
+
+    .hud[data-tone="working"] .indicator::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--tone);
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
+    }
+
+    .copy {
+      min-width: 0;
+    }
+
+    .title {
+      margin: 0 0 3px;
+      color: var(--tone);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .message {
+      margin: 0;
+      overflow: hidden;
+      color: #d9e5ee;
+      font-size: 13px;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <section class="hud" id="hud" data-tone="working" role="status" aria-live="polite">
+    <div class="indicator" aria-hidden="true"><div class="dot"></div></div>
+    <div class="copy">
+      <p class="title" id="title">Hotkey received</p>
+      <p class="message" id="message">Copying selected findings…</p>
+    </div>
+  </section>
+  <script>
+    window.RadSpeedFeedback = {
+      show(payload) {
+        const hud = document.getElementById("hud");
+        hud.dataset.tone = payload.tone || "working";
+        document.getElementById("title").textContent = payload.title || "RadSpeed";
+        document.getElementById("message").textContent = payload.message || "";
+      }
+    };
+  </script>
+</body>
+</html>

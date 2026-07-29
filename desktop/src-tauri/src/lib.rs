@@ -5,6 +5,7 @@
 //! without the binary getting in the way.
 
 mod api;
+mod feedback;
 mod hotkey;
 mod keyboard;
 mod settings;
@@ -117,6 +118,7 @@ pub fn run() {
         ])
         .setup(|app| {
             tray::build(app)?;
+            feedback::build(app)?;
 
             // Prevent the settings window's close button from quitting the app.
             // Hide instead — tray menu is the canonical app exit path.
