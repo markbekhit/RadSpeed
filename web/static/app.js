@@ -1786,11 +1786,115 @@ function _pasteFormat() {
   return document.body.dataset.pasteFormat || "rich";
 }
 
-function _renderedPlainText() {
-  // Use the rendered DOM's innerText so headings stay on their own line and
-  // bold/italic markers are dropped — what most RIS text fields want.
-  const div = $("report-rendered");
-  return (div && div.innerText ? div.innerText : $("report-raw").value).trim();
+function _clipboardInlineText(node) {
+  if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || "";
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  if (node.tagName === "BR") return "\n";
+  if (node.tagName === "SCRIPT" || node.tagName === "STYLE") return "";
+  return Array.from(node.childNodes).map(_clipboardInlineText).join("");
+}
+
+function _cleanClipboardChunk(text) {
+  return String(text || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+$/g, ""))
+    .join("\n")
+    .replace(/^\n+|\n+$/g, "")
+    .replace(/\n{3,}/g, "\n\n");
+}
+
+function _clipboardListLines(list, depth = 0) {
+  const ordered = list.tagName === "OL";
+  const start = ordered ? (parseInt(list.getAttribute("start") || "1", 10) || 1) : 1;
+  const lines = [];
+  const items = Array.from(list.children).filter((child) => child.tagName === "LI");
+
+  items.forEach((item, index) => {
+    const directText = _cleanClipboardChunk(
+      Array.from(item.childNodes)
+        .filter((child) => !(child.nodeType === Node.ELEMENT_NODE &&
+          (child.tagName === "OL" || child.tagName === "UL")))
+        .map(_clipboardInlineText)
+        .join("")
+    );
+    const prefix = ordered ? `${start + index}. ` : "• ";
+    if (directText) lines.push(`${"  ".repeat(depth)}${prefix}${directText}`);
+
+    Array.from(item.children)
+      .filter((child) => child.tagName === "OL" || child.tagName === "UL")
+      .forEach((nested) => lines.push(..._clipboardListLines(nested, depth + 1)));
+  });
+  return lines;
+}
+
+function _clipboardPlainText(html, markdown) {
+  // Serialize Markdown blocks ourselves rather than reading innerText from a
+  // styled offscreen element. Chromium expands block margins into repeated
+  // newlines there, which PowerScribe then pastes as large gaps.
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  const chunks = [];
+
+  Array.from(root.childNodes).forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = _cleanClipboardChunk(node.nodeValue);
+      if (text.trim()) chunks.push(text);
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+    if (node.tagName === "OL" || node.tagName === "UL") {
+      const lines = _clipboardListLines(node);
+      if (lines.length) chunks.push(lines.join("\n"));
+      return;
+    }
+    if (node.tagName === "TABLE") {
+      const rows = Array.from(node.querySelectorAll("tr")).map((row) =>
+        Array.from(row.querySelectorAll(":scope > th, :scope > td"))
+          .map((cell) => _cleanClipboardChunk(_clipboardInlineText(cell)))
+          .join("\t")
+      );
+      if (rows.length) chunks.push(rows.join("\n"));
+      return;
+    }
+    if (node.tagName === "HR") return;
+
+    const text = _cleanClipboardChunk(
+      node.tagName === "PRE" ? node.textContent : _clipboardInlineText(node)
+    );
+    if (text.trim()) chunks.push(text);
+  });
+
+  return (chunks.length ? chunks.join("\n\n") : _cleanClipboardChunk(markdown)).trim();
+}
+
+function _escapeClipboardHtml(text) {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function _isClipboardHeading(line) {
+  const text = line.trim();
+  if (!text || text.length > 100) return false;
+  return text.endsWith(":") ||
+    /^[A-Z0-9][A-Z0-9 /&()+,.'’\-]{2,}$/.test(text);
+}
+
+function _clipboardRichHtml(plain) {
+  // A line-break fragment pastes consistently into PowerScribe and still gives
+  // Word/Outlook bold report headings. Paragraph/list block tags are avoided
+  // because target editors commonly add their own spacing around those blocks.
+  const lines = plain.split("\n").map((line) => {
+    const escaped = _escapeClipboardHtml(line);
+    return _isClipboardHeading(line) ? `<strong>${escaped}</strong>` : escaped;
+  });
+  return `<span>${lines.join("<br>")}</span>`;
 }
 
 // Fire-and-forget: diff the current report against the LLM output to detect
@@ -1822,19 +1926,8 @@ async function copyReport() {
   // drop the radiologist's corrections.
   const html = renderMarkdown(markdown);
   $("report-rendered").innerHTML = html;
-  // Derive plain text from an offscreen render — a display:none element (Edit
-  // mode) yields empty innerText, so we can't read the hidden rendered div.
-  const _tmp = document.createElement("div");
-  _tmp.innerHTML = html;
-  _tmp.style.position = "fixed";
-  _tmp.style.left = "-9999px";
-  _tmp.style.whiteSpace = "pre-wrap";
-  document.body.appendChild(_tmp);
-  const plain = (_tmp.innerText || _tmp.textContent || markdown).trim();
-  _tmp.remove();
-  // Wrap in a minimal document so rich-text targets (PowerScribe, Word, Outlook)
-  // reliably pick up the text/html flavor.
-  const htmlDoc = `<!DOCTYPE html><html><body>${html}</body></html>`;
+  const plain = _clipboardPlainText(html, markdown);
+  const richHtml = _clipboardRichHtml(plain);
 
   // Build the clipboard payload per the user's paste-format preference.
   //   rich     — html + plain-rendered fallback
@@ -1843,7 +1936,7 @@ async function copyReport() {
   const payload =
     fmt === "markdown" ? { plain: markdown } :
     fmt === "plain"    ? { plain } :
-                         { plain, html: htmlDoc };
+                         { plain, html: richHtml };
   const labelSuffix =
     fmt === "markdown" ? " (markdown)" :
     fmt === "plain"    ? " (plain)" :
@@ -1870,7 +1963,7 @@ async function copyReport() {
     const div = document.createElement("div");
     div.contentEditable = "true";
     if (payload.html) {
-      div.innerHTML = html;
+      div.innerHTML = payload.html;
     } else {
       div.textContent = payload.plain;
     }

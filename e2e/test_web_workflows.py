@@ -123,6 +123,47 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     expect(page.locator("#template-select")).to_have_value("Ultrasound_Worksheet.txt")
     assert format_payloads and format_payloads[-1]["source_kind"] == "worksheet"
     assert format_payloads[-1]["template_name"] == "Ultrasound_Worksheet.txt"
+
+    # Copy must preserve clinical line structure without exporting the browser's
+    # paragraph/list spacing. PowerScribe prefers text/html when both clipboard
+    # flavours are present, so assert both representations are compact.
+    page.evaluate(
+        """() => {
+          setReport(
+            "ULTRASOUND KIDNEYS\\n\\n" +
+            "FINDINGS:\\nLeft kidney measures 10.2 cm.\\n\\n" +
+            "CONCLUSION:\\n1. No hydronephrosis.\\n2. Simple renal cyst."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "rich";
+          window.__worksheetClipboard = {};
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+              write: async (items) => {
+                for (const type of items[0].types) {
+                  window.__worksheetClipboard[type] =
+                    await (await items[0].getType(type)).text();
+                }
+              },
+            },
+          });
+        }"""
+    )
+    page.locator("#btn-copy").click()
+    page.wait_for_function(
+        "() => Boolean(window.__worksheetClipboard['text/plain'])"
+    )
+    clipboard = page.evaluate("window.__worksheetClipboard")
+    assert clipboard["text/plain"] == (
+        "ULTRASOUND KIDNEYS\n\n"
+        "FINDINGS:\nLeft kidney measures 10.2 cm.\n\n"
+        "CONCLUSION:\n\n"
+        "1. No hydronephrosis.\n2. Simple renal cyst."
+    )
+    assert "<p" not in clipboard["text/html"].lower()
+    assert "<li" not in clipboard["text/html"].lower()
+    assert "<br>" in clipboard["text/html"].lower()
     assert errors == []
 
 
