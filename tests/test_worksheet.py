@@ -114,7 +114,7 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
 
 
 class WorksheetFormattingSafetyTests(unittest.TestCase):
-    def test_worksheet_mode_overrides_normal_completion(self):
+    def test_worksheet_mode_preserves_findings_and_requires_clinical_impression(self):
         client = MagicMock()
         client.chat.completions.create.return_value = _completion(
             "**FINDINGS:**\nLeft renal pelvicaliectasis."
@@ -134,6 +134,13 @@ class WorksheetFormattingSafetyTests(unittest.TestCase):
         self.assertIn("Do NOT add normal descriptors", system)
         self.assertIn("Copy every documented measurement verbatim", system)
         self.assertIn('keep "14 mm" as', system)
+        self.assertIn("The radiologist is not a transcriptionist", system)
+        self.assertIn("senior-radiologist synthesis", system)
+        self.assertIn("Normal pelvic ultrasound", system)
+        self.assertIn("Never refer to a worksheet", system)
+        self.assertIn(
+            "The Impression must read as the radiologist's conclusion", system
+        )
         self.assertGreater(
             system.index("Worksheet-source safety override"),
             system.index("Report measurements"),
@@ -152,6 +159,34 @@ class WorksheetFormattingSafetyTests(unittest.TestCase):
 
         system = client.chat.completions.create.call_args.kwargs["messages"][0]["content"]
         self.assertNotIn("Worksheet-source safety override", system)
+
+    def test_streamed_worksheet_report_uses_same_clinical_impression_rules(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = []
+
+        with patch("llm.format.OpenAI", return_value=client):
+            list(
+                report_format._stream_create_structured_report(
+                    "Synthetic pelvic worksheet observations.",
+                    "**FINDINGS:**\n[documented findings]\n\n**IMPRESSION:**",
+                    source_kind="worksheet",
+                )
+            )
+
+        system = client.chat.completions.create.call_args.kwargs["messages"][0]["content"]
+        self.assertIn("The radiologist is not a transcriptionist", system)
+        self.assertIn("Normal pelvic ultrasound", system)
+        self.assertIn("Never refer to a worksheet", system)
+
+    def test_bundled_worksheet_template_never_uses_audit_language_as_impression(self):
+        template = report_format._get_template_content("Ultrasound_Worksheet.txt")
+        self.assertIsNotNone(template)
+        self.assertNotIn(
+            "No abnormality documented in the supplied worksheet.", template
+        )
+        self.assertIn("clinically useful synthesis", template)
+        self.assertIn("Normal pelvic ultrasound", template)
+        self.assertIn("Never mention the worksheet", template)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ pelvicaliectasis, hydronephrosis, hydroureter, ureteric jet, post-void residual,
 [Organise all documented worksheet observations anatomically. Use short paragraphs or labelled lines rather than recreating the source table.]
 
 **IMPRESSION:**
-[Concise summary derived only from the documented worksheet observations.]
+[Concise clinical conclusion synthesised from the documented observations and clinical details.]
 
 ### ===== AI INSTRUCTIONS (advanced) ===== ###
 - This template is specifically for source notes extracted from a sonographer worksheet screenshot.
@@ -24,4 +24,9 @@ pelvicaliectasis, hydronephrosis, hydroureter, ureteric jet, post-void residual,
 - "Not well seen", "not assessed" and similar selections are limitations, not normal findings. State them explicitly in Findings.
 - Do not calculate diagnoses, gestational age, centiles, volumes, grading categories or management from measurements. Report entered calculations only when the worksheet itself documents them.
 - If an extraction contains an [UNCERTAIN: ...] marker, retain it visibly in Findings for radiologist review.
-- In Impression, summarise only documented abnormal observations and material limitations. If the worksheet contains only explicitly selected normal observations, state "No abnormality documented in the supplied worksheet." Do not interpret absence of an entry as absence of disease.
+- In Impression, write as the radiologist: provide a concise, clinically useful synthesis rather than a transcription or inventory of the form.
+- Lead with the most clinically important conclusion, group related findings and omit routine measurements, normal anatomy and physiologic/incidental findings that do not affect the conclusion.
+- Every conclusion must be supported by the documented observations. Do not infer that a blank or unmarked field is normal, and do not invent pathology or recommendations.
+- When the documented normal observations adequately cover the examination, give a direct conventional conclusion such as "Normal pelvic ultrasound" or "No sonographic abnormality identified." A physiologic corpus luteum does not prevent an otherwise normal pelvic ultrasound conclusion.
+- Use the clinical details to answer the clinical question when the documented findings support it. State any material technical limitation specifically.
+- Never mention the worksheet, supplied worksheet, source notes, transcription or documentation status in the Impression. It must read as the radiologist's clinical conclusion.
