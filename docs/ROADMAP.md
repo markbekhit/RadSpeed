@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-07-29
+Updated: 2026-08-02
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -89,6 +89,10 @@ These are confirmed in code on `main` as of this update — not aspirations.
   v2.1, LI-RADS CT/MRI v2018 and ACR TI-RADS categories emit a consistent
   report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
+- **Fracture Lab** — authenticated experimental viewer for the 1,132-case
+  public OrthoFrac-XR benchmark, including labels, model estimates, frontier
+  comments and approximate boxes. It is retrospective research only; patient
+  uploads and live clinical inference are deliberately not enabled.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
 

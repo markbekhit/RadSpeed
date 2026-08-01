@@ -77,6 +77,38 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
+def test_authenticated_fracture_lab_is_reachable_from_radspeed(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    # Production images live on the Fly volume rather than in the repository.
+    # Stub image responses here so isolated browser QA can verify the viewer.
+    page.route(
+        "**/fracture-workbench/images/**",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="image/gif",
+            body=(
+                b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
+                b"\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00"
+                b"\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+            ),
+        ),
+    )
+
+    page.goto(f"{base_url}/app")
+    expect(page.get_by_role("link", name="Fracture Lab")).to_have_attribute(
+        "href", "/fracture-workbench"
+    )
+    page.get_by_role("link", name="Fracture Lab").click()
+
+    expect(page.get_by_role("heading", name="RadSpeed Fracture Lab")).to_be_visible()
+    expect(page.locator(".notice")).to_contain_text("uploads are not enabled")
+    expect(page.get_by_role("button", name="All 1132")).to_be_visible()
+    expect(page.locator("article.card")).to_have_count(1132)
+    assert errors == []
+
+
 def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     page: Page, base_url: str
 ):

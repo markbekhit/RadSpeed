@@ -25,11 +25,12 @@ import threading
 import time
 import uuid
 from datetime import date
+from pathlib import Path
 from typing import Literal, Optional
 
 from fastapi import Body, Depends, FastAPI, File, Form, Header, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, StreamingResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -97,6 +98,7 @@ from web.followups import (
     suggest_followups,
     update_followup,
 )
+from web.fracture_workbench import resolve_workbench_image
 from web.qa import run_qa_checks
 from web.stt_providers import get_streaming_provider
 
@@ -123,6 +125,7 @@ app.mount(
     name="static",
 )
 _jinja = Jinja2Templates(directory=os.path.join(_BASE_DIR, "templates"))
+_FRACTURE_WORKBENCH_PAGE = Path(_BASE_DIR) / "private" / "fracture_workbench.html"
 
 # Cache-busting: use the current git commit hash (or a timestamp fallback)
 # so browsers always load fresh JS/CSS after each deploy.
@@ -688,6 +691,43 @@ def index(request: Request, user: dict = Depends(_verify_auth)):
             "static_version": _STATIC_VERSION,
             "oauth_mode": oauth_enabled(),
             "paste_format": paste_format,
+        },
+    )
+
+
+@app.get("/fracture-workbench")
+def fracture_workbench_page(user: dict = Depends(_verify_auth)):
+    """Serve the public-data benchmark viewer behind RadSpeed sign-in."""
+    if not _FRACTURE_WORKBENCH_PAGE.is_file():
+        raise HTTPException(status_code=503, detail="Fracture Lab is not installed")
+    return FileResponse(
+        _FRACTURE_WORKBENCH_PAGE,
+        media_type="text/html",
+        headers={
+            "Cache-Control": "private, no-store",
+            "Content-Security-Policy": (
+                "default-src 'self'; img-src 'self'; style-src 'unsafe-inline'; "
+                "script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"
+            ),
+            "X-Robots-Tag": "noindex, nofollow",
+        },
+    )
+
+
+@app.get("/fracture-workbench/images/{image_path:path}")
+def fracture_workbench_image(image_path: str, user: dict = Depends(_verify_auth)):
+    """Serve one benchmark radiograph from the persistent encrypted volume."""
+    try:
+        image = resolve_workbench_image(image_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Image not found") from exc
+    if not image.is_file():
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(
+        image,
+        headers={
+            "Cache-Control": "private, max-age=86400",
+            "X-Robots-Tag": "noindex, nofollow",
         },
     )
 
