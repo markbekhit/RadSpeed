@@ -133,16 +133,20 @@ class FractureAnalysisTests(unittest.TestCase):
                 "validation_threshold": 0.05,
             }
         )
+        general_locator = MagicMock()
         images = prepare_fracture_images([_png(width=120, height=96)])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
             _, method, open_model = analyse_fracture_images(
-                images, chest_scorer=chest_scorer
+                images,
+                chest_scorer=chest_scorer,
+                general_locator=general_locator,
             )
 
         self.assertEqual(method, "frontier_chest_multiscale_with_visual_critic")
         self.assertEqual(open_model["highest_view_probability"], 0.37)
         chest_scorer.assert_called_once_with(images)
+        general_locator.assert_not_called()
         first_content = client.chat.completions.create.call_args_list[0].kwargs[
             "messages"
         ][1]["content"]
@@ -184,6 +188,59 @@ class FractureAnalysisTests(unittest.TestCase):
         self.assertEqual(method, "frontier_multiview_with_visual_critic")
         self.assertIsNone(open_model)
         chest_scorer.assert_not_called()
+
+    def test_general_study_uses_untrusted_locator_zooms_for_second_read(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            _completion(_assessment("Initial opinion.")),
+            _completion(_assessment("Proposal-assisted opinion.")),
+        ]
+        locator = MagicMock(
+            return_value={
+                "model": "synthetic locator",
+                "score_semantics": "ranking_only_not_calibrated_probability",
+                "views": [
+                    {
+                        "view_index": 1,
+                        "boxes": [
+                            {
+                                "x_min": 300,
+                                "y_min": 250,
+                                "x_max": 500,
+                                "y_max": 550,
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+        images = prepare_fracture_images([_png(width=120, height=96)])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            result, method, open_model = analyse_fracture_images(
+                images, general_locator=locator
+            )
+
+        self.assertEqual(result.summary, "Proposal-assisted opinion.")
+        self.assertEqual(
+            method, "frontier_proposal_multiscale_with_visual_critic"
+        )
+        self.assertIsNone(open_model)
+        locator.assert_called_once_with(images)
+        second_content = client.chat.completions.create.call_args_list[1].kwargs[
+            "messages"
+        ][1]["content"]
+        second_images = [
+            item for item in second_content if item.get("type") == "image_url"
+        ]
+        self.assertEqual(len(second_images), 2)
+        self.assertIn("not a fracture classifier", second_content[0]["text"])
+        self.assertTrue(
+            any(
+                "Untrusted detector proposal" in item.get("text", "")
+                for item in second_content
+            )
+        )
 
     def test_returns_initial_read_if_critic_response_is_malformed(self):
         client = MagicMock()

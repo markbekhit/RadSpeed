@@ -1,0 +1,1 @@
+{"model":"RT-DETR R18 broad fracture proposal locator","base_model":"PekingU/rtdetr_r18vd","base_model_license":"Apache-2.0","input_size":512,"resampling":"bilinear","rescale_factor":0.00392156862745098,"normalisation":"none","output_coordinates":"normalised_0_1000_original_image","recommended_top_k":3,"score_semantics":"ranking_only_not_calibrated_probability"}

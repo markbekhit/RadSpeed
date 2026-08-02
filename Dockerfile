@@ -21,6 +21,12 @@ ADD --checksum=sha256:02a46abdc14bcf8f234c098d821a17a09002668e1149b46c4a1f9150ef
     https://github.com/markbekhit/RadSpeed/releases/download/chest-fracture-model-v1/kad512_chest_float.onnx \
     /app/models/kad512_chest_float.onnx
 
+# Broad detector is used only to create ranked zoom proposals for the fresh
+# frontier read. Its raw scores are never displayed as fracture probabilities.
+ADD --checksum=sha256:e61a9097343cd0efc57552c6e031a70de39cd88767d053d382c0da26e944d5ec \
+    https://github.com/markbekhit/RadSpeed/releases/download/fracture-locator-v1/rtdetr_fracatlas_full.onnx \
+    /app/models/rtdetr_fracatlas_full.onnx
+
 # /data/working  — templates, guidelines, reports (bind-mount or named volume)
 # /root/.voxrad  — encrypted API keys + settings.ini (named volume)
 VOLUME ["/data/working", "/root/.voxrad"]

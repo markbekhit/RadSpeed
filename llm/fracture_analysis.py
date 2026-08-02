@@ -259,6 +259,73 @@ def _chest_zoom_content(
     return content
 
 
+def _proposal_zoom_content(
+    images: list[PreparedFractureImage],
+    text: str,
+    locator_result: dict[str, Any],
+) -> list[dict]:
+    """Add detector-ranked crops while retaining the unaltered full images."""
+    content = _image_content(images, text)
+    for view in locator_result.get("views", []):
+        view_index = int(view.get("view_index", 0))
+        if not 1 <= view_index <= len(images):
+            continue
+        prepared = images[view_index - 1]
+        with Image.open(io.BytesIO(prepared.data)) as source:
+            image = source.convert("L")
+            width, height = image.size
+            for rank, raw_box in enumerate(view.get("boxes", [])[:3], start=1):
+                box = {
+                    key: max(0, min(1000, int(raw_box[key])))
+                    for key in ("x_min", "y_min", "x_max", "y_max")
+                }
+                if box["x_max"] <= box["x_min"] or box["y_max"] <= box["y_min"]:
+                    continue
+                left = box["x_min"] / 1000 * width
+                top = box["y_min"] / 1000 * height
+                right = box["x_max"] / 1000 * width
+                bottom = box["y_max"] / 1000 * height
+                center_x = (left + right) / 2
+                center_y = (top + bottom) / 2
+                crop_width = max(96, (right - left) * 1.8)
+                crop_height = max(96, (bottom - top) * 1.8)
+                crop = image.crop(
+                    (
+                        max(0, round(center_x - crop_width / 2)),
+                        max(0, round(center_y - crop_height / 2)),
+                        min(width, round(center_x + crop_width / 2)),
+                        min(height, round(center_y + crop_height / 2)),
+                    )
+                )
+                crop.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+                output = io.BytesIO()
+                crop.save(output, format="PNG", compress_level=6)
+                encoded = base64.b64encode(output.getvalue()).decode("ascii")
+                content.extend(
+                    [
+                        {
+                            "type": "text",
+                            "text": (
+                                f"Untrusted detector proposal {rank} from original view "
+                                f"{view_index}, centred on original coordinates "
+                                f"x={box['x_min']}–{box['x_max']}, "
+                                f"y={box['y_min']}–{box['y_max']}. This is a zoom, not "
+                                "a separate view or a diagnosis. Report any final box in "
+                                "original-view coordinates."
+                            ),
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{encoded}",
+                                "detail": "high",
+                            },
+                        },
+                    ]
+                )
+    return content
+
+
 def _parse_assessment(text: str, image_count: int) -> FractureAssessment:
     candidate = text.strip()
     if candidate.startswith("```"):
@@ -310,6 +377,9 @@ def analyse_fracture_images(
     chest_scorer: Optional[
         Callable[[list[PreparedFractureImage]], dict[str, Any]]
     ] = None,
+    general_locator: Optional[
+        Callable[[list[PreparedFractureImage]], dict[str, Any]]
+    ] = None,
 ) -> tuple[FractureAssessment, str, Optional[dict[str, Any]]]:
     """Auto-route an initial read into a general or chest-specific critique."""
     if not images:
@@ -329,6 +399,8 @@ def analyse_fracture_images(
     is_chest = initial.study_region == "chest_ribs"
     open_model: Optional[dict[str, Any]] = None
     chest_instructions = ""
+    locator_instructions = ""
+    locator_result: Optional[dict[str, Any]] = None
     content_builder = _image_content
     if is_chest:
         if chest_scorer is not None:
@@ -361,6 +433,32 @@ def analyse_fracture_images(
             f"back to its original-view coordinates.{open_model_context}"
         )
         content_builder = _chest_zoom_content
+    elif general_locator is not None:
+        try:
+            locator_result = general_locator(images)
+        except Exception as exc:
+            logger.warning(
+                "Broad fracture locator unavailable (%s); continuing with "
+                "frontier review.",
+                type(exc).__name__,
+            )
+        if locator_result is not None:
+            locator_instructions = (
+                " A separately trained public-data detector supplied up to three "
+                "ranked zooms per view. Its raw scores are not probabilities and it "
+                "is not a fracture classifier. Treat every proposal as untrusted: "
+                "reject mimics, search outside the crops, and do not create a finding "
+                "merely because a zoom was supplied."
+            )
+
+            def proposal_builder(
+                selected_images: list[PreparedFractureImage], selected_text: str
+            ) -> list[dict]:
+                return _proposal_zoom_content(
+                    selected_images, selected_text, locator_result
+                )
+
+            content_builder = proposal_builder
 
     critic_text = (
         "Act as a fresh second reader. Reinspect every image, challenge false "
@@ -368,7 +466,7 @@ def analyse_fracture_images(
         "tight and on the stated abnormality. Then return a corrected final JSON "
         "assessment in the same schema. Do not defer to the draft.\n\n"
         f"First-reader draft:\n{initial.model_dump_json()}"
-        f"{chest_instructions}"
+        f"{chest_instructions}{locator_instructions}"
     )
     try:
         final = _parse_assessment(
@@ -380,7 +478,11 @@ def analyse_fracture_images(
         method = (
             "frontier_chest_multiscale_with_visual_critic"
             if is_chest
-            else "frontier_multiview_with_visual_critic"
+            else (
+                "frontier_proposal_multiscale_with_visual_critic"
+                if locator_result is not None
+                else "frontier_multiview_with_visual_critic"
+            )
         )
     except Exception as exc:
         # The initial read remains useful if the second response is malformed or
@@ -395,7 +497,11 @@ def analyse_fracture_images(
         method = (
             "frontier_chest_multiscale_single_pass_fallback"
             if is_chest
-            else "frontier_multiview_single_pass_fallback"
+            else (
+                "frontier_proposal_multiscale_single_pass_fallback"
+                if locator_result is not None
+                else "frontier_multiview_single_pass_fallback"
+            )
         )
     return final, method, open_model
 

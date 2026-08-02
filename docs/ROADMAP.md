@@ -102,10 +102,12 @@ These are confirmed in code on `main` as of this update — not aspirations.
   original view, then supplies the highest score and overlapping de-identified
   hemithorax zooms to the second reader. Proposed boxes are mapped back to the
   original view, and all per-view open-model scores are returned to the
-  signed-in interface. It
-  returns cautious four-state wording, explicitly uncalibrated confidence and
-  suggested regions. The page also includes the 1,132-case public OrthoFrac-XR
-  benchmark. Direct DICOM and the heavier open detector/classifier remain
+  signed-in interface. For non-chest studies, a local RT-DETR locator trained
+  on public FracAtlas data now supplies up to three ranked, untrusted zooms per
+  view to the second reader; its raw scores are neither displayed nor treated
+  as fracture probabilities. Fracture Lab returns cautious four-state wording,
+  explicitly uncalibrated confidence and suggested regions. The page also
+  includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM remains
   future separate-service work.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
