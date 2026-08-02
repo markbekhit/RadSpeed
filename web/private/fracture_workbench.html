@@ -60,6 +60,11 @@
         <span>I checked the cleaned previews and no patient details remain.</span>
       </label>
     </section>
+    <label class="context-label" for="fracture-study-type">Study type</label>
+    <select id="fracture-study-type" class="context-input">
+      <option value="general">General X-ray</option>
+      <option value="chest_ribs">Chest / ribs</option>
+    </select>
     <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
     <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
     <div class="analysis-actions">
@@ -12545,6 +12550,6 @@
   });
 </script>
   <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>
-  <script src="/static/fracture-lab.js?v=privacy-1"></script>
+  <script src="/static/fracture-lab.js?v=chest-1"></script>
 </body>
 </html>

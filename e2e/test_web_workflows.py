@@ -255,6 +255,7 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
 
     page.locator("#fracture-privacy-confirm").check()
     expect(page.locator("#fracture-analyse")).to_be_enabled()
+    page.locator("#fracture-study-type").select_option("chest_ribs")
     page.locator("#fracture-context").fill("Synthetic test context")
     page.locator("#fracture-analyse").click()
 
@@ -267,6 +268,7 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
     assert b'deidentified-view-' in uploaded_payloads[-1]
     assert b'synthetic-view.png' not in uploaded_payloads[-1]
     assert b'privacy_confirmed' in uploaded_payloads[-1]
+    assert b'chest_ribs' in uploaded_payloads[-1]
     assert errors == []
 
 

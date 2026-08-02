@@ -109,6 +109,36 @@ class FractureAnalysisTests(unittest.TestCase):
             any(item.get("type") == "image_url" for item in second_content)
         )
 
+    def test_chest_mode_adds_two_hemithorax_zooms_per_view(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            _completion(_assessment("Initial chest opinion.")),
+            _completion(_assessment("Critic-confirmed chest opinion.")),
+        ]
+        images = prepare_fracture_images([_png(width=120, height=96)])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            _, method = analyse_fracture_images(images, study_type="chest_ribs")
+
+        self.assertEqual(method, "frontier_chest_multiscale_with_visual_critic")
+        first_content = client.chat.completions.create.call_args_list[0].kwargs[
+            "messages"
+        ][1]["content"]
+        image_parts = [
+            item for item in first_content if item.get("type") == "image_url"
+        ]
+        self.assertEqual(len(image_parts), 3)
+        self.assertIn("Search each rib sequentially", first_content[0]["text"])
+        self.assertTrue(
+            any("Supplemental displayed left" in item.get("text", "") for item in first_content)
+        )
+
+    def test_rejects_unknown_study_type(self):
+        with self.assertRaises(FractureImageError):
+            analyse_fracture_images(
+                prepare_fracture_images([_png()]), study_type="unsupported"
+            )
+
     def test_returns_initial_read_if_critic_response_is_malformed(self):
         client = MagicMock()
         client.chat.completions.create.side_effect = [

@@ -730,6 +730,7 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
 async def fracture_analysis(
     images: list[UploadFile] = File(...),
     clinical_context: Optional[str] = Form(None),
+    study_type: Optional[str] = Form("general"),
     privacy_confirmed: Optional[str] = Form(None),
     user: dict = Depends(_verify_auth),
 ):
@@ -771,6 +772,7 @@ async def fracture_analysis(
                     analyse_fracture_images,
                     prepared,
                     clinical_context=clinical_context,
+                    study_type=study_type or "general",
                 )
     except FractureImageError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -797,6 +799,7 @@ async def fracture_analysis(
             "assessment": assessment.assessment,
             "confidence_percent": assessment.confidence_percent,
             "method": method,
+            "study_type": study_type or "general",
         },
     )
     return JSONResponse(
