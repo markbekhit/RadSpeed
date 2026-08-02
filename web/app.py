@@ -61,6 +61,7 @@ from llm.fracture_analysis import (
     mock_fracture_assessment,
     prepare_fracture_images,
 )
+from llm.chest_open_model import score_chest_images
 from llm.impressions import stream_impression
 from llm.model_compat import completion_options
 from llm.worksheet import (
@@ -767,12 +768,39 @@ async def fracture_analysis(
             if _MOCK_MODE:
                 assessment = mock_fracture_assessment(len(prepared))
                 method = "synthetic_test_fixture"
+                open_model = (
+                    {
+                        "model": "synthetic_test_fixture",
+                        "view_probabilities": [0.42] * len(prepared),
+                        "highest_view_probability": 0.42,
+                        "validation_threshold": 0.05,
+                    }
+                    if (study_type or "general") == "chest_ribs"
+                    else None
+                )
             else:
+                open_model = None
+                if (study_type or "general") == "chest_ribs":
+                    try:
+                        open_model = await asyncio.to_thread(
+                            score_chest_images, prepared
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "Open chest classifier unavailable (%s); continuing with "
+                            "frontier review.",
+                            type(exc).__name__,
+                        )
                 assessment, method = await asyncio.to_thread(
                     analyse_fracture_images,
                     prepared,
                     clinical_context=clinical_context,
                     study_type=study_type or "general",
+                    open_model_probability=(
+                        open_model["highest_view_probability"]
+                        if open_model is not None
+                        else None
+                    ),
                 )
     except FractureImageError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -800,6 +828,7 @@ async def fracture_analysis(
             "confidence_percent": assessment.confidence_percent,
             "method": method,
             "study_type": study_type or "general",
+            "open_model_used": open_model is not None,
         },
     )
     return JSONResponse(
@@ -808,6 +837,7 @@ async def fracture_analysis(
             "method": method,
             "image_count": len(prepared),
             "model_confidence_is_calibrated": False,
+            "open_model": open_model,
         },
         headers={"Cache-Control": "private, no-store"},
     )

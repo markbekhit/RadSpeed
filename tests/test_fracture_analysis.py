@@ -133,6 +133,27 @@ class FractureAnalysisTests(unittest.TestCase):
             any("Supplemental displayed left" in item.get("text", "") for item in first_content)
         )
 
+    def test_chest_mode_includes_open_classifier_as_fallible_context(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            _completion(_assessment()),
+            _completion(_assessment()),
+        ]
+        images = prepare_fracture_images([_png()])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            analyse_fracture_images(
+                images,
+                study_type="chest_ribs",
+                open_model_probability=0.37,
+            )
+
+        prompt = client.chat.completions.create.call_args_list[0].kwargs["messages"][1][
+            "content"
+        ][0]["text"]
+        self.assertIn("37.0% fracture probability", prompt)
+        self.assertIn("fallible supporting evidence", prompt)
+
     def test_rejects_unknown_study_type(self):
         with self.assertRaises(FractureImageError):
             analyse_fracture_images(

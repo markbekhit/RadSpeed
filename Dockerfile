@@ -15,6 +15,12 @@ RUN pip install --no-cache-dir -r requirements-web.txt
 # Copy application source.
 COPY . .
 
+# Pin the public open-model artifact by content hash so the private app always
+# runs the exact chest classifier that was evaluated before deployment.
+ADD --checksum=sha256:02a46abdc14bcf8f234c098d821a17a09002668e1149b46c4a1f9150ef3f54c0 \
+    https://github.com/markbekhit/RadSpeed/releases/download/chest-fracture-model-v1/kad512_chest_float.onnx \
+    /app/models/kad512_chest_float.onnx
+
 # /data/working  — templates, guidelines, reports (bind-mount or named volume)
 # /root/.voxrad  — encrypted API keys + settings.ini (named volume)
 VOLUME ["/data/working", "/root/.voxrad"]

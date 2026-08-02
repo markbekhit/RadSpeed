@@ -590,6 +590,19 @@
     heading.append(titleBlock, badge);
     result.append(heading, create("p", "result-summary", assessment.summary));
 
+    if (payload.open_model) {
+      const viewScores = payload.open_model.view_probabilities
+        .map((probability, index) => `view ${index + 1}: ${Math.round(probability * 100)}%`)
+        .join(" · ");
+      result.append(
+        create(
+          "p",
+          "confidence-note",
+          `Open chest classifier estimated fracture probability — ${viewScores}. Highest view: ${Math.round(payload.open_model.highest_view_probability * 100)}%.`,
+        ),
+      );
+    }
+
     const columns = create("div", "result-columns");
     appendList(columns, "Key findings", assessment.key_findings);
     appendList(columns, "Limitations", assessment.limitations);

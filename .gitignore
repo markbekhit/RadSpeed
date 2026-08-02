@@ -14,3 +14,4 @@ test-results/
 .DS_Store
 .gstack/
 .claude/settings.local.json
+models/*.onnx

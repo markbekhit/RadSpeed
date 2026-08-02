@@ -302,6 +302,7 @@ def analyse_fracture_images(
     *,
     clinical_context: Optional[str] = None,
     study_type: str = "general",
+    open_model_probability: Optional[float] = None,
 ) -> tuple[FractureAssessment, str]:
     """Run an initial multi-view read followed by a separate visual critique."""
     if not images:
@@ -312,13 +313,23 @@ def analyse_fracture_images(
     chest_instructions = ""
     content_builder = _image_content
     if study_type == "chest_ribs":
+        open_model_context = ""
+        if open_model_probability is not None:
+            bounded_probability = min(1.0, max(0.0, open_model_probability))
+            open_model_context = (
+                " A separately tested open chest classifier estimated a "
+                f"{bounded_probability:.1%} fracture probability for its highest-scoring "
+                "original view. Treat this as fallible supporting evidence: inspect "
+                "the pixels independently and explicitly challenge both false-positive "
+                "and false-negative possibilities."
+            )
         chest_instructions = (
             " This is a chest/rib study. Search each rib sequentially on both "
             "sides, then the clavicles, scapulae and visible proximal humeri. "
             "Check cortical steps, lucent lines, focal callus, pleural reaction "
             "and pneumothorax. Use the supplemental hemithorax zooms to challenge "
             "subtle findings, but report only the original views and map every box "
-            "back to its original-view coordinates."
+            f"back to its original-view coordinates.{open_model_context}"
         )
         content_builder = _chest_zoom_content
     initial_text = (

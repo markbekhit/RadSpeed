@@ -98,7 +98,11 @@ These are confirmed in code on `main` as of this update — not aspirations.
   a second layer, reviews the views together with the configured frontier
   vision model, then challenges the result with a second visual pass. A
   chest/rib mode also supplies overlapping de-identified hemithorax zooms to
-  both visual passes while mapping proposed boxes back to the original view. It
+  both visual passes while mapping proposed boxes back to the original view.
+  Before those passes, chest/rib studies also receive a local KAD-512
+  fracture-probability estimate from each original view; the highest score is
+  supplied as fallible context to the frontier review and all per-view scores
+  are returned to the signed-in interface. It
   returns cautious four-state wording, explicitly uncalibrated confidence and
   suggested regions. The page also includes the 1,132-case public OrthoFrac-XR
   benchmark. Direct DICOM and the heavier open detector/classifier remain
