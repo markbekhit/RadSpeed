@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Fracture Lab · RadSpeed</title>
+  <link rel="stylesheet" href="/static/fracture-lab.css">
   <style>
     :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; }
     body { margin: 0; background: #09090b; color: #f4f4f5; }
@@ -31,8 +32,38 @@
 <main>
   <p><a class="back" href="/app">← Back to RadSpeed</a></p>
   <h1>RadSpeed Fracture Lab</h1>
-  <p class="notice"><strong>Experimental benchmark viewer — uploads are not enabled.</strong> Public research images only.  A percentage is an estimated probability only when explicitly labelled that way; other percentages are uncalibrated model scores. The estimate assumes images similar to the public calibration set and is not a patient-specific probability. All boxes are approximate research proposals, not validated localisations. Not for patient care.</p>
+  <p class="notice"><strong>Experimental research interface.</strong> The benchmark below uses public research images only.  A percentage is an estimated probability only when explicitly labelled that way; other percentages are uncalibrated model scores. The estimate assumes images similar to the public calibration set and is not a patient-specific probability. All boxes are approximate research proposals, not validated localisations. Not for patient care.</p>
   <p>Images: <a class="back" href="https://doi.org/10.6084/m9.figshare.32021085.v1" rel="external noopener">OrthoFrac-XR v1</a> by Tabib, Liza, Bijoy, Hasan and Khan, <a class="back" href="https://creativecommons.org/licenses/by/4.0/" rel="external noopener">CC BY 4.0</a>.</p>
+  <section class="analysis-panel" aria-labelledby="live-analysis-heading">
+    <div class="analysis-heading">
+      <div>
+        <div class="eyebrow">Private experimental second read</div>
+        <h2 id="live-analysis-heading">Analyse your X-rays</h2>
+      </div>
+      <span class="privacy-pill">Not saved by RadSpeed</span>
+    </div>
+    <p class="analysis-intro">Add up to four views from one study. RadSpeed removes embedded image metadata, reviews the views together, then runs a second visual critique before showing a cautious assessment and suggested regions.</p>
+    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
+      <strong>Paste, drop or choose X-ray screenshots</strong>
+      <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
+    </div>
+    <input id="fracture-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+    <div id="fracture-preview-list" class="fracture-preview-list" aria-live="polite"></div>
+    <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
+    <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
+    <div class="analysis-actions">
+      <button id="fracture-choose" type="button">Choose images</button>
+      <button id="fracture-clear" type="button" disabled>Clear</button>
+      <button id="fracture-analyse" class="primary-action" type="button" disabled>Analyse study</button>
+    </div>
+    <p class="privacy-copy">Use de-identified screenshots without burned-in patient details. Images are processed ephemerally and sent to RadSpeed's configured vision-model provider; RadSpeed does not retain the files. This is unofficial decision support and must not replace your interpretation.</p>
+    <div id="fracture-status" class="fracture-status" role="status" aria-live="polite"></div>
+    <section id="fracture-result" class="fracture-result" aria-live="polite" hidden></section>
+  </section>
+  <div class="benchmark-heading">
+    <div class="eyebrow">Retrospective validation</div>
+    <h2>Public benchmark cases</h2>
+  </div>
   <nav>
     <button data-filter="all">All 1132</button>
     <button data-filter="error">Any error (541)</button>
@@ -12502,5 +12533,6 @@
     });
   });
 </script>
+  <script src="/static/fracture-lab.js"></script>
 </body>
 </html>

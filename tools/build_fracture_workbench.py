@@ -23,7 +23,8 @@ def build(source: Path, destination: Path) -> int:
     )
     html = html.replace(
         "<title>Hybrid fracture model review</title>",
-        "<title>Fracture Lab · RadSpeed</title>",
+        "<title>Fracture Lab · RadSpeed</title>\n"
+        '  <link rel="stylesheet" href="/static/fracture-lab.css">',
     )
     html = html.replace(
         "    .notice { max-width: 900px; color: #fbbf24; }",
@@ -38,8 +39,8 @@ def build(source: Path, destination: Path) -> int:
     )
     html = html.replace(
         '<p class="notice">Public research images only.',
-        '<p class="notice"><strong>Experimental benchmark viewer — uploads are not enabled.</strong> '
-        "Public research images only. ",
+        '<p class="notice"><strong>Experimental research interface.</strong> '
+        "The benchmark below uses public research images only. ",
     )
     notice_end = (
         "All boxes are approximate research proposals, not validated localisations. "
@@ -57,7 +58,45 @@ def build(source: Path, destination: Path) -> int:
     if notice_end not in html:
         raise ValueError("The benchmark safety notice could not be found")
     html = html.replace(notice_end, attribution, 1)
+    analysis_panel = """\
+  <section class="analysis-panel" aria-labelledby="live-analysis-heading">
+    <div class="analysis-heading">
+      <div>
+        <div class="eyebrow">Private experimental second read</div>
+        <h2 id="live-analysis-heading">Analyse your X-rays</h2>
+      </div>
+      <span class="privacy-pill">Not saved by RadSpeed</span>
+    </div>
+    <p class="analysis-intro">Add up to four views from one study. RadSpeed removes embedded image metadata, reviews the views together, then runs a second visual critique before showing a cautious assessment and suggested regions.</p>
+    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
+      <strong>Paste, drop or choose X-ray screenshots</strong>
+      <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
+    </div>
+    <input id="fracture-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+    <div id="fracture-preview-list" class="fracture-preview-list" aria-live="polite"></div>
+    <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
+    <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
+    <div class="analysis-actions">
+      <button id="fracture-choose" type="button">Choose images</button>
+      <button id="fracture-clear" type="button" disabled>Clear</button>
+      <button id="fracture-analyse" class="primary-action" type="button" disabled>Analyse study</button>
+    </div>
+    <p class="privacy-copy">Use de-identified screenshots without burned-in patient details. Images are processed ephemerally and sent to RadSpeed's configured vision-model provider; RadSpeed does not retain the files. This is unofficial decision support and must not replace your interpretation.</p>
+    <div id="fracture-status" class="fracture-status" role="status" aria-live="polite"></div>
+    <section id="fracture-result" class="fracture-result" aria-live="polite" hidden></section>
+  </section>
+  <div class="benchmark-heading">
+    <div class="eyebrow">Retrospective validation</div>
+    <h2>Public benchmark cases</h2>
+  </div>
+"""
+    html = html.replace("  <nav>\n", analysis_panel + "  <nav>\n", 1)
     html = html.replace(SOURCE_IMAGE_PREFIX, HOSTED_IMAGE_PREFIX)
+    html = html.replace(
+        "</body>",
+        '  <script src="/static/fracture-lab.js"></script>\n</body>',
+        1,
+    )
 
     if html.count(HOSTED_IMAGE_PREFIX) != image_count:
         raise ValueError("Not all image references were converted")

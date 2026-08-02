@@ -4,6 +4,14 @@ Fracture Lab is an authenticated RadSpeed page for reviewing the experimental
 fracture benchmark. It is available at `/fracture-workbench` to any user who
 has completed the existing RadSpeed sign-in.
 
+It also accepts one to four PNG, JPEG or WebP radiograph screenshots from a
+single study for an ephemeral live review. RadSpeed validates and re-encodes
+the raster data to remove EXIF/embedded metadata, sends the prepared views to
+the configured vision-model provider, and does not write the files to its
+persistent volume. A second visual pass challenges the first assessment before
+the result is returned. Burned-in identifiers cannot be removed reliably, so
+users must crop or exclude them before submission.
+
 ## Current scope
 
 - 1,132 eligible radiographs from the public
@@ -15,12 +23,16 @@ has completed the existing RadSpeed sign-in.
 - Filters for all cases, any model error, and cases all models classified
   correctly.
 
-This is a retrospective benchmark viewer, not live clinical inference. Patient
-uploads are deliberately not enabled. It must not be used as a medical device
-or as the sole basis for patient care.
+The live result uses cautious four-state terminology, an explicitly
+uncalibrated model-confidence percentage and up to three suggested regions per
+view. It is experimental decision support, not a medical device, and must not
+be used as the sole basis for patient care. Direct DICOM ingestion and the open
+detector/classifier are not yet hosted; the current live route is frontier
+multi-view review plus a frontier visual critic.
 
 The benchmark HTML is stored outside the public static directory and both the
-page and each image route use the standard RadSpeed authentication dependency.
+page, live-analysis route and each benchmark image route use the standard
+RadSpeed authentication dependency.
 Production images live on the persistent Fly volume under
 `/data/fracture_workbench/images` and are not included in the Git repository.
 `RADSPEED_FRACTURE_WORKBENCH_DIR` can override the data root for local tests.

@@ -1,0 +1,288 @@
+.analysis-panel {
+  margin: 28px 0 34px;
+  padding: 24px;
+  border: 1px solid #3f3f46;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #18181b, #111827);
+  box-shadow: 0 18px 45px #0005;
+}
+
+.analysis-heading,
+.analysis-actions,
+.result-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.analysis-heading {
+  justify-content: space-between;
+}
+
+.analysis-heading h2,
+.benchmark-heading h2 {
+  margin: 3px 0 0;
+  font-size: 25px;
+}
+
+.eyebrow {
+  color: #93c5fd;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.privacy-pill,
+.assessment-badge {
+  padding: 6px 10px;
+  border: 1px solid #166534;
+  border-radius: 999px;
+  background: #052e16;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.analysis-intro {
+  max-width: 1050px;
+  margin: 14px 0 18px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.fracture-drop-zone {
+  display: grid;
+  place-items: center;
+  min-height: 116px;
+  padding: 18px;
+  border: 2px dashed #52525b;
+  border-radius: 12px;
+  background: #09090b99;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+
+.fracture-drop-zone:hover,
+.fracture-drop-zone:focus,
+.fracture-drop-zone.drag-over {
+  border-color: #60a5fa;
+  outline: none;
+  background: #17255499;
+}
+
+.fracture-drop-zone strong {
+  font-size: 17px;
+}
+
+.fracture-drop-zone span {
+  margin-top: 6px;
+  color: #a1a1aa;
+  font-size: 13px;
+}
+
+.fracture-preview-list,
+.live-view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.fracture-preview,
+.live-view-card {
+  overflow: hidden;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  background: #09090b;
+}
+
+.fracture-preview img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background: #000;
+}
+
+.fracture-preview-footer,
+.live-view-copy {
+  padding: 10px;
+  color: #d4d4d8;
+  font-size: 13px;
+}
+
+.context-label {
+  display: block;
+  margin: 16px 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.context-label span {
+  color: #a1a1aa;
+  font-weight: 500;
+}
+
+.context-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #52525b;
+  border-radius: 8px;
+  background: #09090b;
+  color: #f4f4f5;
+  font: inherit;
+}
+
+.context-input:focus {
+  border-color: #60a5fa;
+  outline: 2px solid #1d4ed866;
+}
+
+.analysis-actions {
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.analysis-panel button {
+  margin: 0;
+}
+
+.analysis-panel button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.analysis-panel .primary-action {
+  margin-left: auto;
+  border-color: #2563eb;
+  background: #2563eb;
+  font-weight: 800;
+}
+
+.privacy-copy {
+  margin: 14px 0 0;
+  color: #a1a1aa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.fracture-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: #93c5fd;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fracture-status.error {
+  color: #fca5a5;
+}
+
+.fracture-result {
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid #3f3f46;
+}
+
+.result-heading {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.result-heading h3 {
+  margin: 3px 0 0;
+  font-size: 22px;
+}
+
+.assessment-badge.possible_fracture,
+.assessment-badge.indeterminate {
+  border-color: #a16207;
+  background: #422006;
+  color: #fde68a;
+}
+
+.assessment-badge.fracture_suspected {
+  border-color: #b91c1c;
+  background: #450a0a;
+  color: #fecaca;
+}
+
+.result-summary {
+  margin: 14px 0;
+  color: #f4f4f5;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.result-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.result-list {
+  padding: 14px;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  background: #09090b88;
+}
+
+.result-list h4 {
+  margin: 0 0 8px;
+}
+
+.result-list ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #d4d4d8;
+  font-size: 14px;
+}
+
+.live-image-shell {
+  position: relative;
+  background: #000;
+}
+
+.live-image-shell img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.live-image-shell svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.live-view-copy strong,
+.live-view-copy span {
+  display: block;
+}
+
+.live-view-copy span {
+  margin-top: 5px;
+  color: #a1a1aa;
+}
+
+.confidence-note {
+  margin: 16px 0 0;
+  color: #fbbf24;
+  font-size: 12px;
+}
+
+.benchmark-heading {
+  margin-top: 34px;
+}
+
+@media (max-width: 640px) {
+  .analysis-panel { padding: 17px; }
+  .analysis-heading, .result-heading { align-items: flex-start; flex-direction: column; }
+  .analysis-panel .primary-action { margin-left: 0; width: 100%; }
+}

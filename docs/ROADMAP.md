@@ -89,10 +89,13 @@ These are confirmed in code on `main` as of this update — not aspirations.
   v2.1, LI-RADS CT/MRI v2018 and ACR TI-RADS categories emit a consistent
   report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
-- **Fracture Lab** — authenticated experimental viewer for the 1,132-case
-  public OrthoFrac-XR benchmark, including labels, model estimates, frontier
-  comments and approximate boxes. It is retrospective research only; patient
-  uploads and live clinical inference are deliberately not enabled.
+- **Fracture Lab** — authenticated experimental review with an ephemeral live
+  path for one to four de-identified radiograph screenshots. Images are
+  metadata-stripped, reviewed together by the configured frontier vision model,
+  then challenged by a second visual pass. It returns cautious four-state
+  wording, explicitly uncalibrated confidence and suggested regions. The page
+  also includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM and
+  the heavier open detector/classifier remain future separate-service work.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
 

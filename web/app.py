@@ -53,6 +53,14 @@ from llm.format import (
     split_template,
     stream_format_text,
 )
+from llm.fracture_analysis import (
+    MAX_FRACTURE_IMAGE_BYTES,
+    MAX_FRACTURE_IMAGES,
+    FractureImageError,
+    analyse_fracture_images,
+    mock_fracture_assessment,
+    prepare_fracture_images,
+)
 from llm.impressions import stream_impression
 from llm.model_compat import completion_options
 from llm.worksheet import (
@@ -126,6 +134,7 @@ app.mount(
 )
 _jinja = Jinja2Templates(directory=os.path.join(_BASE_DIR, "templates"))
 _FRACTURE_WORKBENCH_PAGE = Path(_BASE_DIR) / "private" / "fracture_workbench.html"
+_fracture_analysis_slot = asyncio.Semaphore(1)
 
 # Cache-busting: use the current git commit hash (or a timestamp fallback)
 # so browsers always load fresh JS/CSS after each deploy.
@@ -706,11 +715,91 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
         headers={
             "Cache-Control": "private, no-store",
             "Content-Security-Policy": (
-                "default-src 'self'; img-src 'self'; style-src 'unsafe-inline'; "
-                "script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"
+                "default-src 'self'; img-src 'self' blob:; "
+                "style-src 'self' 'unsafe-inline'; "
+                "script-src 'self' 'unsafe-inline'; base-uri 'none'; "
+                "frame-ancestors 'none'"
             ),
             "X-Robots-Tag": "noindex, nofollow",
         },
+    )
+
+
+@app.post("/api/fracture-analysis")
+async def fracture_analysis(
+    images: list[UploadFile] = File(...),
+    clinical_context: Optional[str] = Form(None),
+    user: dict = Depends(_verify_auth),
+):
+    """Run an ephemeral, experimental multi-view fracture second read."""
+    if not images or len(images) > MAX_FRACTURE_IMAGES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Use between 1 and {MAX_FRACTURE_IMAGES} X-ray views.",
+        )
+    if not _MOCK_MODE and not config.TEXT_API_KEY:
+        raise HTTPException(
+            status_code=503,
+            detail="The RadSpeed vision model is not configured.",
+        )
+
+    try:
+        # The small production VM handles one memory-intensive upload at a
+        # time. Waiting requests remain in Starlette's bounded upload spool and
+        # never reach RadSpeed's persistent data volume.
+        async with _fracture_analysis_slot:
+            payloads: list[bytes] = []
+            try:
+                for image in images:
+                    payloads.append(await image.read(MAX_FRACTURE_IMAGE_BYTES + 1))
+            finally:
+                for image in images:
+                    await image.close()
+            prepared = await asyncio.to_thread(prepare_fracture_images, payloads)
+            if _MOCK_MODE:
+                assessment = mock_fracture_assessment(len(prepared))
+                method = "synthetic_test_fixture"
+            else:
+                assessment, method = await asyncio.to_thread(
+                    analyse_fracture_images,
+                    prepared,
+                    clinical_context=clinical_context,
+                )
+    except FractureImageError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except AuthenticationError as exc:
+        logger.error("Vision model API key rejected during fracture analysis.")
+        raise HTTPException(
+            status_code=503,
+            detail="The RadSpeed vision model could not authenticate.",
+        ) from exc
+    except Exception as exc:
+        # Do not include provider text, filenames, clinical context or image
+        # details in logs: any of them may contain health information.
+        logger.error("Fracture analysis failed (%s).", type(exc).__name__)
+        raise HTTPException(
+            status_code=503,
+            detail="The fracture review could not be completed. Try again shortly.",
+        ) from exc
+
+    log_event(
+        user_id=user.get("id"),
+        event_type="fracture_analysis",
+        metadata={
+            "image_count": len(prepared),
+            "assessment": assessment.assessment,
+            "confidence_percent": assessment.confidence_percent,
+            "method": method,
+        },
+    )
+    return JSONResponse(
+        {
+            "assessment": assessment.model_dump(),
+            "method": method,
+            "image_count": len(prepared),
+            "model_confidence_is_calibrated": False,
+        },
+        headers={"Cache-Control": "private, no-store"},
     )
 
 

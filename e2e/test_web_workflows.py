@@ -1,9 +1,11 @@
 """Browser-level coverage for RadSpeed's highest-value web workflows."""
 from __future__ import annotations
 
+import io
 import re
 import time
 
+from PIL import Image
 from playwright.sync_api import Browser, Page, expect
 
 
@@ -103,9 +105,49 @@ def test_authenticated_fracture_lab_is_reachable_from_radspeed(
     page.get_by_role("link", name="Fracture Lab").click()
 
     expect(page.get_by_role("heading", name="RadSpeed Fracture Lab")).to_be_visible()
-    expect(page.locator(".notice")).to_contain_text("uploads are not enabled")
+    expect(page.locator(".notice")).to_contain_text("Experimental research interface")
     expect(page.get_by_role("button", name="All 1132")).to_be_visible()
     expect(page.locator("article.card")).to_have_count(1132)
+    assert errors == []
+
+
+def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.route(
+        "**/fracture-workbench/images/**",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="image/gif",
+            body=(
+                b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
+                b"\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00"
+                b"\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+            ),
+        ),
+    )
+    synthetic_buffer = io.BytesIO()
+    Image.new("L", (96, 96), color=110).save(synthetic_buffer, format="PNG")
+    synthetic_xray = synthetic_buffer.getvalue()
+
+    page.goto(f"{base_url}/fracture-workbench")
+    page.locator("#fracture-file-input").set_input_files(
+        [
+            {
+                "name": "synthetic-view.png",
+                "mimeType": "image/png",
+                "buffer": synthetic_xray,
+            }
+        ]
+    )
+    expect(page.locator(".fracture-preview")).to_have_count(1)
+    page.locator("#fracture-context").fill("Synthetic test context")
+    page.locator("#fracture-analyse").click()
+
+    expect(page.locator("#fracture-result")).to_be_visible(timeout=10_000)
+    expect(page.locator("#fracture-result")).to_contain_text("Possible fracture")
+    expect(page.locator("#fracture-result")).to_contain_text("62% model confidence")
+    expect(page.locator("#fracture-result svg rect")).to_have_count(1)
+    expect(page.locator("#fracture-status")).to_contain_text("Review complete")
     assert errors == []
 
 
