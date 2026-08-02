@@ -717,7 +717,8 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
             "Content-Security-Policy": (
                 "default-src 'self'; img-src 'self' blob:; "
                 "style-src 'self' 'unsafe-inline'; "
-                "script-src 'self' 'unsafe-inline'; base-uri 'none'; "
+                "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; "
+                "worker-src 'self' blob:; base-uri 'none'; "
                 "frame-ancestors 'none'"
             ),
             "X-Robots-Tag": "noindex, nofollow",
@@ -729,6 +730,7 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
 async def fracture_analysis(
     images: list[UploadFile] = File(...),
     clinical_context: Optional[str] = Form(None),
+    privacy_confirmed: Optional[str] = Form(None),
     user: dict = Depends(_verify_auth),
 ):
     """Run an ephemeral, experimental multi-view fracture second read."""
@@ -736,6 +738,11 @@ async def fracture_analysis(
         raise HTTPException(
             status_code=400,
             detail=f"Use between 1 and {MAX_FRACTURE_IMAGES} X-ray views.",
+        )
+    if privacy_confirmed != "true":
+        raise HTTPException(
+            status_code=400,
+            detail="Check the cleaned previews and confirm privacy before analysis.",
         )
     if not _MOCK_MODE and not config.TEXT_API_KEY:
         raise HTTPException(

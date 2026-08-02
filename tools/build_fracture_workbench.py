@@ -24,7 +24,7 @@ def build(source: Path, destination: Path) -> int:
     html = html.replace(
         "<title>Hybrid fracture model review</title>",
         "<title>Fracture Lab · RadSpeed</title>\n"
-        '  <link rel="stylesheet" href="/static/fracture-lab.css">',
+        '  <link rel="stylesheet" href="/static/fracture-lab.css?v=privacy-1">',
     )
     html = html.replace(
         "    .notice { max-width: 900px; color: #fbbf24; }",
@@ -67,13 +67,24 @@ def build(source: Path, destination: Path) -> int:
       </div>
       <span class="privacy-pill">Not saved by RadSpeed</span>
     </div>
-    <p class="analysis-intro">Add up to four views from one study. RadSpeed removes embedded image metadata, reviews the views together, then runs a second visual critique before showing a cautious assessment and suggested regions.</p>
+    <p class="analysis-intro">Add up to four views from one study. Before upload, your browser checks for visible text and blacks it out locally. Only the cleaned copies are sent for the two-pass visual review.</p>
     <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
       <strong>Paste, drop or choose X-ray screenshots</strong>
       <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
     </div>
     <input id="fracture-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
     <div id="fracture-preview-list" class="fracture-preview-list" aria-live="polite"></div>
+    <section id="fracture-privacy-panel" class="privacy-review" aria-labelledby="fracture-privacy-heading" hidden>
+      <div>
+        <strong id="fracture-privacy-heading">Privacy check before upload</strong>
+        <p id="fracture-privacy-summary"></p>
+        <p class="privacy-instruction">The previews above are the copies that will be analysed. Drag over anything missed to add a permanent black box. Laterality and standard view markers are kept where recognised.</p>
+      </div>
+      <label class="privacy-confirmation">
+        <input id="fracture-privacy-confirm" type="checkbox">
+        <span>I checked the cleaned previews and no patient details remain.</span>
+      </label>
+    </section>
     <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
     <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
     <div class="analysis-actions">
@@ -81,7 +92,7 @@ def build(source: Path, destination: Path) -> int:
       <button id="fracture-clear" type="button" disabled>Clear</button>
       <button id="fracture-analyse" class="primary-action" type="button" disabled>Analyse study</button>
     </div>
-    <p class="privacy-copy">Use de-identified screenshots without burned-in patient details. Images are processed ephemerally and sent to RadSpeed's configured vision-model provider; RadSpeed does not retain the files. This is unofficial decision support and must not replace your interpretation.</p>
+    <p class="privacy-copy">Visible-text checking and blackouts happen in this browser. The unredacted screenshot is not uploaded. The cleaned copy is also stripped of hidden metadata by RadSpeed, processed ephemerally by RadSpeed's configured vision-model provider, and not retained by RadSpeed. Automated de-identification can miss text, so the preview check remains required. This is unofficial decision support and must not replace your interpretation.</p>
     <div id="fracture-status" class="fracture-status" role="status" aria-live="polite"></div>
     <section id="fracture-result" class="fracture-result" aria-live="polite" hidden></section>
   </section>
@@ -94,7 +105,8 @@ def build(source: Path, destination: Path) -> int:
     html = html.replace(SOURCE_IMAGE_PREFIX, HOSTED_IMAGE_PREFIX)
     html = html.replace(
         "</body>",
-        '  <script src="/static/fracture-lab.js"></script>\n</body>',
+        '  <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>\n'
+        '  <script src="/static/fracture-lab.js?v=privacy-1"></script>\n</body>',
         1,
     )
 

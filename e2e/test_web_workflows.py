@@ -5,7 +5,7 @@ import io
 import re
 import time
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import Browser, Page, expect
 
 
@@ -111,8 +111,72 @@ def test_authenticated_fracture_lab_is_reachable_from_radspeed(
     assert errors == []
 
 
+def test_fracture_lab_runs_deidentification_engine_entirely_on_site(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    external_requests: list[str] = []
+    page.on(
+        "request",
+        lambda request: external_requests.append(request.url)
+        if not request.url.startswith(base_url) and not request.url.startswith("blob:")
+        else None,
+    )
+    page.route(
+        "**/fracture-workbench/images/**",
+        lambda route: route.fulfill(status=200, content_type="image/gif", body=b"GIF89a"),
+    )
+
+    screenshot = Image.new("RGB", (1200, 420), color="black")
+    draw = ImageDraw.Draw(screenshot)
+    font = ImageFont.load_default(size=58)
+    draw.text((35, 35), "PATIENT NAME: EXAMPLE", fill="white", font=font)
+    draw.text((35, 125), "MRN: 12345678", fill="white", font=font)
+    screenshot_buffer = io.BytesIO()
+    screenshot.save(screenshot_buffer, format="PNG")
+
+    page.goto(f"{base_url}/fracture-workbench")
+    page.locator("#fracture-file-input").set_input_files(
+        {
+            "name": "identifiable-synthetic.png",
+            "mimeType": "image/png",
+            "buffer": screenshot_buffer.getvalue(),
+        }
+    )
+
+    expect(page.locator(".fracture-preview.privacy-ready")).to_have_count(1, timeout=30_000)
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text(
+        re.compile(r"[1-9]\d* text areas? covered"), timeout=30_000
+    )
+    expect(page.locator("#fracture-analyse")).to_be_disabled()
+    assert external_requests == []
+    assert errors == []
+
+
 def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: str):
     errors = _console_errors(page)
+    uploaded_payloads: list[bytes] = []
+
+    page.route(
+        "**/static/vendor/tesseract/tesseract.min.js*",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="application/javascript",
+            body="""
+              window.Tesseract = {
+                createWorker: async () => ({
+                  recognize: async () => ({ data: { tsv:
+                    "level\\tpage_num\\tblock_num\\tpar_num\\tline_num\\tword_num\\tleft\\ttop\\twidth\\theight\\tconf\\ttext\\n" +
+                    "5\\t1\\t1\\t1\\t1\\t1\\t8\\t8\\t32\\t12\\t96\\tPATIENT\\n" +
+                    "5\\t1\\t1\\t1\\t1\\t2\\t44\\t8\\t36\\t12\\t96\\tNAME\\n" +
+                    "5\\t1\\t1\\t1\\t2\\t1\\t80\\t80\\t8\\t8\\t96\\tR"
+                  }}),
+                  terminate: async () => {},
+                }),
+              };
+            """,
+        ),
+    )
     page.route(
         "**/fracture-workbench/images/**",
         lambda route: route.fulfill(
@@ -129,6 +193,25 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
     Image.new("L", (96, 96), color=110).save(synthetic_buffer, format="PNG")
     synthetic_xray = synthetic_buffer.getvalue()
 
+    unconfirmed = page.request.post(
+        f"{base_url}/api/fracture-analysis",
+        multipart={
+            "images": {
+                "name": "synthetic-view.png",
+                "mimeType": "image/png",
+                "buffer": synthetic_xray,
+            }
+        },
+    )
+    assert unconfirmed.status == 400
+    assert "confirm privacy" in unconfirmed.json()["detail"]
+
+    def capture_analysis_request(request):
+        if request.url.endswith("/api/fracture-analysis"):
+            uploaded_payloads.append(request.post_data_buffer)
+
+    page.on("request", capture_analysis_request)
+
     page.goto(f"{base_url}/fracture-workbench")
     page.locator("#fracture-file-input").set_input_files(
         [
@@ -140,6 +223,38 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
         ]
     )
     expect(page.locator(".fracture-preview")).to_have_count(1)
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text(
+        "2 text areas covered", timeout=10_000
+    )
+    expect(page.locator("#fracture-analyse")).to_be_disabled()
+
+    # The simulated patient-name boxes are blacked out, while the standard
+    # right-side marker is intentionally retained.
+    pixels = page.locator(".fracture-preview-canvas").evaluate(
+        """canvas => ({
+          redacted: Array.from(canvas.getContext('2d').getImageData(10, 10, 1, 1).data),
+          marker: Array.from(canvas.getContext('2d').getImageData(82, 82, 1, 1).data),
+        })"""
+    )
+    assert pixels["redacted"][:3] == [0, 0, 0]
+    assert pixels["marker"][:3] == [110, 110, 110]
+
+    page.locator(".fracture-preview-canvas").scroll_into_view_if_needed()
+    canvas_box = page.locator(".fracture-preview-canvas").bounding_box()
+    assert canvas_box
+    page.mouse.move(canvas_box["x"] + canvas_box["width"] * 0.52, canvas_box["y"] + canvas_box["height"] * 0.52)
+    page.mouse.down()
+    page.mouse.move(canvas_box["x"] + canvas_box["width"] * 0.70, canvas_box["y"] + canvas_box["height"] * 0.70)
+    page.mouse.up()
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text("3 text areas covered")
+    assert page.locator(".fracture-preview-canvas").evaluate(
+        "canvas => Array.from(canvas.getContext('2d').getImageData(56, 56, 1, 1).data).slice(0, 3)"
+    ) == [0, 0, 0]
+    page.get_by_role("button", name="Undo blackout").click()
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text("2 text areas covered")
+
+    page.locator("#fracture-privacy-confirm").check()
+    expect(page.locator("#fracture-analyse")).to_be_enabled()
     page.locator("#fracture-context").fill("Synthetic test context")
     page.locator("#fracture-analyse").click()
 
@@ -148,6 +263,10 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
     expect(page.locator("#fracture-result")).to_contain_text("62% model confidence")
     expect(page.locator("#fracture-result svg rect")).to_have_count(1)
     expect(page.locator("#fracture-status")).to_contain_text("Review complete")
+    assert uploaded_payloads
+    assert b'deidentified-view-' in uploaded_payloads[-1]
+    assert b'synthetic-view.png' not in uploaded_payloads[-1]
+    assert b'privacy_confirmed' in uploaded_payloads[-1]
     assert errors == []
 
 

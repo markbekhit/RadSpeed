@@ -90,12 +90,17 @@ These are confirmed in code on `main` as of this update — not aspirations.
   report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
 - **Fracture Lab** — authenticated experimental review with an ephemeral live
-  path for one to four de-identified radiograph screenshots. Images are
-  metadata-stripped, reviewed together by the configured frontier vision model,
-  then challenged by a second visual pass. It returns cautious four-state
-  wording, explicitly uncalibrated confidence and suggested regions. The page
-  also includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM and
-  the heavier open detector/classifier remain future separate-service work.
+  path for one to four radiograph screenshots. A bundled browser-only text
+  recogniser automatically blacks out detected text before upload, preserves
+  standard laterality/view markers, and supports manual drag-to-blackout. The
+  analysis endpoint requires confirmation of the exact cleaned previews. Only
+  those generic-filename copies leave the browser; RadSpeed strips metadata as
+  a second layer, reviews the views together with the configured frontier
+  vision model, then challenges the result with a second visual pass. It
+  returns cautious four-state wording, explicitly uncalibrated confidence and
+  suggested regions. The page also includes the 1,132-case public OrthoFrac-XR
+  benchmark. Direct DICOM and the heavier open detector/classifier remain
+  future separate-service work.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
 
@@ -166,7 +171,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **99 Python tests + 11 Chromium E2E workflows** run before deployment and on
+- **112 Python tests + 14 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,

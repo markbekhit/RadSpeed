@@ -5,12 +5,21 @@ fracture benchmark. It is available at `/fracture-workbench` to any user who
 has completed the existing RadSpeed sign-in.
 
 It also accepts one to four PNG, JPEG or WebP radiograph screenshots from a
-single study for an ephemeral live review. RadSpeed validates and re-encodes
-the raster data to remove EXIF/embedded metadata, sends the prepared views to
-the configured vision-model provider, and does not write the files to its
-persistent volume. A second visual pass challenges the first assessment before
-the result is returned. Burned-in identifiers cannot be removed reliably, so
-users must crop or exclude them before submission.
+single study for an ephemeral live review. Before upload, the browser runs the
+bundled text-recognition engine locally, blacks out detected text other than
+standard laterality/view markers, and shows the exact cleaned copy that will be
+sent. The user can drag over anything missed and must confirm the previews
+before the analysis route accepts the upload. The original file and filename
+are never submitted. RadSpeed then validates and re-encodes the cleaned raster
+to remove EXIF/embedded metadata, sends it to the configured vision-model
+provider, and does not write the file to its persistent volume. A second visual
+pass challenges the first assessment before the result is returned.
+
+Automatic text recognition is a safety aid rather than a guarantee. Analysis
+remains fail-closed behind the final preview confirmation, and users should
+remove an image or manually cover any ambiguous area. The OCR runtime, English
+language data and image processing are served by RadSpeed and execute in the
+browser; no image or recognised text is sent to an OCR service.
 
 ## Current scope
 
