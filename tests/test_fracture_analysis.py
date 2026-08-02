@@ -29,9 +29,12 @@ def _png(*, width: int = 96, height: int = 80, marker: str | None = None) -> byt
     return output.getvalue()
 
 
-def _assessment(summary: str = "Possible subtle fracture.") -> str:
+def _assessment(
+    summary: str = "Possible subtle fracture.", *, study_region: str = "other"
+) -> str:
     return json.dumps(
         {
+            "study_region": study_region,
             "assessment": "possible_fracture",
             "confidence_percent": 64,
             "summary": summary,
@@ -95,12 +98,13 @@ class FractureAnalysisTests(unittest.TestCase):
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method = analyse_fracture_images(
+            result, method, open_model = analyse_fracture_images(
                 images, clinical_context="synthetic trauma context"
             )
 
         self.assertEqual(method, "frontier_multiview_with_visual_critic")
         self.assertEqual(result.summary, "Critic-confirmed opinion.")
+        self.assertIsNone(open_model)
         self.assertEqual(client.chat.completions.create.call_count, 2)
         second_request = client.chat.completions.create.call_args_list[1].kwargs
         second_content = second_request["messages"][1]["content"]
@@ -109,56 +113,77 @@ class FractureAnalysisTests(unittest.TestCase):
             any(item.get("type") == "image_url" for item in second_content)
         )
 
-    def test_chest_mode_adds_two_hemithorax_zooms_per_view(self):
+    def test_chest_study_is_auto_routed_to_open_model_and_zoomed_critic(self):
         client = MagicMock()
         client.chat.completions.create.side_effect = [
-            _completion(_assessment("Initial chest opinion.")),
-            _completion(_assessment("Critic-confirmed chest opinion.")),
+            _completion(
+                _assessment("Initial chest opinion.", study_region="chest_ribs")
+            ),
+            _completion(
+                _assessment(
+                    "Critic-confirmed chest opinion.", study_region="chest_ribs"
+                )
+            ),
         ]
+        chest_scorer = MagicMock(
+            return_value={
+                "model": "synthetic KAD",
+                "view_probabilities": [0.37],
+                "highest_view_probability": 0.37,
+                "validation_threshold": 0.05,
+            }
+        )
         images = prepare_fracture_images([_png(width=120, height=96)])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            _, method = analyse_fracture_images(images, study_type="chest_ribs")
+            _, method, open_model = analyse_fracture_images(
+                images, chest_scorer=chest_scorer
+            )
 
         self.assertEqual(method, "frontier_chest_multiscale_with_visual_critic")
+        self.assertEqual(open_model["highest_view_probability"], 0.37)
+        chest_scorer.assert_called_once_with(images)
         first_content = client.chat.completions.create.call_args_list[0].kwargs[
             "messages"
         ][1]["content"]
-        image_parts = [
+        second_content = client.chat.completions.create.call_args_list[1].kwargs[
+            "messages"
+        ][1]["content"]
+        first_images = [
             item for item in first_content if item.get("type") == "image_url"
         ]
-        self.assertEqual(len(image_parts), 3)
-        self.assertIn("Search each rib sequentially", first_content[0]["text"])
+        second_images = [
+            item for item in second_content if item.get("type") == "image_url"
+        ]
+        self.assertEqual(len(first_images), 1)
+        self.assertEqual(len(second_images), 3)
+        self.assertIn("Search each rib sequentially", second_content[0]["text"])
+        self.assertIn("37.0% fracture probability", second_content[0]["text"])
+        self.assertIn("fallible supporting evidence", second_content[0]["text"])
         self.assertTrue(
-            any("Supplemental displayed left" in item.get("text", "") for item in first_content)
+            any(
+                "Supplemental displayed left" in item.get("text", "")
+                for item in second_content
+            )
         )
 
-    def test_chest_mode_includes_open_classifier_as_fallible_context(self):
+    def test_general_study_does_not_run_chest_classifier(self):
         client = MagicMock()
         client.chat.completions.create.side_effect = [
             _completion(_assessment()),
             _completion(_assessment()),
         ]
+        chest_scorer = MagicMock()
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            analyse_fracture_images(
-                images,
-                study_type="chest_ribs",
-                open_model_probability=0.37,
+            _, method, open_model = analyse_fracture_images(
+                images, chest_scorer=chest_scorer
             )
 
-        prompt = client.chat.completions.create.call_args_list[0].kwargs["messages"][1][
-            "content"
-        ][0]["text"]
-        self.assertIn("37.0% fracture probability", prompt)
-        self.assertIn("fallible supporting evidence", prompt)
-
-    def test_rejects_unknown_study_type(self):
-        with self.assertRaises(FractureImageError):
-            analyse_fracture_images(
-                prepare_fracture_images([_png()]), study_type="unsupported"
-            )
+        self.assertEqual(method, "frontier_multiview_with_visual_critic")
+        self.assertIsNone(open_model)
+        chest_scorer.assert_not_called()
 
     def test_returns_initial_read_if_critic_response_is_malformed(self):
         client = MagicMock()
@@ -169,10 +194,11 @@ class FractureAnalysisTests(unittest.TestCase):
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method = analyse_fracture_images(images)
+            result, method, open_model = analyse_fracture_images(images)
 
         self.assertEqual(method, "frontier_multiview_single_pass_fallback")
         self.assertEqual(result.summary, "Initial opinion.")
+        self.assertIsNone(open_model)
         self.assertIn("second-pass visual critique was unavailable", result.limitations[-1])
 
     def test_rejects_boxes_with_no_area(self):

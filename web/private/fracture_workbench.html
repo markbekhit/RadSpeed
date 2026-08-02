@@ -42,7 +42,7 @@
       </div>
       <span class="privacy-pill">Not saved by RadSpeed</span>
     </div>
-    <p class="analysis-intro">Add up to four views from one study. Before upload, your browser checks for visible text and blacks it out locally. Only the cleaned copies are sent for the two-pass visual review.</p>
+    <p class="analysis-intro">Add up to four views from one study. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. Only the cleaned copies are sent for the two-pass visual review.</p>
     <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
       <strong>Paste, drop or choose X-ray screenshots</strong>
       <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
@@ -60,11 +60,6 @@
         <span>I checked the cleaned previews and no patient details remain.</span>
       </label>
     </section>
-    <label class="context-label" for="fracture-study-type">Study type</label>
-    <select id="fracture-study-type" class="context-input">
-      <option value="general">General X-ray</option>
-      <option value="chest_ribs">Chest / ribs</option>
-    </select>
     <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
     <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
     <div class="analysis-actions">
@@ -12550,6 +12545,6 @@
   });
 </script>
   <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>
-  <script src="/static/fracture-lab.js?v=chest-open-1"></script>
+  <script src="/static/fracture-lab.js?v=auto-route-1"></script>
 </body>
 </html>

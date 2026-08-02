@@ -96,13 +96,13 @@ These are confirmed in code on `main` as of this update — not aspirations.
   analysis endpoint requires confirmation of the exact cleaned previews. Only
   those generic-filename copies leave the browser; RadSpeed strips metadata as
   a second layer, reviews the views together with the configured frontier
-  vision model, then challenges the result with a second visual pass. A
-  chest/rib mode also supplies overlapping de-identified hemithorax zooms to
-  both visual passes while mapping proposed boxes back to the original view.
-  Before those passes, chest/rib studies also receive a local KAD-512
-  fracture-probability estimate from each original view; the highest score is
-  supplied as fallible context to the frontier review and all per-view scores
-  are returned to the signed-in interface. It
+  vision model, then challenges the result with a second visual pass. The
+  first pass identifies the anatomy automatically. When it sees a chest or rib
+  study, RadSpeed runs a local KAD-512 fracture-probability estimate for each
+  original view, then supplies the highest score and overlapping de-identified
+  hemithorax zooms to the second reader. Proposed boxes are mapped back to the
+  original view, and all per-view open-model scores are returned to the
+  signed-in interface. It
   returns cautious four-state wording, explicitly uncalibrated confidence and
   suggested regions. The page also includes the 1,132-case public OrthoFrac-XR
   benchmark. Direct DICOM and the heavier open detector/classifier remain

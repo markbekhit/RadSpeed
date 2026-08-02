@@ -731,7 +731,6 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
 async def fracture_analysis(
     images: list[UploadFile] = File(...),
     clinical_context: Optional[str] = Form(None),
-    study_type: Optional[str] = Form("general"),
     privacy_confirmed: Optional[str] = Form(None),
     user: dict = Depends(_verify_auth),
 ):
@@ -766,41 +765,22 @@ async def fracture_analysis(
                     await image.close()
             prepared = await asyncio.to_thread(prepare_fracture_images, payloads)
             if _MOCK_MODE:
-                assessment = mock_fracture_assessment(len(prepared))
-                method = "synthetic_test_fixture"
-                open_model = (
-                    {
-                        "model": "synthetic_test_fixture",
-                        "view_probabilities": [0.42] * len(prepared),
-                        "highest_view_probability": 0.42,
-                        "validation_threshold": 0.05,
-                    }
-                    if (study_type or "general") == "chest_ribs"
-                    else None
+                assessment = mock_fracture_assessment(
+                    len(prepared), study_region="chest_ribs"
                 )
+                method = "synthetic_test_fixture"
+                open_model = {
+                    "model": "synthetic_test_fixture",
+                    "view_probabilities": [0.42] * len(prepared),
+                    "highest_view_probability": 0.42,
+                    "validation_threshold": 0.05,
+                }
             else:
-                open_model = None
-                if (study_type or "general") == "chest_ribs":
-                    try:
-                        open_model = await asyncio.to_thread(
-                            score_chest_images, prepared
-                        )
-                    except Exception as exc:
-                        logger.warning(
-                            "Open chest classifier unavailable (%s); continuing with "
-                            "frontier review.",
-                            type(exc).__name__,
-                        )
-                assessment, method = await asyncio.to_thread(
+                assessment, method, open_model = await asyncio.to_thread(
                     analyse_fracture_images,
                     prepared,
                     clinical_context=clinical_context,
-                    study_type=study_type or "general",
-                    open_model_probability=(
-                        open_model["highest_view_probability"]
-                        if open_model is not None
-                        else None
-                    ),
+                    chest_scorer=score_chest_images,
                 )
     except FractureImageError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -827,7 +807,7 @@ async def fracture_analysis(
             "assessment": assessment.assessment,
             "confidence_percent": assessment.confidence_percent,
             "method": method,
-            "study_type": study_type or "general",
+            "detected_study_type": assessment.study_region,
             "open_model_used": open_model is not None,
         },
     )
@@ -836,6 +816,7 @@ async def fracture_analysis(
             "assessment": assessment.model_dump(),
             "method": method,
             "image_count": len(prepared),
+            "detected_study_type": assessment.study_region,
             "model_confidence_is_calibrated": False,
             "open_model": open_model,
         },

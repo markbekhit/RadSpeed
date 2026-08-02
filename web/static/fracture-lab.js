@@ -26,7 +26,6 @@
   const clearButton = byId("fracture-clear");
   const analyseButton = byId("fracture-analyse");
   const contextInput = byId("fracture-context");
-  const studyTypeInput = byId("fracture-study-type");
   const privacyPanel = byId("fracture-privacy-panel");
   const privacySummary = byId("fracture-privacy-summary");
   const privacyConfirm = byId("fracture-privacy-confirm");
@@ -656,15 +655,10 @@
     analysisBusy = true;
     updateControls();
     resetResult();
-    setStatus(
-      studyTypeInput.value === "chest_ribs"
-        ? "Uploading only the cleaned copies, then reviewing the full chest and rib zooms…"
-        : "Uploading only the cleaned copies, then running two visual reviews…",
-    );
+    setStatus("Uploading only the cleaned copies, identifying the anatomy, then running two visual reviews…");
     const form = new FormData();
     files.forEach((item) => form.append("images", item.scrubbedFile, item.scrubbedFile.name));
     form.append("privacy_confirmed", "true");
-    form.append("study_type", studyTypeInput.value);
     if (clinicalContext) form.append("clinical_context", clinicalContext);
 
     try {
