@@ -35,9 +35,13 @@ browser; no image or recognised text is sent to an OCR service.
 The live result uses cautious four-state terminology, an explicitly
 uncalibrated model-confidence percentage and up to three suggested regions per
 view. It is experimental decision support, not a medical device, and must not
-be used as the sole basis for patient care. Direct DICOM ingestion and the open
-detector/classifier are not yet hosted; the current live route is frontier
-multi-view review plus a frontier visual critic.
+be used as the sole basis for patient care. The first frontier pass routes the
+study automatically. Chest/rib studies receive a separate local KAD score and
+systematic hemithorax zooms; dedicated wrist studies receive untrusted zooms
+from a public-data paediatric-wrist YOLOv9 specialist; other studies receive
+untrusted broad RT-DETR zooms. A fresh frontier pass must accept or reject those
+suggestions and search outside them. Wrist-detector performance has not been
+established in adults. Direct DICOM ingestion remains future work.
 
 The benchmark HTML is stored outside the public static directory and both the
 page, live-analysis route and each benchmark image route use the standard

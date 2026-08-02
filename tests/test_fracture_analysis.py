@@ -8,6 +8,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 from PIL import Image, PngImagePlugin
 
 from llm.fracture_analysis import (
@@ -76,6 +77,19 @@ class FractureImagePreparationTests(unittest.TestCase):
         with Image.open(io.BytesIO(prepared[0].data)) as image:
             self.assertEqual(image.size, (96, 80))
             self.assertEqual(image.info, {})
+
+    def test_preserves_16_bit_display_contrast(self):
+        source = io.BytesIO()
+        gradient = np.linspace(0, 65535, 96 * 80, dtype=np.uint16).reshape(80, 96)
+        Image.fromarray(gradient).save(source, format="PNG")
+
+        prepared = prepare_fracture_images([source.getvalue()])
+
+        with Image.open(io.BytesIO(prepared[0].data)) as image:
+            values = np.asarray(image)
+        self.assertGreater(len(np.unique(values)), 200)
+        self.assertEqual(int(values.min()), 0)
+        self.assertEqual(int(values.max()), 255)
 
     def test_rejects_non_image_and_too_small_raster(self):
         with self.assertRaises(FractureImageError):
@@ -241,6 +255,41 @@ class FractureAnalysisTests(unittest.TestCase):
                 for item in second_content
             )
         )
+
+    def test_wrist_study_uses_paediatric_specialist_locator(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [
+            _completion(_assessment("Initial wrist opinion.", study_region="wrist")),
+            _completion(_assessment("Wrist-assisted opinion.", study_region="wrist")),
+        ]
+        general_locator = MagicMock()
+        wrist_locator = MagicMock(
+            return_value={
+                "model": "synthetic wrist locator",
+                "scope": "paediatric wrist radiographs only",
+                "score_semantics": "ranking_only_not_calibrated_probability",
+                "views": [],
+            }
+        )
+        images = prepare_fracture_images([_png()])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            result, method, _ = analyse_fracture_images(
+                images,
+                general_locator=general_locator,
+                wrist_locator=wrist_locator,
+            )
+
+        self.assertEqual(result.study_region, "wrist")
+        self.assertEqual(
+            method, "frontier_wrist_proposal_multiscale_with_visual_critic"
+        )
+        wrist_locator.assert_called_once_with(images)
+        general_locator.assert_not_called()
+        second_content = client.chat.completions.create.call_args_list[1].kwargs[
+            "messages"
+        ][1]["content"]
+        self.assertIn("paediatric wrist", second_content[0]["text"])
 
     def test_returns_initial_read_if_critic_response_is_malformed(self):
         client = MagicMock()

@@ -27,6 +27,12 @@ ADD --checksum=sha256:e61a9097343cd0efc57552c6e031a70de39cd88767d053d382c0da26e9
     https://github.com/markbekhit/RadSpeed/releases/download/fracture-locator-v1/rtdetr_fracatlas_full.onnx \
     /app/models/rtdetr_fracatlas_full.onnx
 
+# Dedicated paediatric-wrist detector. It is automatically selected only for
+# wrist studies and provides untrusted zoom proposals, never a displayed score.
+ADD --checksum=sha256:74279e8831ca2efbbc85e4805521f611a96946b03d815918773e99b96da788b1 \
+    https://github.com/markbekhit/RadSpeed/releases/download/wrist-fracture-locator-v1/yolov9_c_grazpedwri.onnx \
+    /app/models/yolov9_c_grazpedwri.onnx
+
 # /data/working  — templates, guidelines, reports (bind-mount or named volume)
 # /root/.voxrad  — encrypted API keys + settings.ini (named volume)
 VOLUME ["/data/working", "/root/.voxrad"]

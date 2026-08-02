@@ -9,7 +9,10 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from PIL import Image
 
-from llm.fracture_locator import locate_fracture_candidates
+from llm.fracture_locator import (
+    locate_fracture_candidates,
+    locate_wrist_fracture_candidates,
+)
 
 
 def _png(value: int = 100) -> bytes:
@@ -57,6 +60,37 @@ class FractureLocatorTests(unittest.TestCase):
         submitted = session.run.call_args.args[1]["pixel_values"]
         self.assertEqual(submitted.shape, (1, 3, 32, 32))
 
+    def test_wrist_locator_letterboxes_and_hides_raw_scores(self):
+        session = MagicMock()
+        output = np.zeros((1, 13, 3), dtype=np.float32)
+        output[0, :4, 0] = [320, 320, 128, 128]
+        output[0, 7, :] = [0.9, 0.0005, 0.0001]
+        session.run.return_value = [output]
+        parameters = {
+            "model": "synthetic wrist detector",
+            "input_size": 640,
+            "recommended_top_k": 3,
+            "score_semantics": "ranking_only_not_calibrated_probability",
+            "scope": "paediatric wrist radiographs only",
+            "input_name": "images",
+            "output_name": "cat_60",
+            "fracture_class_index": 3,
+            "candidate_min_score": 0.001,
+            "nms_iou_threshold": 0.45,
+        }
+        image = SimpleNamespace(data=_png())
+
+        with patch(
+            "llm.fracture_locator._session_and_parameters",
+            return_value=(session, parameters),
+        ):
+            result = locate_wrist_fracture_candidates([image])
+
+        self.assertEqual(len(result["views"][0]["boxes"]), 1)
+        self.assertNotIn("score", result["views"][0]["boxes"][0])
+        submitted = session.run.call_args.args[1]["images"]
+        self.assertEqual(submitted.shape, (1, 3, 640, 640))
+
     @unittest.skipUnless(
         (
             Path(__file__).resolve().parents[1]
@@ -72,6 +106,26 @@ class FractureLocatorTests(unittest.TestCase):
 
         self.assertEqual(len(result["views"]), 1)
         self.assertEqual(len(result["views"][0]["boxes"]), 3)
+        self.assertEqual(
+            result["score_semantics"],
+            "ranking_only_not_calibrated_probability",
+        )
+
+    @unittest.skipUnless(
+        (
+            Path(__file__).resolve().parents[1]
+            / "models"
+            / "yolov9_c_grazpedwri.onnx"
+        ).is_file(),
+        "packaged wrist locator is fetched during the container build",
+    )
+    def test_packaged_wrist_locator_runs_end_to_end(self):
+        image = SimpleNamespace(data=_png())
+
+        result = locate_wrist_fracture_candidates([image])
+
+        self.assertEqual(len(result["views"]), 1)
+        self.assertEqual(result["scope"], "paediatric wrist radiographs only")
         self.assertEqual(
             result["score_semantics"],
             "ranking_only_not_calibrated_probability",

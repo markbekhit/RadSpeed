@@ -102,10 +102,14 @@ These are confirmed in code on `main` as of this update — not aspirations.
   original view, then supplies the highest score and overlapping de-identified
   hemithorax zooms to the second reader. Proposed boxes are mapped back to the
   original view, and all per-view open-model scores are returned to the
-  signed-in interface. For non-chest studies, a local RT-DETR locator trained
-  on public FracAtlas data now supplies up to three ranked, untrusted zooms per
-  view to the second reader; its raw scores are neither displayed nor treated
-  as fracture probabilities. Fracture Lab returns cautious four-state wording,
+  signed-in interface. Dedicated wrist studies are automatically routed to a
+  local YOLOv9-C locator trained on public GRAZPEDWRI-DX paediatric wrist data;
+  its top three boxes covered 99.3% of labelled fractures on the authors'
+  patient-held-out 2,029-image test split at IoU 0.5. This does not establish
+  adult-wrist performance. Other non-chest studies use a local RT-DETR locator
+  trained on public FracAtlas data. Both locators supply ranked, untrusted zooms
+  to the second reader; raw scores are neither displayed nor treated as
+  fracture probabilities. Fracture Lab returns cautious four-state wording,
   explicitly uncalibrated confidence and suggested regions. The page also
   includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM remains
   future separate-service work.
