@@ -96,21 +96,23 @@ These are confirmed in code on `main` as of this update — not aspirations.
   analysis endpoint requires confirmation of the exact cleaned previews. Only
   those generic-filename copies leave the browser; RadSpeed strips metadata as
   a second layer, reviews the views together with the configured frontier
-  vision model, then challenges the result with a second visual pass. The
-  first pass identifies the anatomy automatically. When it sees a chest or rib
-  study, RadSpeed runs a local KAD-512 fracture-probability estimate for each
-  original view, then supplies the highest score and overlapping de-identified
-  hemithorax zooms to the second reader. Proposed boxes are mapped back to the
-  original view, and all per-view open-model scores are returned to the
+  vision model in one independent pass. That pass identifies the anatomy
+  automatically. When it sees a chest or rib study, RadSpeed runs a local
+  KAD-512 fracture-probability estimate for each
+  original view and displays its public-dataset estimate separately from the
+  frontier answer. All per-view open-model scores are returned to the
   signed-in interface. Dedicated wrist studies are automatically routed to a
   local YOLOv9-C locator trained on public GRAZPEDWRI-DX paediatric wrist data;
   its top three boxes covered 99.3% of labelled fractures on the authors'
   patient-held-out 2,029-image test split at IoU 0.5. This does not establish
   adult-wrist performance. Other non-chest studies use a local RT-DETR locator
-  trained on public FracAtlas data. Both locators supply ranked, untrusted zooms
-  to the second reader; raw scores are neither displayed nor treated as
-  fracture probabilities. Fracture Lab returns cautious four-state wording,
-  explicitly uncalibrated confidence and suggested regions. The page also
+  trained on public FracAtlas data. Both locators display ranked, untrusted
+  attention cues separately; raw scores are neither displayed nor treated as
+  fracture probabilities, and their output is not silently fused into the
+  frontier answer. The stronger broad SigLIP/MedSigLIP classifier is prepared
+  but awaits a separate higher-memory or GPU deployment. Fracture Lab returns
+  cautious four-state wording, explicitly uncalibrated confidence and suggested
+  regions. The page also
   includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM remains
   future separate-service work.
 

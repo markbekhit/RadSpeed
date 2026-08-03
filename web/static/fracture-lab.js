@@ -547,10 +547,12 @@
     indeterminate: "Indeterminate",
   }[category] || "Indeterminate");
 
-  const renderBoxes = (svg, boxes) => {
+  const renderBoxes = (svg, boxes, { supporting = false } = {}) => {
     const namespace = "http://www.w3.org/2000/svg";
     (boxes || []).forEach((box, index) => {
-      const colour = ["#38bdf8", "#f472b6", "#facc15"][index % 3];
+      const colour = supporting
+        ? "#34d399"
+        : ["#38bdf8", "#f472b6", "#facc15"][index % 3];
       const rect = document.createElementNS(namespace, "rect");
       rect.setAttribute("x", box.x_min);
       rect.setAttribute("y", box.y_min);
@@ -560,15 +562,78 @@
       rect.setAttribute("stroke", colour);
       rect.setAttribute("stroke-width", "7");
       rect.setAttribute("vector-effect", "non-scaling-stroke");
+      if (supporting) rect.setAttribute("stroke-dasharray", "18 12");
       const label = document.createElementNS(namespace, "text");
       label.setAttribute("x", Math.max(5, box.x_min + 8));
       label.setAttribute("y", Math.max(32, box.y_min - 10));
       label.setAttribute("fill", colour);
       label.setAttribute("font-size", "28");
       label.setAttribute("font-weight", "700");
-      label.textContent = `${index + 1}: ${box.label}`;
+      label.textContent = supporting
+        ? `Open model ${index + 1}: attention cue`
+        : `${index + 1}: ${box.label}`;
       svg.append(rect, label);
     });
+  };
+
+  const renderSupportingModels = (models) => {
+    if (!models.length) return null;
+    const section = create("section", "supporting-models");
+    section.append(
+      create("h4", "", "Independent open models"),
+      create(
+        "p",
+        "supporting-model-intro",
+        "These ran separately after the frontier read. Their outputs were not shown to it or automatically combined with its answer.",
+      ),
+    );
+    const grid = create("div", "supporting-model-grid");
+    models.forEach((model) => {
+      const card = create("article", "supporting-model-card");
+      card.append(
+        create("strong", "", model.label || "Open model"),
+        create("span", "model-scope", model.scope || "Public-data research model"),
+      );
+      if (model.kind === "classifier") {
+        const viewScores = (model.view_probabilities || [])
+          .map((probability, index) => `view ${index + 1}: ${Math.round(probability * 100)}%`)
+          .join(" · ");
+        card.append(
+          create(
+            "p",
+            "model-result",
+            `Public-dataset fracture estimate: ${Math.round(model.highest_view_probability * 100)}% on the highest view.`,
+          ),
+        );
+        if (viewScores) card.append(create("p", "model-detail", viewScores));
+      } else if (model.kind === "locator") {
+        const boxCount = (model.views || []).reduce(
+          (total, view) => total + (view.boxes || []).length,
+          0,
+        );
+        card.append(
+          create(
+            "p",
+            "model-result",
+            boxCount
+              ? `${boxCount} dashed green attention cue${boxCount === 1 ? "" : "s"} shown on the images.`
+              : "No attention cues were suggested.",
+          ),
+        );
+      }
+      if (model.evaluation) {
+        card.append(
+          create(
+            "p",
+            "model-evidence",
+            `Research check: AUC ${Number(model.evaluation.auc).toFixed(3)} on ${model.evaluation.cases} public images. ${model.evaluation.limitation}`,
+          ),
+        );
+      }
+      grid.append(card);
+    });
+    section.append(grid);
+    return section;
   };
 
   const renderResult = (payload) => {
@@ -578,7 +643,7 @@
     const heading = create("div", "result-heading");
     const titleBlock = create("div");
     titleBlock.append(
-      create("div", "eyebrow", "Live multi-view review"),
+      create("div", "eyebrow", "Frontier model · independent read"),
       create("h3", "", categoryLabel(assessment.assessment)),
     );
     const badge = create(
@@ -589,18 +654,9 @@
     heading.append(titleBlock, badge);
     result.append(heading, create("p", "result-summary", assessment.summary));
 
-    if (payload.open_model) {
-      const viewScores = payload.open_model.view_probabilities
-        .map((probability, index) => `view ${index + 1}: ${Math.round(probability * 100)}%`)
-        .join(" · ");
-      result.append(
-        create(
-          "p",
-          "confidence-note",
-          `Open chest classifier estimated fracture probability — ${viewScores}. Highest view: ${Math.round(payload.open_model.highest_view_probability * 100)}%.`,
-        ),
-      );
-    }
+    const supportingModels = payload.supporting_models || [];
+    const supportingSection = renderSupportingModels(supportingModels);
+    if (supportingSection) result.append(supportingSection);
 
     const columns = create("div", "result-columns");
     appendList(columns, "Key findings", assessment.key_findings);
@@ -622,6 +678,15 @@
         svg.setAttribute("viewBox", "0 0 1000 1000");
         svg.setAttribute("preserveAspectRatio", "none");
         renderBoxes(svg, view.boxes);
+        const supportingBoxes = supportingModels
+          .filter((model) => model.kind === "locator")
+          .flatMap((model) => {
+            const locatorView = (model.views || []).find(
+              (candidate) => candidate.view_index === view.view_index,
+            );
+            return locatorView ? locatorView.boxes || [] : [];
+          });
+        renderBoxes(svg, supportingBoxes, { supporting: true });
         shell.append(image, svg);
         const copy = create("div", "live-view-copy");
         copy.append(
@@ -636,7 +701,7 @@
       create(
         "p",
         "confidence-note",
-        "Confidence is the model's subjective confidence in its wording, not a calibrated probability of fracture. Reassess the original diagnostic images yourself.",
+        "Frontier confidence is subjective confidence in its wording, not fracture probability. Open-model estimates and dashed boxes are separate supporting opinions. Reassess the original diagnostic images yourself.",
       ),
     );
     result.hidden = false;
@@ -655,7 +720,7 @@
     analysisBusy = true;
     updateControls();
     resetResult();
-    setStatus("Uploading only the cleaned copies, identifying the anatomy, then running two visual reviews…");
+    setStatus("Uploading only the cleaned copies, then running one frontier read and a separate open-model check…");
     const form = new FormData();
     files.forEach((item) => form.append("images", item.scrubbedFile, item.scrubbedFile.name));
     form.append("privacy_confirmed", "true");

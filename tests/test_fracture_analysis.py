@@ -103,42 +103,33 @@ class FractureImagePreparationTests(unittest.TestCase):
 
 
 class FractureAnalysisTests(unittest.TestCase):
-    def test_runs_fresh_multiview_read_and_visual_critic(self):
+    def test_runs_one_independent_frontier_read(self):
         client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(_assessment("Initial opinion.")),
-            _completion(_assessment("Critic-confirmed opinion.")),
-        ]
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent frontier opinion.")
+        )
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method, open_model = analyse_fracture_images(
+            result, method, supporting_models = analyse_fracture_images(
                 images, clinical_context="synthetic trauma context"
             )
 
-        self.assertEqual(method, "frontier_multiview_with_visual_critic")
-        self.assertEqual(result.summary, "Critic-confirmed opinion.")
-        self.assertIsNone(open_model)
-        self.assertEqual(client.chat.completions.create.call_count, 2)
-        second_request = client.chat.completions.create.call_args_list[1].kwargs
-        second_content = second_request["messages"][1]["content"]
-        self.assertIn("fresh second reader", second_content[0]["text"])
-        self.assertTrue(
-            any(item.get("type") == "image_url" for item in second_content)
-        )
-
-    def test_chest_study_is_auto_routed_to_open_model_and_zoomed_critic(self):
-        client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(
-                _assessment("Initial chest opinion.", study_region="chest_ribs")
-            ),
-            _completion(
-                _assessment(
-                    "Critic-confirmed chest opinion.", study_region="chest_ribs"
-                )
-            ),
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(result.summary, "Independent frontier opinion.")
+        self.assertEqual(supporting_models, [])
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+        content = client.chat.completions.create.call_args.kwargs["messages"][1][
+            "content"
         ]
+        self.assertIn("synthetic trauma context", content[0]["text"])
+        self.assertTrue(any(item.get("type") == "image_url" for item in content))
+
+    def test_chest_study_returns_classifier_separately(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent chest opinion.", study_region="chest_ribs")
+        )
         chest_scorer = MagicMock(
             return_value={
                 "model": "synthetic KAD",
@@ -151,64 +142,48 @@ class FractureAnalysisTests(unittest.TestCase):
         images = prepare_fracture_images([_png(width=120, height=96)])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            _, method, open_model = analyse_fracture_images(
+            result, method, supporting_models = analyse_fracture_images(
                 images,
                 chest_scorer=chest_scorer,
                 general_locator=general_locator,
             )
 
-        self.assertEqual(method, "frontier_chest_multiscale_with_visual_critic")
-        self.assertEqual(open_model["highest_view_probability"], 0.37)
+        self.assertEqual(result.summary, "Independent chest opinion.")
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(len(supporting_models), 1)
+        opinion = supporting_models[0]
+        self.assertEqual(opinion["kind"], "classifier")
+        self.assertEqual(opinion["highest_view_probability"], 0.37)
+        self.assertEqual(opinion["evaluation"]["auc"], 0.780)
         chest_scorer.assert_called_once_with(images)
         general_locator.assert_not_called()
-        first_content = client.chat.completions.create.call_args_list[0].kwargs[
-            "messages"
-        ][1]["content"]
-        second_content = client.chat.completions.create.call_args_list[1].kwargs[
-            "messages"
-        ][1]["content"]
-        first_images = [
-            item for item in first_content if item.get("type") == "image_url"
-        ]
-        second_images = [
-            item for item in second_content if item.get("type") == "image_url"
-        ]
-        self.assertEqual(len(first_images), 1)
-        self.assertEqual(len(second_images), 3)
-        self.assertIn("Search each rib sequentially", second_content[0]["text"])
-        self.assertIn("37.0% fracture probability", second_content[0]["text"])
-        self.assertIn("fallible supporting evidence", second_content[0]["text"])
-        self.assertTrue(
-            any(
-                "Supplemental displayed left" in item.get("text", "")
-                for item in second_content
-            )
-        )
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+        frontier_content = client.chat.completions.create.call_args.kwargs["messages"][
+            1
+        ]["content"]
+        self.assertNotIn("37", frontier_content[0]["text"])
+        self.assertNotIn("KAD", frontier_content[0]["text"])
 
     def test_general_study_does_not_run_chest_classifier(self):
         client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(_assessment()),
-            _completion(_assessment()),
-        ]
+        client.chat.completions.create.return_value = _completion(_assessment())
         chest_scorer = MagicMock()
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            _, method, open_model = analyse_fracture_images(
+            _, method, supporting_models = analyse_fracture_images(
                 images, chest_scorer=chest_scorer
             )
 
-        self.assertEqual(method, "frontier_multiview_with_visual_critic")
-        self.assertIsNone(open_model)
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(supporting_models, [])
         chest_scorer.assert_not_called()
 
-    def test_general_study_uses_untrusted_locator_zooms_for_second_read(self):
+    def test_general_study_returns_locator_as_separate_attention_cues(self):
         client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(_assessment("Initial opinion.")),
-            _completion(_assessment("Proposal-assisted opinion.")),
-        ]
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent opinion.")
+        )
         locator = MagicMock(
             return_value={
                 "model": "synthetic locator",
@@ -231,37 +206,31 @@ class FractureAnalysisTests(unittest.TestCase):
         images = prepare_fracture_images([_png(width=120, height=96)])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method, open_model = analyse_fracture_images(
+            result, method, supporting_models = analyse_fracture_images(
                 images, general_locator=locator
             )
 
-        self.assertEqual(result.summary, "Proposal-assisted opinion.")
-        self.assertEqual(
-            method, "frontier_proposal_multiscale_with_visual_critic"
-        )
-        self.assertIsNone(open_model)
+        self.assertEqual(result.summary, "Independent opinion.")
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(len(supporting_models), 1)
+        opinion = supporting_models[0]
+        self.assertEqual(opinion["kind"], "locator")
+        self.assertEqual(opinion["role"], "broad_fracture_locator")
+        self.assertEqual(opinion["evaluation"]["auc"], 0.625)
+        self.assertEqual(len(opinion["views"][0]["boxes"]), 1)
         locator.assert_called_once_with(images)
-        second_content = client.chat.completions.create.call_args_list[1].kwargs[
-            "messages"
-        ][1]["content"]
-        second_images = [
-            item for item in second_content if item.get("type") == "image_url"
-        ]
-        self.assertEqual(len(second_images), 2)
-        self.assertIn("not a fracture classifier", second_content[0]["text"])
-        self.assertTrue(
-            any(
-                "Untrusted detector proposal" in item.get("text", "")
-                for item in second_content
-            )
-        )
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+        frontier_text = client.chat.completions.create.call_args.kwargs["messages"][1][
+            "content"
+        ][0]["text"]
+        self.assertNotIn("detector", frontier_text)
+        self.assertNotIn("proposal", frontier_text)
 
     def test_wrist_study_uses_paediatric_specialist_locator(self):
         client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(_assessment("Initial wrist opinion.", study_region="wrist")),
-            _completion(_assessment("Wrist-assisted opinion.", study_region="wrist")),
-        ]
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent wrist opinion.", study_region="wrist")
+        )
         general_locator = MagicMock()
         wrist_locator = MagicMock(
             return_value={
@@ -274,38 +243,41 @@ class FractureAnalysisTests(unittest.TestCase):
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method, _ = analyse_fracture_images(
+            result, method, supporting_models = analyse_fracture_images(
                 images,
                 general_locator=general_locator,
                 wrist_locator=wrist_locator,
             )
 
         self.assertEqual(result.study_region, "wrist")
-        self.assertEqual(
-            method, "frontier_wrist_proposal_multiscale_with_visual_critic"
-        )
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(supporting_models[0]["role"], "wrist_fracture_locator")
+        self.assertEqual(supporting_models[0]["evaluation"]["auc"], 0.996)
         wrist_locator.assert_called_once_with(images)
         general_locator.assert_not_called()
-        second_content = client.chat.completions.create.call_args_list[1].kwargs[
-            "messages"
-        ][1]["content"]
-        self.assertIn("paediatric wrist", second_content[0]["text"])
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+        frontier_text = client.chat.completions.create.call_args.kwargs["messages"][1][
+            "content"
+        ][0]["text"]
+        self.assertNotIn("paediatric wrist", frontier_text)
 
-    def test_returns_initial_read_if_critic_response_is_malformed(self):
+    def test_open_locator_failure_does_not_discard_frontier_read(self):
         client = MagicMock()
-        client.chat.completions.create.side_effect = [
-            _completion(_assessment("Initial opinion.")),
-            _completion("not json"),
-        ]
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent opinion.")
+        )
+        locator = MagicMock(side_effect=RuntimeError("synthetic unavailable"))
         images = prepare_fracture_images([_png()])
 
         with patch("llm.fracture_analysis.OpenAI", return_value=client):
-            result, method, open_model = analyse_fracture_images(images)
+            result, method, supporting_models = analyse_fracture_images(
+                images, general_locator=locator
+            )
 
-        self.assertEqual(method, "frontier_multiview_single_pass_fallback")
-        self.assertEqual(result.summary, "Initial opinion.")
-        self.assertIsNone(open_model)
-        self.assertIn("second-pass visual critique was unavailable", result.limitations[-1])
+        self.assertEqual(method, "frontier_multiview_independent_single_pass")
+        self.assertEqual(result.summary, "Independent opinion.")
+        self.assertEqual(supporting_models, [])
+        locator.assert_called_once_with(images)
 
     def test_rejects_boxes_with_no_area(self):
         invalid = json.loads(_assessment())

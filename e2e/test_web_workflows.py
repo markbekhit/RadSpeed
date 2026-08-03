@@ -262,7 +262,10 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
     expect(page.locator("#fracture-result")).to_be_visible(timeout=10_000)
     expect(page.locator("#fracture-result")).to_contain_text("Possible fracture")
     expect(page.locator("#fracture-result")).to_contain_text(
-        "Open chest classifier estimated fracture probability"
+        "Independent open models"
+    )
+    expect(page.locator("#fracture-result")).to_contain_text(
+        "Public-dataset fracture estimate: 42%"
     )
     expect(page.locator("#fracture-result")).to_contain_text("62% model confidence")
     expect(page.locator("#fracture-result svg rect")).to_have_count(1)

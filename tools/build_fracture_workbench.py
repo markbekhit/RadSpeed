@@ -24,7 +24,7 @@ def build(source: Path, destination: Path) -> int:
     html = html.replace(
         "<title>Hybrid fracture model review</title>",
         "<title>Fracture Lab · RadSpeed</title>\n"
-        '  <link rel="stylesheet" href="/static/fracture-lab.css?v=privacy-1">',
+        '  <link rel="stylesheet" href="/static/fracture-lab.css?v=independent-models-1">',
     )
     html = html.replace(
         "    .notice { max-width: 900px; color: #fbbf24; }",
@@ -67,7 +67,7 @@ def build(source: Path, destination: Path) -> int:
       </div>
       <span class="privacy-pill">Not saved by RadSpeed</span>
     </div>
-    <p class="analysis-intro">Add up to four views from one study. Before upload, your browser checks for visible text and blacks it out locally. Only the cleaned copies are sent for the two-pass visual review.</p>
+    <p class="analysis-intro">Add up to four views from one study. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. The cleaned copies receive one frontier-model read and a separate check from the relevant open model; the opinions are shown independently.</p>
     <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
       <strong>Paste, drop or choose X-ray screenshots</strong>
       <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
@@ -106,7 +106,7 @@ def build(source: Path, destination: Path) -> int:
     html = html.replace(
         "</body>",
         '  <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>\n'
-        '  <script src="/static/fracture-lab.js?v=privacy-1"></script>\n</body>',
+        '  <script src="/static/fracture-lab.js?v=independent-models-1"></script>\n</body>',
         1,
     )
 

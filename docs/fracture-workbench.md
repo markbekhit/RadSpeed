@@ -12,8 +12,9 @@ sent. The user can drag over anything missed and must confirm the previews
 before the analysis route accepts the upload. The original file and filename
 are never submitted. RadSpeed then validates and re-encodes the cleaned raster
 to remove EXIF/embedded metadata, sends it to the configured vision-model
-provider, and does not write the file to its persistent volume. A second visual
-pass challenges the first assessment before the result is returned.
+provider, and does not write the file to its persistent volume. The frontier
+model never sees the open-model outputs: one frontier read and the relevant
+open classifier or locator are returned as independent opinions.
 
 Automatic text recognition is a safety aid rather than a guarantee. Analysis
 remains fail-closed behind the final preview confirmation, and users should
@@ -36,12 +37,15 @@ The live result uses cautious four-state terminology, an explicitly
 uncalibrated model-confidence percentage and up to three suggested regions per
 view. It is experimental decision support, not a medical device, and must not
 be used as the sole basis for patient care. The first frontier pass routes the
-study automatically. Chest/rib studies receive a separate local KAD score and
-systematic hemithorax zooms; dedicated wrist studies receive untrusted zooms
-from a public-data paediatric-wrist YOLOv9 specialist; other studies receive
-untrusted broad RT-DETR zooms. A fresh frontier pass must accept or reject those
-suggestions and search outside them. Wrist-detector performance has not been
-established in adults. Direct DICOM ingestion remains future work.
+study automatically. Chest/rib studies receive a separately displayed local
+KAD estimate; dedicated wrist studies receive separately displayed attention
+cues from a public-data paediatric-wrist YOLOv9 specialist; other studies
+receive separately displayed broad RT-DETR attention cues. None of these open
+outputs is silently supplied to or fused into the frontier answer. The stronger
+broad SigLIP/MedSigLIP classifier remains deployment-ready but is not yet live
+because it requires a separate higher-memory or GPU service. Wrist-detector
+performance has not been established in adults. Direct DICOM ingestion remains
+future work.
 
 The benchmark HTML is stored outside the public static directory and both the
 page, live-analysis route and each benchmark image route use the standard

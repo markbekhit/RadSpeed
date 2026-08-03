@@ -773,14 +773,31 @@ async def fracture_analysis(
                     len(prepared), study_region="chest_ribs"
                 )
                 method = "synthetic_test_fixture"
-                open_model = {
-                    "model": "synthetic_test_fixture",
-                    "view_probabilities": [0.42] * len(prepared),
-                    "highest_view_probability": 0.42,
-                    "validation_threshold": 0.05,
-                }
+                supporting_models = [
+                    {
+                        "kind": "classifier",
+                        "role": "chest_fracture_classifier",
+                        "label": "Open chest/rib classifier",
+                        "model": "synthetic_test_fixture",
+                        "scope": "Chest and rib radiographs",
+                        "probability_kind": (
+                            "public_dataset_estimate_not_patient_specific"
+                        ),
+                        "view_probabilities": [0.42] * len(prepared),
+                        "highest_view_probability": 0.42,
+                        "validation_threshold": 0.05,
+                        "evaluation": {
+                            "auc": 0.780,
+                            "cases": 553,
+                            "dataset": "ChestX-Det untouched public test set",
+                            "limitation": (
+                                "Performance and calibration may differ on local images."
+                            ),
+                        },
+                    }
+                ]
             else:
-                assessment, method, open_model = await asyncio.to_thread(
+                assessment, method, supporting_models = await asyncio.to_thread(
                     analyse_fracture_images,
                     prepared,
                     clinical_context=clinical_context,
@@ -814,7 +831,7 @@ async def fracture_analysis(
             "confidence_percent": assessment.confidence_percent,
             "method": method,
             "detected_study_type": assessment.study_region,
-            "open_model_used": open_model is not None,
+            "supporting_model_count": len(supporting_models),
         },
     )
     return JSONResponse(
@@ -824,7 +841,7 @@ async def fracture_analysis(
             "image_count": len(prepared),
             "detected_study_type": assessment.study_region,
             "model_confidence_is_calibrated": False,
-            "open_model": open_model,
+            "supporting_models": supporting_models,
         },
         headers={"Cache-Control": "private, no-store"},
     )
