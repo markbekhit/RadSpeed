@@ -48,6 +48,25 @@ class ClinicalQualityEvaluatorTests(unittest.TestCase):
         report = case["reference_report"].replace("ACL and PCL are intact", "ACL and PCL: Intact")
         self.assertTrue(evaluate_case(case, report).passed)
 
+    def test_equivalent_mm_and_cm_measurements_are_accepted(self):
+        ctpa = next(case for case in self.cases if case["id"] == "ctpa_right_lower_lobe_embolus")
+        report = ctpa["reference_report"].replace("29 mm", "2.9 cm")
+        self.assertTrue(evaluate_case(ctpa, report).passed)
+
+        kub = next(case for case in self.cases if case["id"] == "ct_kub_left_ureteric_calculus")
+        report = kub["reference_report"].replace("2 cm", "20 mm")
+        self.assertTrue(evaluate_case(kub, report).passed)
+
+    def test_different_measurement_still_fails(self):
+        case = next(case for case in self.cases if case["id"] == "ctpa_right_lower_lobe_embolus")
+        report = case["reference_report"].replace("29 mm", "3.0 cm")
+        result = evaluate_case(case, report)
+        self.assertFalse(result.passed)
+        self.assertIn(
+            "measurement:29 mm",
+            {check.name for check in result.checks if not check.passed},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

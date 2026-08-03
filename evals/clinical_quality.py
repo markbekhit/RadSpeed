@@ -12,6 +12,7 @@ import argparse
 import json
 import re
 from dataclasses import asdict, dataclass
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Iterable
 
@@ -22,6 +23,39 @@ CASES_PATH = Path(__file__).with_name("clinical_cases.json")
 def _normalise(text: str) -> str:
     text = text.lower().replace("×", "x")
     return re.sub(r"\s+", " ", text).strip()
+
+
+_LINEAR_MEASUREMENT_RE = re.compile(
+    r"(?<![\d.])(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>mm|cm)\b",
+    re.IGNORECASE,
+)
+
+
+def _measurement_in_mm(match: re.Match[str]) -> Decimal | None:
+    """Convert one parsed linear measurement to an exact millimetre value."""
+    try:
+        value = Decimal(match.group("value"))
+    except InvalidOperation:
+        return None
+    if match.group("unit").lower() == "cm":
+        value *= Decimal(10)
+    return value
+
+
+def _measurement_present(expected: str, report: str) -> bool:
+    """Accept a dictated measurement verbatim or in an equivalent mm/cm form.
+
+    Report styling may legitimately render ``29 mm`` as ``2.9 cm``. The
+    clinical gate protects the value rather than one unit representation.
+    """
+    expected_match = _LINEAR_MEASUREMENT_RE.fullmatch(expected.strip())
+    if expected_match:
+        expected_value = _measurement_in_mm(expected_match)
+        return expected_value is not None and any(
+            _measurement_in_mm(match) == expected_value
+            for match in _LINEAR_MEASUREMENT_RE.finditer(report)
+        )
+    return _normalise(expected) in _normalise(report)
 
 
 @dataclass
@@ -77,7 +111,7 @@ def evaluate_case(case: dict, report: str) -> CaseResult:
         )
 
     for measurement in case.get("measurements", []):
-        present = _normalise(measurement) in normalised
+        present = _measurement_present(measurement, report or "")
         checks.append(
             Check(
                 name=f"measurement:{measurement}",
