@@ -32,6 +32,11 @@ the Mac.
 - `deploy/mac/strong-fracture-worker.sh` and the launch-agent template keep the
   worker running while the Mac is awake and signed in.
 
-The worker credentials belong in macOS Keychain. The website credentials belong
-only in the root-readable production environment file. Do not place either in a
-repository, shell history, launch-agent file, diagnostic artifact, or log.
+The worker wrapper prefers credentials from the current macOS login session and
+falls back to macOS Keychain. On this migrated Mac, the login Keychain currently
+refuses new items, so the deployed credential is memory-only: it survives sleep
+and worker/app restarts but not a full logout or reboot. After a reboot the
+website safely marks the strong model offline until the credential is refreshed.
+The website credentials belong only in the root-readable production environment
+file. Do not place either credential in a repository, shell history,
+launch-agent file, diagnostic artifact, or log.

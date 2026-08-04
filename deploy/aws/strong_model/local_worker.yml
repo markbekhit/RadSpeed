@@ -81,6 +81,12 @@ Resources:
                 Action: s3:GetObject
                 Resource: !Sub "${WorkerBucket.Arn}/worker-status/default.json"
               - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt WorkerBucket.Arn
+                Condition:
+                  StringLike:
+                    s3:prefix: "results/*"
+              - Effect: Allow
                 Action: sqs:SendMessage
                 Resource: !GetAtt WorkerQueue.Arn
 

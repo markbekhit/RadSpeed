@@ -2,8 +2,10 @@
 set -euo pipefail
 
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
-export AWS_ACCESS_KEY_ID="$(/usr/bin/security find-generic-password -a radspeed-mac-fracture-worker -s radspeed-strong-worker-access-key -w)"
-export AWS_SECRET_ACCESS_KEY="$(/usr/bin/security find-generic-password -a radspeed-mac-fracture-worker -s radspeed-strong-worker-secret-key -w)"
+if [[ -z "${AWS_ACCESS_KEY_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" ]]; then
+  export AWS_ACCESS_KEY_ID="$(/usr/bin/security find-generic-password -a radspeed-mac-fracture-worker -s radspeed-strong-worker-access-key -w)"
+  export AWS_SECRET_ACCESS_KEY="$(/usr/bin/security find-generic-password -a radspeed-mac-fracture-worker -s radspeed-strong-worker-secret-key -w)"
+fi
 export AWS_REGION="ap-southeast-2"
 export HF_HUB_OFFLINE="1"
 export TRANSFORMERS_OFFLINE="1"
