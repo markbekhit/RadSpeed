@@ -7,22 +7,48 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   production-eval:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      AWS_REGION: ap-southeast-2
+      INSTANCE_NAME: radspeed-web
+      INSTANCE_HOST: ${{ vars.AWS_LIGHTSAIL_HOST }}
     steps:
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Configure short-lived AWS access
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Prepare temporary SSH access
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.AWS_LIGHTSAIL_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/radspeed-aws
+          chmod 600 ~/.ssh/radspeed-aws
+          RUNNER_IP="$(curl -fsSL https://checkip.amazonaws.com | tr -d '[:space:]')"
+          test -n "$RUNNER_IP"
+          echo "RUNNER_IP=$RUNNER_IP" >> "$GITHUB_ENV"
+          aws lightsail open-instance-public-ports \
+            --region "$AWS_REGION" \
+            --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
+          sleep 5
+          ssh-keyscan -H "$INSTANCE_HOST" >> ~/.ssh/known_hosts
 
       - name: Evaluate the deployed production model on synthetic cases
         run: |
           set -o pipefail
-          flyctl ssh console -a voxrad-v-hkvq -C \
-            "/bin/sh -lc 'cd /app && python -m evals.clinical_quality --live --minimum-pass-rate 0.80'" \
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+            "cd /opt/radspeed && sudo RADSPEED_IMAGE=unused docker compose exec -T app \
+             python -m evals.clinical_quality --live --minimum-pass-rate 0.80" \
             2>&1 | tee clinical-eval.log
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - name: Upload evaluation log
         if: always()
@@ -32,3 +58,11 @@ jobs:
           path: clinical-eval.log
           if-no-files-found: error
           retention-days: 30
+
+      - name: Close temporary SSH access
+        if: always() && env.RUNNER_IP != ''
+        run: |
+          aws lightsail close-instance-public-ports \
+            --region "$AWS_REGION" \
+            --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
