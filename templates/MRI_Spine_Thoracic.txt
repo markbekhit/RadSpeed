@@ -22,18 +22,11 @@ MRI of the thoracic spine was performed using T1-weighted, T2-weighted, and STIR
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing disc morphology (bulge/protrusion/extrusion/sequestration), signal change, degree of canal/foraminal compromise, and cord compression or signal change.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, an MRI Thoracic Spine report involves Vertebral Bodies (T1–T12, visualised C7 and L1), Bone Marrow Signal, Intervertebral Discs (T1/2 through T12/L1), End Plates, Costovertebral and Costotransverse Joints, Spinal Cord (calibre, T2 signal, conus position), Thecal Sac, Spinal Canal, Neural Foramina, Ligamentum Flavum, Paraspinal Soft Tissues, and Visualised Lung Parenchyma and Upper Abdominal Structures. If not mentioned, state "{structure} appears normal."
-- **Costovertebral and costotransverse joints** are unique to the thoracic spine: ALWAYS report them, stating "Costovertebral and costotransverse joints are intact." if the transcript does not describe them.
-
-  - Describe each abnormal disc level specifically. Normal disc levels may be grouped: e.g. "Remaining thoracic disc levels show preserved height and normal T2 signal."
-    For instance:
-    - **T7/T8:** Right paracentral disc protrusion indenting the ventral cord without cord signal abnormality.
-    - **Remaining Levels:** Normal disc height and T2 signal, no significant canal or foraminal compromise.
-    - **Spinal Cord:** Normal calibre and T2 signal throughout. No cord oedema, demyelination, or intramedullary lesion.
-    - **Vertebral Bodies and Marrow:** Normal alignment. Normal marrow signal. No compression fracture or aggressive osseous lesion.
-    - and so on...
+- Use this exact internal order within Findings: **overview first, then levels, then final checks**. Do not create extra structure-by-structure subsections.
+- **Overview:** Begin with one concise unlabelled paragraph covering thoracic alignment, kyphosis and vertebral body heights/bone marrow signal. State spinal cord calibre and signal, and conus position when included, in a concise sentence before the levels. Preserve dictated wording when supplied; otherwise use compact normal wording.
+- **Levels:** Then report each abnormal thoracic disc level under its own bold heading in anatomical order from T1/2 to T12/L1, regardless of dictation order. Gather every comment for a level together, including disc/endplate/facet change, canal or foraminal stenosis and cord effect. Account for normal levels in one brief **Remaining levels:** line; do not itemise twelve normal levels separately.
+- **Final checks:** Finish with one concise survey of the paravertebral soft tissues. Mention costovertebral joints, visualised lungs or upper abdominal structures only when explicitly dictated; do not add routine normal statements for them.
+- Do not generate separate headings or repeated summaries for vertebral bodies, endplates, facet joints, ligamentum flavum, thecal sac, spinal canal or neural foramina. These belong in the overview or at the relevant level.
 - **Commonly Misspelled Words:**
 [correct spellings] Scheuermann disease, Schmorl node, syringomyelia, syrinx, transverse myelitis, demyelination, cord contusion, compression fracture, pars defect, costovertebral joint, paraspinal, epidural, extradural, intramedullary, extramedullary intradural, conus medullaris [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.

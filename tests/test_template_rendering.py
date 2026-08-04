@@ -50,6 +50,44 @@ class BundledTemplateTests(unittest.TestCase):
     def test_missing_template_returns_none(self):
         self.assertIsNone(fmt._get_template_content("does-not-exist.txt"))
 
+    def test_spine_templates_use_compact_overview_levels_final_checks_order(self):
+        names = (
+            "MRI_Spine_Cervical.txt",
+            "MRI_Spine_Thoracic.txt",
+            "MRI_Spine_Lumbar.txt",
+            "CT_Spine_Cervical.txt",
+            "CT_Spine_Thoracic.txt",
+            "CT_Spine_Lumbar.txt",
+        )
+
+        for name in names:
+            with self.subTest(template=name):
+                content = fmt._get_template_content(name)
+                self.assertIsNotNone(content)
+                overview = content.index("**Overview:**")
+                levels = content.index("**Levels:**")
+                final_checks = content.index("**Final checks:**")
+                self.assertLess(overview, levels)
+                self.assertLess(levels, final_checks)
+                self.assertNotIn("mention ALL", content)
+                self.assertNotIn("ALWAYS report", content)
+
+    def test_lumbar_spine_templates_keep_only_two_routine_final_checks(self):
+        for name in ("MRI_Spine_Lumbar.txt", "CT_Spine_Lumbar.txt"):
+            with self.subTest(template=name):
+                content = fmt._get_template_content(name)
+                final_checks = content.split("**Final checks:**", 1)[1]
+                final_checks = final_checks.split("**Commonly Misspelled Words:**", 1)[0]
+                self.assertIn("paravertebral musculature", final_checks)
+                self.assertIn("sacroiliac joints", final_checks)
+                self.assertIn("do not add a routine abdominal", final_checks)
+
+    def test_thoracic_spine_mri_has_direct_keyword_selection(self):
+        self.assertEqual(
+            fmt._keyword_select_template("MRI thoracic spine for mid-back pain"),
+            "MRI_Spine_Thoracic.txt",
+        )
+
 
 class StructuredReportRenderingTests(unittest.TestCase):
     def test_selected_prior_is_clearly_delimited_as_reference_only(self):

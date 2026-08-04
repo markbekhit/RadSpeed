@@ -22,17 +22,18 @@ MRI of the lumbar spine was performed using T1-weighted, T2-weighted, and STIR s
 
 ### Findings:
 **Instructions:**
-- **Organise the report level by level, in anatomical order from top to bottom (L1/2, L2/3, L3/4, L4/5, L5/S1), REGARDLESS of the order in which findings were dictated.** The radiologist dictates freely as findings are noticed and may jump between levels or revisit a level more than once. Gather every comment that belongs to a given level and place it under that level's heading. Do NOT preserve dictation order — the anatomical level order above governs absolutely.
-- Give each disc level its own bold heading, e.g. **L4/5:**, with that level's findings beneath it. For each abnormal level describe disc morphology (bulge/protrusion/extrusion/sequestration), signal change, degree of canal/foraminal/lateral recess compromise, and nerve root involvement.
-- Levels with no abnormality may be grouped into one line, e.g. **Remaining levels (L1/2–L3/4):** Normal disc height and T2 signal, no significant canal or foraminal compromise. Every level must appear somewhere — either with its own findings or inside a grouped "remaining levels" line.
-- After the disc levels, report the structures that are not level-specific: Vertebral Bodies (L1–L5, S1) and Bone Marrow Signal, End Plates, Conus Medullaris and Cauda Equina, Facet Joints, Ligamentum Flavum, Sacroiliac Joints, Paraspinal Muscles, and Visualized Abdominal Structures. Normal structures within the same group may be combined into a single statement. If a structure is not mentioned, state "{structure} appears normal."
-    For instance (note how levels are emitted in anatomical order even if dictated out of order):
-    - **L1/2–L3/4:** Normal disc height and T2 signal, no canal or foraminal compromise.
-    - **L4/5:** Left paracentral disc protrusion abutting the traversing left L5 nerve root with mild left lateral recess narrowing.
-    - **L5/S1:** Broad-based disc bulge with mild bilateral foraminal narrowing.
-    - **Conus and Cauda Equina:** Normal in calibre and position, no nerve root compression at the remaining levels.
-    - **Vertebral Bodies and Marrow:** Normal height and signal, no fracture or marrow oedema.
-    - and so on...
+- Use this exact internal order within Findings: **overview first, then levels, then final checks**. Do not create extra structure-by-structure subsections.
+- **Overview:** Begin with one concise unlabelled paragraph covering lumbar alignment (including lordosis, scoliosis or listhesis) and vertebral body heights/bone marrow signal. Follow with one concise sentence stating the conus termination level and signal. Preserve dictated wording when supplied; otherwise use compact normal wording.
+- **Levels:** Then report L1/2, L2/3, L3/4, L4/5 and L5/S1 in anatomical order, regardless of dictation order. Give every level its own bold heading, e.g. **L4/5:**. Gather every comment for that level together. Include disc morphology and signal, endplate change, facet arthropathy, ligamentum flavum change, canal/subarticular/foraminal stenosis and neural compromise at that level rather than repeating these later under separate structure headings.
+- Keep normal level descriptions brief, e.g. **L1/2:** No significant disc bulge, spinal canal or foraminal stenosis.
+- **Final checks:** After L5/S1, add only a concise survey of the paravertebral musculature and partially visualised sacroiliac joints, in that order. If an additional extraspinal finding was explicitly dictated, include it briefly after these checks; do not add a routine abdominal or retroperitoneal survey.
+- Do not generate separate headings or repeated summaries for vertebral bodies, endplates, cauda equina, facet joints, ligamentum flavum, spinal canal or neural foramina. These belong in the overview or at the relevant level.
+- Example order:
+    - Lumbar alignment and marrow overview.
+    - Conus termination and signal.
+    - **L1/2:** ... through **L5/S1:** ...
+    - Paravertebral musculature.
+    - Partially visualised sacroiliac joints.
 - **Commonly Misspelled Words:**
 [correct spellings] spondylolysis, spondylolisthesis, foraminal stenosis, lateral recess, cauda equina, ligamentum flavum, Modic, annular fissure, protrusion, extrusion, sequestration, facet hypertrophy [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.

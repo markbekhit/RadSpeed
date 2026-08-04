@@ -22,12 +22,11 @@ Axial cuts were obtained from the cervicothoracic junction to the thoracolumbar 
 
 ### Findings:
 **Instructions:**
-- First, identify at what anatomical site the pathologies are from the transcript. Then format it correctly, describing its morphology and any neural compromise.
-- First mention the structures having the pathology.
-- Then mention ALL the structures that are normal. For your guidance, a CT Thoracic Spine report involves Vertebral Bodies (T1–T12), Intervertebral Disc Spaces, Facet Joints, Pedicles and Posterior Elements, Costovertebral and Costotransverse Joints (rib articulations), Spinal Canal, Neural Foramina, Paraspinal Soft Tissues, and Visualized Thoracic Organs. If not mentioned in transcript, state "{structure} appears normal."
-
-  - Normal structures within the same anatomical group may be combined into a single statement. Only itemise individually when pathology is present.
-  - **Costovertebral and costotransverse joints** are unique to the thoracic spine: ALWAYS report them, stating "Costovertebral and costotransverse joints are intact." if the transcript does not describe them.
+- Use this exact internal order within Findings: **overview first, then levels, then final checks**. Do not create extra structure-by-structure subsections.
+- **Overview:** Begin with one concise unlabelled paragraph covering thoracic alignment/kyphosis and vertebral body heights, including any fracture or destructive osseous lesion. Preserve dictated wording when supplied; otherwise use compact normal wording.
+- **Levels:** Then report each abnormal thoracic level under its own bold heading in anatomical order from T1/2 to T12/L1, regardless of dictation order. Gather disc-space/osteophyte, endplate and facet change, canal/foraminal stenosis and neural compromise at the relevant level. Account for normal levels in one brief **Remaining levels:** line; do not itemise twelve normal levels separately.
+- **Final checks:** Finish with one concise survey of the paravertebral soft tissues. Mention costovertebral/costotransverse joints or visualised thoracic organs only when explicitly dictated; do not add routine normal statements for them.
+- Do not generate separate headings or repeated summaries for vertebral bodies, posterior elements, facet joints, spinal canal or neural foramina. These belong in the overview or at the relevant level.
 - **Commonly Misspelled Words:**
 [correct spellings] vertebra, spondylosis, spondylolisthesis, kyphosis, scoliosis, pedicle, paraspinal, costovertebral, osteophyte, compression fracture, Schmorl's node [correct spellings]
 - If 'query' is mentioned in the transcript, it should be rendered as '?' in the report.

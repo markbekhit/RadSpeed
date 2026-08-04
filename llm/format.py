@@ -109,6 +109,7 @@ _KEYWORD_MAP = [
     ("MRI_Hip.txt",                 ["mri hip", "hip mri", "mri of the hip"]),
     ("MRI_Brain.txt",               ["mri brain", "brain mri", "mri head", "mri of the brain"]),
     ("MRI_Spine_Cervical.txt",      ["mri cervical spine", "mri c-spine", "cervical spine mri"]),
+    ("MRI_Spine_Thoracic.txt",      ["mri thoracic spine", "mri t-spine", "thoracic spine mri"]),
     ("MRI_Spine_Lumbar.txt",        ["mri lumbar spine", "mri l-spine", "lumbar spine mri"]),
     ("MRI_Abdomen_Liver.txt",       ["mri liver", "mri abdomen", "liver mri", "mri of the liver"]),
     ("MRI_Pelvis.txt",              ["mri pelvis", "pelvis mri", "mri of the pelvis"]),
