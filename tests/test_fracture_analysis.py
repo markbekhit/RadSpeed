@@ -272,6 +272,24 @@ class FractureAnalysisTests(unittest.TestCase):
 
         strong_scorer.assert_not_called()
 
+    def test_offline_strong_classifier_is_shown_without_discarding_other_reads(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent frontier opinion.")
+        )
+        strong_scorer = MagicMock(side_effect=RuntimeError("synthetic offline"))
+        images = prepare_fracture_images([_png(width=120, height=96)])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            result, _, supporting_models = analyse_fracture_images(
+                images, strong_scorer=strong_scorer
+            )
+
+        self.assertEqual(result.summary, "Independent frontier opinion.")
+        self.assertEqual(len(supporting_models), 1)
+        self.assertEqual(supporting_models[0]["kind"], "availability")
+        self.assertFalse(supporting_models[0]["available"])
+
     def test_wrist_study_uses_paediatric_specialist_locator(self):
         client = MagicMock()
         client.chat.completions.create.return_value = _completion(

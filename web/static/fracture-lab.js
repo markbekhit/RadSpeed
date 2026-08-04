@@ -752,6 +752,14 @@
               : "No attention cues were suggested.",
           ),
         );
+      } else if (model.kind === "availability") {
+        card.append(
+          create(
+            "p",
+            "model-result",
+            model.message || "This supporting model is currently offline.",
+          ),
+        );
       }
       if (model.evaluation) {
         card.append(

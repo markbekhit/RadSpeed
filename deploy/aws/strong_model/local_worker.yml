@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Private transient queue between RadSpeed AWS and Mark's Mac GPU
+
+Resources:
+  WorkerBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: RemoveTransientStudiesAndResults
+            Status: Enabled
+            ExpirationInDays: 1
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  WorkerBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WorkerBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !GetAtt WorkerBucket.Arn
+              - !Sub "${WorkerBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 86400
+      SqsManagedSseEnabled: true
+
+  WorkerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 3600
+      ReceiveMessageWaitTimeSeconds: 20
+      VisibilityTimeout: 300
+      SqsManagedSseEnabled: true
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  WebUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: radspeed-web-local-fracture-worker
+      Policies:
+        - PolicyName: SubmitPrivateFractureJobs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource: !Sub "${WorkerBucket.Arn}/jobs/*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub "${WorkerBucket.Arn}/results/*"
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub "${WorkerBucket.Arn}/worker-status/default.json"
+              - Effect: Allow
+                Action: sqs:SendMessage
+                Resource: !GetAtt WorkerQueue.Arn
+
+  MacWorkerUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: radspeed-mac-fracture-worker
+      Policies:
+        - PolicyName: ProcessPrivateFractureJobs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub "${WorkerBucket.Arn}/jobs/*"
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource:
+                  - !Sub "${WorkerBucket.Arn}/results/*"
+                  - !Sub "${WorkerBucket.Arn}/worker-status/default.json"
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:ChangeMessageVisibility
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt WorkerQueue.Arn
+
+Outputs:
+  BucketName:
+    Value: !Ref WorkerBucket
+  QueueUrl:
+    Value: !Ref WorkerQueue
+  QueueArn:
+    Value: !GetAtt WorkerQueue.Arn
+  WebUserName:
+    Value: !Ref WebUser
+  MacWorkerUserName:
+    Value: !Ref MacWorkerUser

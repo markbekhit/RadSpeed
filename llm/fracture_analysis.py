@@ -369,6 +369,19 @@ def analyse_fracture_images(
                     "the other independent reads.",
                     type(exc).__name__,
                 )
+                supporting_models.append(
+                    {
+                        "kind": "availability",
+                        "role": "calibrated_extremity_fracture_classifier",
+                        "label": "Open two-model fracture classifier",
+                        "scope": "Upper- and lower-limb radiographs",
+                        "available": False,
+                        "message": (
+                            "The Mac-hosted strong model is offline; the frontier "
+                            "and other available models still completed normally."
+                        ),
+                    }
+                )
         selected_locator = wrist_locator if is_wrist else general_locator
         if selected_locator is None and is_wrist:
             selected_locator = general_locator

@@ -112,8 +112,13 @@ These are confirmed in code on `main` as of this update — not aspirations.
   trained on public FracAtlas data. Both locators display ranked, untrusted
   attention cues separately; raw scores are neither displayed nor treated as
   fracture probabilities, and their output is not silently fused into the
-  frontier answer. The stronger broad SigLIP/MedSigLIP classifier is prepared
-  but awaits a separate higher-memory or GPU deployment. Fracture Lab returns
+  frontier answer. The stronger broad SigLIP/MedSigLIP classifier is connected
+  through a private, outbound-only Mac worker: RadSpeed places a short-lived
+  encrypted job in AWS, the Mac processes it with Apple GPU acceleration when
+  awake, and the result is deleted after collection. It reproduces the
+  externally evaluated OrthoFrac-XR inference path (AUC 0.892 across 1,132
+  images). If the Mac is offline, the interface says so and the frontier and
+  other available models continue normally. Fracture Lab returns
   cautious four-state wording, explicitly uncalibrated confidence and suggested
   regions. The page also
   includes the 1,132-case public OrthoFrac-XR benchmark. Direct PACS/DICOMweb

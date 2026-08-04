@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>au.com.radspeed.strong-fracture-worker</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__WORKER_SCRIPT__</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>RADSPEED_STRONG_MODEL_BUCKET</key>
+    <string>__BUCKET__</string>
+    <key>RADSPEED_STRONG_MODEL_QUEUE_URL</key>
+    <string>__QUEUE_URL__</string>
+    <key>RADSPEED_STRONG_MODEL_CLASSIFIER_DIR</key>
+    <string>__CLASSIFIER_DIR__</string>
+    <key>RADSPEED_WORKER_PYTHON</key>
+    <string>__PYTHON__</string>
+    <key>RADSPEED_REPOSITORY</key>
+    <string>__REPOSITORY__</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>StandardOutPath</key>
+  <string>__LOG_DIR__/strong-fracture-worker.log</string>
+  <key>StandardErrorPath</key>
+  <string>__LOG_DIR__/strong-fracture-worker-error.log</string>
+</dict>
+</plist>
