@@ -2,6 +2,9 @@ name: Deploy to AWS
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -127,4 +130,3 @@ jobs:
             --region "$AWS_REGION" \
             --instance-name "$INSTANCE_NAME" \
             --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
-
