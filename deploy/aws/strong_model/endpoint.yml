@@ -43,7 +43,6 @@ Resources:
           ModelName: !GetAtt StrongFractureModel.ModelName
           VariantName: AllTraffic
           InitialVariantWeight: 1.0
-          VolumeSizeInGB: 20
           ContainerStartupHealthCheckTimeoutInSeconds: 900
           ModelDataDownloadTimeoutInSeconds: 900
       Tags:
