@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: RadSpeed private web application on AWS Lightsail
+
+Parameters:
+  LightsailKeyPairName:
+    Type: String
+    Description: Existing Lightsail key pair used by automated deployments
+  BudgetEmail:
+    Type: String
+    Default: markbekhit@gmail.com
+    Description: Email address for the RadSpeed Lightsail spend warning
+
+Resources:
+  WebRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: radspeed/web
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: IMMUTABLE
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep the ten most recent RadSpeed images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {"type": "expire"}
+              }
+            ]
+          }
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: radspeed-github-deploy
+      Description: Short-lived deployment access for the RadSpeed main branch
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: repo:markbekhit/RadSpeed:ref:refs/heads/main
+      Policies:
+        - PolicyName: radspeed-deploy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: EcrLogin
+                Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: EcrImagePublish
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:DescribeImages
+                  - ecr:DescribeRepositories
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:ListImages
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource: !GetAtt WebRepository.Arn
+              - Sid: TemporarySshAccess
+                Effect: Allow
+                Action:
+                  - lightsail:CloseInstancePublicPorts
+                  - lightsail:GetInstance
+                  - lightsail:OpenInstancePublicPorts
+                Resource: "*"
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  WebInstance:
+    Type: AWS::Lightsail::Instance
+    Properties:
+      InstanceName: radspeed-web
+      AvailabilityZone: ap-southeast-2a
+      BlueprintId: ubuntu_24_04
+      BundleId: micro_3_2
+      KeyPairName: !Ref LightsailKeyPairName
+      AddOns:
+        - AddOnType: AutoSnapshot
+          Status: Enabled
+          AutoSnapshotAddOnRequest:
+            SnapshotTimeOfDay: "16:00"
+      Networking:
+        Ports:
+          - AccessDirection: inbound
+            AccessType: public
+            FromPort: 80
+            ToPort: 80
+            Protocol: tcp
+            Cidrs:
+              - 0.0.0.0/0
+            Ipv6Cidrs:
+              - ::/0
+          - AccessDirection: inbound
+            AccessType: public
+            FromPort: 443
+            ToPort: 443
+            Protocol: tcp
+            Cidrs:
+              - 0.0.0.0/0
+            Ipv6Cidrs:
+              - ::/0
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y docker.io docker-compose-v2 ca-certificates curl
+          systemctl enable --now docker
+          usermod -aG docker ubuntu
+          install -d -m 0750 -o ubuntu -g docker /opt/radspeed
+          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/data
+          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/data
+          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/config
+          touch /var/lib/radspeed-bootstrap-complete
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+        - Key: Environment
+          Value: production
+
+  WebStaticIp:
+    Type: AWS::Lightsail::StaticIp
+    DependsOn: WebInstance
+    Properties:
+      StaticIpName: radspeed-web-ip
+      AttachedTo: !Ref WebInstance
+
+  LightsailBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: radspeed-lightsail-monthly
+        BudgetLimit:
+          Amount: 15
+          Unit: USD
+        BudgetType: COST
+        CostFilters:
+          Service:
+            - Amazon Lightsail
+        TimeUnit: MONTHLY
+      NotificationsWithSubscribers:
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: FORECASTED
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: !Ref BudgetEmail
+              SubscriptionType: EMAIL
+        - Notification:
+            ComparisonOperator: GREATER_THAN
+            NotificationType: ACTUAL
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - Address: !Ref BudgetEmail
+              SubscriptionType: EMAIL
+
+Outputs:
+  DeployRoleArn:
+    Description: GitHub Actions deployment role
+    Value: !GetAtt GitHubDeployRole.Arn
+  EcrRepositoryUri:
+    Description: RadSpeed web image repository
+    Value: !GetAtt WebRepository.RepositoryUri
+  InstanceName:
+    Description: Lightsail instance name
+    Value: !Ref WebInstance
+  StaticIpAddress:
+    Description: Stable public address for DNS and deployment
+    Value: !GetAtt WebStaticIp.IpAddress
+

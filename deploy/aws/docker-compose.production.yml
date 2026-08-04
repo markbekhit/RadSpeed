@@ -1,0 +1,44 @@
+services:
+  app:
+    image: ${RADSPEED_IMAGE:?Set RADSPEED_IMAGE to the immutable ECR image URI}
+    restart: unless-stopped
+    env_file:
+      - /opt/radspeed/.env
+    environment:
+      VOXRAD_WORKING_DIR: /data/working
+      VOXRAD_DB_PATH: /data/users.db
+    volumes:
+      - /opt/radspeed/data:/data
+    networks:
+      - private
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8765/health', timeout=4)
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - /opt/radspeed/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/radspeed/caddy/data:/data
+      - /opt/radspeed/caddy/config:/config
+    networks:
+      - private
+
+networks:
+  private:
+
