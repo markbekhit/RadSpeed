@@ -39,7 +39,13 @@ Resources:
           S3FailurePath: !Sub "s3://${BucketName}/async-failure/"
       ProductionVariants:
         - InitialInstanceCount: 1
-          InstanceType: ml.g4dn.xlarge
+          InstancePools:
+            - InstanceType: ml.g4dn.xlarge
+              Priority: 1
+            - InstanceType: ml.g4dn.2xlarge
+              Priority: 2
+            - InstanceType: ml.g5.xlarge
+              Priority: 3
           ModelName: !GetAtt StrongFractureModel.ModelName
           VariantName: AllTraffic
           InitialVariantWeight: 1.0
