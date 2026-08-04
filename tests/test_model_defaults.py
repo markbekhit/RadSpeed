@@ -52,7 +52,7 @@ class ModelDefaultDurabilityTests(unittest.TestCase):
         self.assertEqual(DEEPGRAM_STREAMING_MODEL, "nova-3-medical")
 
     def test_deployment_does_not_overwrite_operator_model_secret(self):
-        workflow = (REPO_ROOT / ".github/workflows/fly-deploy.yml").read_text()
+        workflow = (REPO_ROOT / ".github/workflows/aws-deploy.yml").read_text()
         self.assertNotIn("secrets set VOXRAD_TEXT_MODEL", workflow)
         self.assertNotIn("gpt-4.1-mini", workflow)
 

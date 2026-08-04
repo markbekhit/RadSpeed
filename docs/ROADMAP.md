@@ -230,8 +230,8 @@ use; the script remains available as a lightweight fallback.
 
 **Done.** Medico-legal posture for AU/NZ practices.
 
-- `web/audit.py` — `reports` and `audit_log` tables in `users.db`, both
-  living on the persistent `/data` volume on Fly.
+- `web/audit.py` — `reports` and `audit_log` tables in `users.db`, both living
+  on persistent AWS Lightsail storage.
 - Tamper-evident hash chain on `audit_log`. `verify_chain()` catches
   prev_hash mismatches, row_hash mismatches, AND payload-vs-metadata
   mismatches (so retroactive metadata edits without bumping the hash also
@@ -330,8 +330,8 @@ Rad AI Continuity parity for the AU/NZ market.
 
 ## Notes for future Claude sessions
 
-- `main` is the deployment branch — push to main triggers fly.io auto-deploy
-  to `radspeed.com.au`.
+- `main` is the deployment branch — push to main triggers the AWS Lightsail
+  auto-deploy to `radspeed.com.au`.
 - The Impressions page lives at `/impressions` (public, no auth).
 - The PACS/RIS/EHR integration framework is ALREADY SHIPPED on main (HL7
   ORU/ORM, DICOM SR, MWL bridge, FHIR R4). Don't re-plan it as a future

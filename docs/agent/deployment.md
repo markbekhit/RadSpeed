@@ -1,14 +1,14 @@
 # Deployment, release, and updater rules
 
-Read this file before changing Fly.io, GitHub Actions, release artifacts,
+Read this file before changing AWS, GitHub Actions, release artifacts,
 updater configuration, signing, or production secrets.
 
 ## Operating model
 
 - Pushing `main` automatically deploys `radspeed.com.au` through
-  `.github/workflows/fly-deploy.yml`. Pull and inspect `main` first.
-- Use authenticated `gh` and `flyctl` sessions directly. Never print, move,
-  commit, or expose credentials.
+  `.github/workflows/aws-deploy.yml`. Pull and inspect `main` first.
+- Use authenticated `gh` and AWS sessions directly. Never print, move, commit,
+  or expose credentials.
 - GitHub issues are disabled. Do not use issues as diagnostics transport.
 - Workflows should upload useful build logs with `actions/upload-artifact@v4`
   and `if: always()` so failures remain inspectable.
@@ -26,24 +26,23 @@ updater configuration, signing, or production secrets.
 - `TAURI_SIGNING_PRIVATE_KEY` contains the base64-encoded contents of the whole
   `.key` file, not a path or a single key line.
 
-## Fly.io production details
+## AWS production details
 
-- App: `voxrad-v-hkvq`; primary region: `syd`.
-- Resolve `flyctl` from `PATH` and pass `-a voxrad-v-hkvq` explicitly.
-- Persistent volume `voxrad_data` is mounted at `/data`. Persistent paths are
-  `/data/users.db`, `/data/working`, `/data/hl7_inbox`, `/data/hl7_outbox`, and
-  `/data/sr_outbox`.
-- `/data/session_secret.key` is generated once and retained so sessions survive
-  deployments.
-- Set required secrets with `flyctl secrets set` without echoing values.
+- Production is one AWS Lightsail server in Sydney, fronted by Caddy. ECR holds
+  immutable images and Lightsail snapshots provide rollback copies.
+- Persistent application data lives below `/opt/radspeed/data` on the server.
+- CloudFormation in `deploy/aws/cloudformation.yml` owns the server, static IP,
+  ECR repository, GitHub OIDC deployment role, and budget warning.
+- GitHub Actions receives short-lived AWS credentials through OIDC. It opens
+  SSH only to the current runner and closes access after deployment.
+- Treat `docs/deploy-aws.md` as the detailed source of truth. Use synthetic or
+  explicitly de-identified public cases for deployment checks.
 
 ## GitHub Actions deployment
 
-- `FLY_API_TOKEN` is stored as a repository secret.
-- The deployment builds and pushes the image, ensures `voxrad_data` exists,
-  removes legacy machines that lack the required volume mount, then deploys.
-  Preserve that migration safeguard unless the infrastructure model changes.
-- `fly.toml` uses `strategy = "immediate"` because the app has one persistent
-  volume and cannot use a two-machine rolling deployment.
+- The deployment runs all quality gates, publishes an immutable image to ECR,
+  deploys it to Lightsail, and verifies `/health` before succeeding.
+- Preserve the temporary SSH allow-list and cleanup steps. Do not introduce
+  long-lived AWS access keys into GitHub.
 - Push a normal commit to deploy. Use an empty redeploy commit only when a
   code-free redeployment is genuinely required.

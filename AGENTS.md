@@ -22,15 +22,16 @@ radiologists. Protect clinical privacy and verify behaviour with synthetic data.
   or chat output. Use existing authenticated tools and secret stores.
 - Never use patient information in fixtures, screenshots, evaluation cases, or
   external model calls. Use synthetic data only.
-- Diagnose GitHub Actions with the authenticated `gh` CLI and Fly.io with
-  `flyctl`; do not ask the owner to collect logs or run commands.
+- Diagnose GitHub Actions with the authenticated `gh` CLI and AWS with the
+  authenticated AWS tooling; do not ask the owner to collect logs or run
+  commands.
 - Prefer a purpose-built connector. Use Chrome only when signed-in state is
   required, and an isolated browser for public or repeatable QA.
 - Every bug fix needs a regression test.
 
 ## Read before release or infrastructure work
 
-For deployment, Fly.io, GitHub Actions, updater signing, release artifacts, or
+For deployment, AWS, GitHub Actions, updater signing, release artifacts, or
 production secrets, read [docs/agent/deployment.md](docs/agent/deployment.md)
 before making changes.
 
