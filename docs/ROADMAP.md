@@ -90,7 +90,10 @@ These are confirmed in code on `main` as of this update — not aspirations.
   report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
 - **Fracture Lab** — authenticated experimental review with an ephemeral live
-  path for one to four radiograph screenshots. A bundled browser-only text
+  path for one to four radiograph screenshots or DICOM views. DICOM files are
+  decoded and windowed locally, and only their pixel canvases proceed to the
+  privacy preview, so the original files, filenames and identifying metadata
+  never leave the device. A bundled browser-only text
   recogniser automatically blacks out detected text before upload, preserves
   standard laterality/view markers, and supports manual drag-to-blackout. The
   analysis endpoint requires confirmation of the exact cleaned previews. Only
@@ -113,8 +116,8 @@ These are confirmed in code on `main` as of this update — not aspirations.
   but awaits a separate higher-memory or GPU deployment. Fracture Lab returns
   cautious four-state wording, explicitly uncalibrated confidence and suggested
   regions. The page also
-  includes the 1,132-case public OrthoFrac-XR benchmark. Direct DICOM remains
-  future separate-service work.
+  includes the 1,132-case public OrthoFrac-XR benchmark. Direct PACS/DICOMweb
+  connectivity remains future separate-service work.
 
 ### PACS / RIS / EHR integration (already shipped — needs partner adoption)
 

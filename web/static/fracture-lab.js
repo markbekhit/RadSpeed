@@ -3,6 +3,7 @@
 
   const MAX_IMAGES = 4;
   const MAX_BYTES = 12 * 1024 * 1024;
+  const MAX_DICOM_BYTES = 64 * 1024 * 1024;
   const MAX_SOURCE_PIXELS = 24_000_000;
   const MAX_OUTPUT_EDGE = 3000;
   const MAX_OCR_EDGE = 2200;
@@ -17,6 +18,7 @@
   let privacyWorkerPromise = null;
   let privacyQueue = Promise.resolve();
   let analysisBusy = false;
+  let importBusy = false;
 
   const byId = (id) => document.getElementById(id);
   const input = byId("fracture-file-input");
@@ -74,11 +76,11 @@
 
   const updateControls = () => {
     const privacyReady = allPrivacyReady();
-    clearButton.disabled = analysisBusy || files.length === 0;
-    chooseButton.disabled = analysisBusy || files.length >= MAX_IMAGES;
-    privacyConfirm.disabled = analysisBusy || !privacyReady;
+    clearButton.disabled = analysisBusy || importBusy || files.length === 0;
+    chooseButton.disabled = analysisBusy || importBusy || files.length >= MAX_IMAGES;
+    privacyConfirm.disabled = analysisBusy || importBusy || !privacyReady;
     analyseButton.disabled = (
-      analysisBusy || !privacyReady || !privacyConfirm.checked
+      analysisBusy || importBusy || !privacyReady || !privacyConfirm.checked
     );
   };
 
@@ -198,6 +200,97 @@
     );
     cleanup();
     return canvas;
+  };
+
+  const isDicomCandidate = (file) => {
+    const name = (file.name || "").toLowerCase();
+    return name.endsWith(".dcm") || name.endsWith(".dicom") ||
+      file.type === "application/dicom" ||
+      file.type === "application/dicom+binary" ||
+      (!file.type || file.type === "application/octet-stream");
+  };
+
+  const dicomWindow = (image, pixels) => {
+    const photometric = String(image.getPhotometricInterpretation() || "").toUpperCase();
+    const center = Number(image.getWindowCenter());
+    const width = Number(image.getWindowWidth());
+    if (photometric !== "MONOCHROME1" && Number.isFinite(center) && Number.isFinite(width) && width > 1) {
+      return { low: center - 0.5 - (width - 1) / 2, high: center - 0.5 + (width - 1) / 2 };
+    }
+
+    const stride = Math.max(1, Math.floor(pixels.length / 100_000));
+    const sample = [];
+    for (let index = 0; index < pixels.length; index += stride) sample.push(pixels[index]);
+    sample.sort((a, b) => a - b);
+    const low = sample[Math.floor((sample.length - 1) * 0.005)];
+    const high = sample[Math.ceil((sample.length - 1) * 0.995)];
+    return high > low ? { low, high } : { low: low - 0.5, high: high + 0.5 };
+  };
+
+  const renderDicomFrame = (image, frameIndex, width, height) => {
+    const interpreted = image.getInterpretedData(false, true, frameIndex);
+    const pixels = interpreted?.data;
+    if (!pixels || pixels.length !== width * height) {
+      throw new Error("This DICOM image layout is not supported.");
+    }
+    const { low, high } = dicomWindow(image, pixels);
+    const range = high - low;
+    const nativeCanvas = document.createElement("canvas");
+    nativeCanvas.width = width;
+    nativeCanvas.height = height;
+    const context = nativeCanvas.getContext("2d", { alpha: false });
+    const imageData = context.createImageData(width, height);
+    for (let source = 0, target = 0; source < pixels.length; source += 1, target += 4) {
+      const grey = Math.max(0, Math.min(255, Math.round((pixels[source] - low) * 255 / range)));
+      imageData.data[target] = grey;
+      imageData.data[target + 1] = grey;
+      imageData.data[target + 2] = grey;
+      imageData.data[target + 3] = 255;
+    }
+    context.putImageData(imageData, 0, 0);
+
+    const scale = Math.min(1, MAX_OUTPUT_EDGE / Math.max(width, height));
+    if (scale === 1) return nativeCanvas;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    canvas.getContext("2d", { alpha: false }).drawImage(nativeCanvas, 0, 0, canvas.width, canvas.height);
+    return canvas;
+  };
+
+  const loadDicomCanvases = async (file, limit) => {
+    if (!window.daikon?.Series?.parseImage) {
+      throw new Error("Local DICOM support did not load. Refresh the page and try again.");
+    }
+    const buffer = await file.arrayBuffer();
+    window.daikon.Parser.verbose = false;
+    let image;
+    try {
+      image = window.daikon.Series.parseImage(new DataView(buffer));
+    } catch (_error) {
+      throw new Error("This DICOM file could not be decoded.");
+    }
+    if (!image || !image.hasPixelData()) {
+      throw new Error("This DICOM does not contain an image.");
+    }
+    const photometric = String(image.getPhotometricInterpretation() || "").toUpperCase();
+    if (!photometric.startsWith("MONOCHROME") || Number(image.getNumberOfSamplesPerPixel()) !== 1) {
+      throw new Error("Fracture Lab currently supports monochrome radiograph DICOMs only.");
+    }
+    const width = Number(image.getCols());
+    const height = Number(image.getRows());
+    if (!width || !height || width < 64 || height < 64) {
+      throw new Error("The DICOM image is too small to analyse.");
+    }
+    if (width * height > MAX_SOURCE_PIXELS) {
+      throw new Error("The DICOM image is larger than 24 megapixels.");
+    }
+    const frameCount = Math.max(1, Number(image.getNumberOfFrames()) || 1);
+    const canvases = [];
+    for (let frameIndex = 0; frameIndex < Math.min(frameCount, limit); frameIndex += 1) {
+      canvases.push(renderDicomFrame(image, frameIndex, width, height));
+    }
+    return { canvases, frameCount };
   };
 
   const createOcrCanvas = (sourceCanvas) => {
@@ -431,11 +524,13 @@
     try {
       item.state = "loading";
       renderPreviews();
-      item.sourceCanvas = await loadImageCanvas(item.file);
-      if (item.removed) return;
-      revokeUrl(item.originalUrl);
-      item.originalUrl = null;
-      item.file = null;
+      if (!item.sourceCanvas) {
+        item.sourceCanvas = await loadImageCanvas(item.file);
+        if (item.removed) return;
+        revokeUrl(item.originalUrl);
+        item.originalUrl = null;
+        item.file = null;
+      }
       await refreshScrubbedFile(item);
       item.state = "checking";
       renderPreviews();
@@ -475,45 +570,78 @@
     }
   };
 
-  const addFiles = (incoming) => {
+  const createItem = ({ file = null, sourceCanvas = null, sourceType = "image/png" }) => ({
+    id: nextFileId++,
+    file,
+    sourceType,
+    originalUrl: file ? URL.createObjectURL(file) : null,
+    scrubbedUrl: null,
+    scrubbedFile: null,
+    sourceCanvas,
+    redactions: [],
+    state: "queued",
+    error: "",
+    removed: false,
+  });
+
+  const addFiles = async (incoming) => {
+    if (importBusy || analysisBusy) return;
     resetResult();
     privacyConfirm.checked = false;
+    importBusy = true;
+    updateControls();
     let rejection = "";
     const added = [];
-    for (const file of incoming) {
-      if (files.length >= MAX_IMAGES) {
-        rejection = "Use no more than four views from one study.";
-        break;
+    let omittedFrames = 0;
+    try {
+      for (const file of incoming) {
+        if (files.length >= MAX_IMAGES) {
+          rejection = "Use no more than four views from one study.";
+          break;
+        }
+        if (isDicomCandidate(file)) {
+          if (file.size > MAX_DICOM_BYTES) {
+            rejection = "Each DICOM file must be 64 MB or smaller.";
+            continue;
+          }
+          setStatus("Converting DICOM image pixels locally…");
+          try {
+            const remaining = MAX_IMAGES - files.length;
+            const { canvases, frameCount } = await loadDicomCanvases(file, remaining);
+            canvases.forEach((sourceCanvas) => {
+              const item = createItem({ sourceCanvas });
+              files.push(item);
+              added.push(item);
+            });
+            omittedFrames += Math.max(0, frameCount - canvases.length);
+          } catch (error) {
+            rejection = error.message || "This DICOM file could not be decoded.";
+          }
+          continue;
+        }
+        if (!supportedTypes.has(file.type)) {
+          rejection = "Use DICOM, PNG, JPEG or WebP images.";
+          continue;
+        }
+        if (file.size > MAX_BYTES) {
+          rejection = "Each screenshot must be 12 MB or smaller.";
+          continue;
+        }
+        const item = createItem({ file, sourceType: file.type });
+        files.push(item);
+        added.push(item);
       }
-      if (!supportedTypes.has(file.type)) {
-        rejection = "Use PNG, JPEG or WebP screenshots. Export DICOM images first.";
-        continue;
-      }
-      if (file.size > MAX_BYTES) {
-        rejection = "Each image must be 12 MB or smaller.";
-        continue;
-      }
-      const item = {
-        id: nextFileId++,
-        file,
-        sourceType: file.type,
-        originalUrl: URL.createObjectURL(file),
-        scrubbedUrl: null,
-        scrubbedFile: null,
-        sourceCanvas: null,
-        redactions: [],
-        state: "queued",
-        error: "",
-        removed: false,
-      };
-      files.push(item);
-      added.push(item);
+    } finally {
+      importBusy = false;
+      input.value = "";
+      renderPreviews();
     }
-    input.value = "";
-    renderPreviews();
+    if (omittedFrames) {
+      rejection = `Only the first four views were added; ${omittedFrames} additional DICOM frame${omittedFrames === 1 ? " was" : "s were"} omitted.`;
+    }
     setStatus(
       rejection || (added.length ? "Preparing images and checking visible text locally…" : ""),
-      Boolean(rejection),
+      Boolean(rejection && !added.length),
     );
     added.forEach((item) => {
       privacyQueue = privacyQueue.then(() => processItem(item));

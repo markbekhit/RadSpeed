@@ -4,8 +4,13 @@ Fracture Lab is an authenticated RadSpeed page for reviewing the experimental
 fracture benchmark. It is available at `/fracture-workbench` to any user who
 has completed the existing RadSpeed sign-in.
 
-It also accepts one to four PNG, JPEG or WebP radiograph screenshots from a
-single study for an ephemeral live review. Before upload, the browser runs the
+It also accepts one to four DICOM, PNG, JPEG or WebP radiographs from a single
+study for an ephemeral live review. DICOM parsing, decompression and windowing
+happen locally in the browser; only rasterised pixel canvases enter the privacy
+review, so the original DICOM files, filenames and identifying metadata are
+never submitted. Common uncompressed, JPEG, JPEG-LS, JPEG 2000 and RLE transfer
+syntaxes are supported. Multi-frame files contribute up to the four-view study
+limit. Before upload, the browser runs the
 bundled text-recognition engine locally, blacks out detected text other than
 standard laterality/view markers, and shows the exact cleaned copy that will be
 sent. The user can drag over anything missed and must confirm the previews
@@ -44,8 +49,9 @@ receive separately displayed broad RT-DETR attention cues. None of these open
 outputs is silently supplied to or fused into the frontier answer. The stronger
 broad SigLIP/MedSigLIP classifier remains deployment-ready but is not yet live
 because it requires a separate higher-memory or GPU service. Wrist-detector
-performance has not been established in adults. Direct DICOM ingestion remains
-future work.
+performance has not been established in adults. Direct PACS/DICOMweb ingestion
+remains future work; the current DICOM path is deliberately local and
+file-based so protected metadata never reaches RadSpeed.
 
 The benchmark HTML is stored outside the public static directory and both the
 page, live-analysis route and each benchmark image route use the standard

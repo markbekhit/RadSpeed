@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Fracture Lab · RadSpeed</title>
-  <link rel="stylesheet" href="/static/fracture-lab.css?v=paste-overlay-1">
+  <link rel="stylesheet" href="/static/fracture-lab.css?v=dicom-import-1">
   <style>
     :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; }
     body { margin: 0; background: #09090b; color: #f4f4f5; }
@@ -42,12 +42,12 @@
       </div>
       <span class="privacy-pill">Not saved by RadSpeed</span>
     </div>
-    <p class="analysis-intro">Add up to four views from one study. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. The cleaned copies receive one frontier-model read and separate open-model checks. For limb X-rays, the stronger two-model classifier runs on a GPU that switches off while idle, so the first analysis after a quiet period can take several minutes.</p>
-    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images">
-      <strong>Paste, drop or choose X-ray screenshots</strong>
-      <span>PNG, JPEG or WebP · up to 4 views · 12 MB each</span>
+    <p class="analysis-intro">Add up to four views from one study. DICOM files are converted to image pixels in this browser, so their original files and identifying metadata never leave this device. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. The cleaned copies receive one frontier-model read and separate open-model checks. For limb X-rays, the stronger two-model classifier runs on a GPU that switches off while idle, so the first analysis after a quiet period can take several minutes.</p>
+    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images or DICOM files">
+      <strong>Drop or choose DICOMs, or paste screenshots</strong>
+      <span>DICOM, PNG, JPEG or WebP · up to 4 views</span>
     </div>
-    <input id="fracture-file-input" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden>
+    <input id="fracture-file-input" type="file" accept=".dcm,.dicom,application/dicom,image/png,image/jpeg,image/webp" multiple hidden>
     <div id="fracture-preview-list" class="fracture-preview-list" aria-live="polite"></div>
     <section id="fracture-privacy-panel" class="privacy-review" aria-labelledby="fracture-privacy-heading" hidden>
       <div>
@@ -63,11 +63,11 @@
     <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
     <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
     <div class="analysis-actions">
-      <button id="fracture-choose" type="button">Choose images</button>
+      <button id="fracture-choose" type="button">Choose files</button>
       <button id="fracture-clear" type="button" disabled>Clear</button>
       <button id="fracture-analyse" class="primary-action" type="button" disabled>Analyse study</button>
     </div>
-    <p class="privacy-copy">Visible-text checking and blackouts happen in this browser. The unredacted screenshot is not uploaded. The cleaned copy is also stripped of hidden metadata by RadSpeed, processed ephemerally by RadSpeed's configured vision-model provider, and not retained by RadSpeed. Automated de-identification can miss text, so the preview check remains required. This is unofficial decision support and must not replace your interpretation.</p>
+    <p class="privacy-copy">DICOM decoding, visible-text checking and blackouts happen in this browser. The original DICOM or unredacted screenshot is not uploaded; only the cleaned pixel preview is sent. That copy is also stripped of hidden metadata by RadSpeed, processed ephemerally by RadSpeed's configured vision-model provider, and not retained by RadSpeed. Automated de-identification can miss burned-in text, so the preview check remains required. This is unofficial decision support and must not replace your interpretation.</p>
     <div id="fracture-status" class="fracture-status" role="status" aria-live="polite"></div>
     <section id="fracture-result" class="fracture-result" aria-live="polite" hidden></section>
   </section>
@@ -12545,6 +12545,7 @@
   });
 </script>
   <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>
-  <script src="/static/fracture-lab.js?v=paste-overlay-1"></script>
+  <script src="/static/vendor/daikon/daikon.min.js?v=1.2.46"></script>
+  <script src="/static/fracture-lab.js?v=dicom-import-1"></script>
 </body>
 </html>
