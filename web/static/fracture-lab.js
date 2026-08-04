@@ -770,8 +770,9 @@
     dropZone.classList.remove("drag-over");
     addFiles(event.dataTransfer.files);
   });
-  dropZone.addEventListener("paste", (event) => {
-    const pasted = [...event.clipboardData.files].filter((file) => supportedTypes.has(file.type));
+  document.addEventListener("paste", (event) => {
+    const pasted = [...(event.clipboardData?.files || [])]
+      .filter((file) => supportedTypes.has(file.type));
     if (pasted.length) {
       event.preventDefault();
       addFiles(pasted);
