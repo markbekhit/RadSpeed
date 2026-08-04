@@ -6,7 +6,7 @@
 
 [![Python Badge](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff&style=for-the-badge)](#)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=fff&style=for-the-badge)](#)
-[![Fly.io](https://img.shields.io/badge/Fly.io-7C3AED?logo=flydotio&logoColor=fff&style=for-the-badge)](#)
+[![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=fff&style=for-the-badge)](#)
 [![License](https://flat.badgen.net/badge/license/GPLv3/green?icon=github)](LICENSE)
 [![Python Version](https://flat.badgen.net/badge/python/3.11%20|%203.12/blue?icon=github)](#)
 
@@ -18,7 +18,7 @@ RadSpeed is an AI-assisted voice reporting system for radiologists. Dictate a
 study, get back a structured, style-consistent report ready to paste into
 your RIS — or, where integrations are available, delivered automatically.
 
-The project is web-first: deploy a single container (or push to Fly.io) and
+The project is web-first: deploy a single container to AWS or another Docker host and
 your radiologists get a browser-based workstation with streaming speech-
 to-text, LLM report formatting, patient-context awareness, a DICOM/HL7
 worklist, and standards-based export back to the RIS. A legacy desktop
@@ -80,7 +80,7 @@ worklist, and standards-based export back to the RIS. A legacy desktop
 ## 🏗️ Architecture
 
 ```
-                    ┌── Clinic LAN ──┐             ┌── Fly.io / Docker ──┐
+                    ┌── Clinic LAN ──┐             ┌──── AWS / Docker ───┐
                     │                │             │                     │
   ┌─────────┐       │   ┌─────────┐  │             │                     │
   │ PACS /  │──MWL──┼──▶│  MWL    │──┼── HTTPS ───▶│                     │
@@ -120,23 +120,12 @@ Core subsystems:
 
 ## 🚀 Quick start — web app
 
-### Fly.io (recommended — always-on free tier)
+### AWS Lightsail (production)
 
-```bash
-flyctl auth login
-flyctl apps create voxrad-yourname
-
-flyctl secrets set \
-    VOXRAD_WEB_PASSWORD=changeme \
-    VOXRAD_TRANSCRIPTION_API_KEY=gsk_... \
-    VOXRAD_TEXT_API_KEY=sk-...
-
-flyctl deploy
-```
-
-The CI workflow automatically creates the `voxrad_data` persistent volume on first deploy if it doesn't exist — no manual volume setup required. The session secret is auto-generated and stored on the volume, so users stay logged in across deploys without any extra configuration.
-
-To wire up auto-deploy on push to `main`, add your `FLY_API_TOKEN` as a GitHub repo secret (Settings → Secrets → Actions).
+Production runs in AWS Sydney. Pushing to `main` runs the quality gates,
+publishes an immutable image to ECR and deploys it to Lightsail automatically.
+Application data persists below `/opt/radspeed/data`, with automatic Lightsail
+snapshots for rollback.
 
 Full guide: [docs/deploy-web.md](docs/deploy-web.md).
 
@@ -160,7 +149,7 @@ Key vars:
 | `DEEPGRAM_API_KEY` / `ASSEMBLYAI_API_KEY` | Streaming STT provider keys |
 | `VOXRAD_STREAMING_STT_PROVIDER` | `deepgram` \| `assemblyai` \| unset |
 | `VOXRAD_WORKING_DIR` | Where templates / reports / inbox live |
-| `VOXRAD_DB_PATH` | Absolute path for `users.db` (set to `/data/users.db` on Fly) |
+| `VOXRAD_DB_PATH` | Absolute path for `users.db` (set to `/data/users.db` in production) |
 | `SESSION_SECRET_KEY` | Stable secret for signing session cookies — auto-generated and persisted to the volume on first boot if not set |
 | `VOXRAD_HL7_ENABLED` / `_OUTBOX` / `_INBOX` | HL7 v2.4 file-drop integration |
 | `VOXRAD_DICOM_SR_ENABLED` / `_OUTBOX` / `_INSTITUTION` | DICOM Basic Text SR export |
@@ -175,12 +164,11 @@ Key vars:
 Any integration engine that can write/read HL7 v2.x files to a shared
 directory works. Point the engine at RadSpeed's inbox/outbox:
 
-```bash
-flyctl secrets set \
-    VOXRAD_HL7_INBOX=/data/hl7_inbox \
-    VOXRAD_HL7_OUTBOX=/data/hl7_outbox \
-    VOXRAD_HL7_SENDING_FACILITY=VOXRAD \
-    VOXRAD_HL7_RECEIVING_FACILITY=MYCLINIC
+```dotenv
+VOXRAD_HL7_INBOX=/data/hl7_inbox
+VOXRAD_HL7_OUTBOX=/data/hl7_outbox
+VOXRAD_HL7_SENDING_FACILITY=VOXRAD
+VOXRAD_HL7_RECEIVING_FACILITY=MYCLINIC
 ```
 
 Inbound `ORM^O01` orders land in the worklist automatically. Outbound
@@ -192,11 +180,10 @@ Some PACS (Sectra, Philips IntelliSpace, some Agfa configurations)
 accept radiology reports as DICOM SR instead of — or alongside — HL7.
 Enable SR export with:
 
-```bash
-flyctl secrets set \
-    VOXRAD_DICOM_SR_ENABLED=true \
-    VOXRAD_DICOM_SR_OUTBOX=/data/sr_outbox \
-    VOXRAD_DICOM_SR_INSTITUTION="My Clinic"
+```dotenv
+VOXRAD_DICOM_SR_ENABLED=true
+VOXRAD_DICOM_SR_OUTBOX=/data/sr_outbox
+VOXRAD_DICOM_SR_INSTITUTION=My Clinic
 ```
 
 Each finalised report is written as a Basic Text SR instance
@@ -212,15 +199,15 @@ For clinics with a PACS/MWL broker but no HL7 integration engine, run the
 on-prem bridge agent:
 
 ```bash
-# Server side — set the shared secret
-flyctl secrets set VOXRAD_MWL_AGENT_TOKEN=$(openssl rand -hex 32)
+# Server side — add a randomly generated token to the production environment
+# VOXRAD_MWL_AGENT_TOKEN=<random 32-byte token>
 
 # Clinic side — run the bridge
 pip install -r agents/requirements.txt
 python agents/voxrad_mwl_agent.py \
     --mwl-host pacs.clinic.local --mwl-port 104 \
     --called-ae MWLSCP --calling-ae VOXRAD \
-    --voxrad-url https://voxrad-yourname.fly.dev \
+    --voxrad-url https://radspeed.com.au \
     --token $VOXRAD_AGENT_TOKEN
 ```
 
@@ -231,10 +218,9 @@ real PACS.
 
 ### FHIR R4
 
-```bash
-flyctl secrets set \
-    FHIR_BASE_URL=https://ris.example.com/fhir \
-    VOXRAD_FHIR_EXPORT_ENABLED=true
+```dotenv
+FHIR_BASE_URL=https://ris.example.com/fhir
+VOXRAD_FHIR_EXPORT_ENABLED=true
 ```
 
 Each finalised report emits a `DiagnosticReport` JSON to the working
@@ -257,7 +243,8 @@ integration features the web app has. New work lands web-first.
 ## 📚 Documentation
 
 In this repo:
-- [`docs/deploy-web.md`](docs/deploy-web.md) — Fly.io / Docker deployment
+- [`docs/deploy-aws.md`](docs/deploy-aws.md) — AWS production deployment
+- [`docs/deploy-web.md`](docs/deploy-web.md) — Docker self-hosting
 - [`docs/mwl-bridge-agent.md`](docs/mwl-bridge-agent.md) — MWL bridge setup
 - [`docs/local-whisper-setup.md`](docs/local-whisper-setup.md) — self-hosted STT
 - [`docs/FFmpeg.md`](docs/FFmpeg.md) — audio pipeline notes
@@ -288,7 +275,7 @@ responses — useful for UI work and CI without burning API credits.
 
 See [`contributing.md`](contributing.md). Bug reports and feature
 requests via GitHub issues; please include logs and the deployment mode
-(desktop / Fly.io / Docker).
+(desktop / AWS / Docker).
 
 ## 📜 License
 

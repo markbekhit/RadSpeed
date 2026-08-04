@@ -5,14 +5,14 @@ clinics running VoxRad against the cloud-hosted web app.
 
 ## Why a bridge?
 
-VoxRad's web app is hosted on Fly.io. A clinic's PACS / MWL broker lives on
+RadSpeed's web app is hosted on AWS. A clinic's PACS / MWL broker lives on
 their private LAN and will not accept inbound connections from the public
 internet. The bridge inverts the direction: it runs on-prem, makes the
 DICOM association **outbound** to the local MWL SCP, and POSTs the parsed
 orders to VoxRad over HTTPS.
 
 ```
-┌───────────── Clinic LAN ─────────────┐         ┌──── Fly.io ────┐
+┌───────────── Clinic LAN ─────────────┐         ┌───── AWS ──────┐
 │                                      │         │                │
 │   PACS / RIS ◀── C-FIND ──┐          │         │                │
 │                           │          │  HTTPS  │                │
@@ -29,17 +29,14 @@ No firewall changes are needed beyond permitting the agent's outbound HTTPS.
 
 Set the shared-secret token in VoxRad's environment before starting the app:
 
-```bash
-fly secrets set VOXRAD_MWL_AGENT_TOKEN=$(openssl rand -hex 32)
-```
+Add `VOXRAD_MWL_AGENT_TOKEN` to `/opt/radspeed/.env` using a randomly generated
+32-byte token.
 
 Confirm the HL7 inbox directory is writable (the agent's orders are stored
 there as JSON so they feed the existing worklist UI):
 
-```bash
-# defaults to {save_directory}/hl7_inbox
-fly secrets set VOXRAD_HL7_INBOX=/data/hl7_inbox
-```
+The inbox defaults to `{save_directory}/hl7_inbox`; override it with
+`VOXRAD_HL7_INBOX=/data/hl7_inbox` in `/opt/radspeed/.env` if needed.
 
 That's it on the server side — the push endpoint is only live when the
 token env var is set, so there's no exposed surface otherwise.

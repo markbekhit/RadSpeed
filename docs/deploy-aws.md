@@ -17,12 +17,10 @@ closes SSH again. No long-lived AWS access keys are stored in GitHub.
 ## Migration order
 
 1. Deploy the CloudFormation stack and set the GitHub repository variables.
-2. Copy the current Fly.io `/data` directory and environment into the stopped
-   AWS application.
+2. Copy the previous host's `/data` directory and environment into the stopped AWS application.
 3. Run the manual **Deploy to AWS** workflow and verify the static IP.
 4. Perform one final SQLite/data sync, change DNS, and verify Google sign-in.
-5. Stop Fly.io after DNS traffic reaches AWS; keep it briefly as a rollback,
-   then delete its machines and volumes when the AWS copy is proven.
+5. Verify DNS traffic, sign-in and persisted data on AWS, then remove the old host.
 
 Never use real patient images for deployment testing. Use the synthetic test
 fixtures or an explicitly de-identified public case.

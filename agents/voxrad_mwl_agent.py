@@ -7,7 +7,7 @@ Worklist SCP via C-FIND, and POSTs matched orders to VoxRad's
 
 Why a bridge?
 -------------
-VoxRad is hosted on Fly.io; clinic PACS/MWL brokers live on private
+VoxRad is hosted on AWS; clinic PACS/MWL brokers live on private
 networks and will not accept inbound connections from the public
 internet. Inverting the direction — have a small on-prem script make
 outbound HTTPS calls — avoids the firewall problem entirely and keeps

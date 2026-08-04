@@ -1,74 +1,18 @@
 # RadSpeed Web Server — Deployment Guide
 
-Deploy VoxRad as a single-container web service — on Fly.io (recommended, always-on free tier) or on any Linux host using Docker Compose.
+Deploy RadSpeed as a single-container web service on AWS or any Linux host using Docker Compose.
 
 ---
 
-## Option A — Fly.io (recommended, always-on free tier)
+## Option A — AWS Lightsail (production)
 
-Fly.io keeps your container running permanently — no cold-start delays. The free allowance
-(one shared-cpu-1x VM + 3 GB storage) covers a single VoxRad instance indefinitely.
-
-### 1. Install flyctl
-
-```bash
-curl -L https://fly.io/install.sh | sh   # Linux / macOS
-# or: brew install flyctl               # macOS with Homebrew
-flyctl auth login
-```
-
-### 2. Create the app and volumes
-
-```bash
-# Pick a unique app name (e.g. voxrad-yourname) and your nearest region:
-# Regions: https://fly.io/docs/reference/regions/  (e.g. syd, lax, iad, lhr, sin)
-flyctl apps create voxrad-yourname
-
-# Persistent storage — created once, survives redeploys
-flyctl volumes create voxrad_config --size 1 --region syd
-flyctl volumes create voxrad_data   --size 1 --region syd
-```
-
-Update the `app` and `primary_region` fields in `fly.toml` to match.
-
-### 3. Set secrets
-
-```bash
-flyctl secrets set \
-  VOXRAD_WEB_PASSWORD=changeme \
-  VOXRAD_TRANSCRIPTION_API_KEY=gsk_... \
-  VOXRAD_TEXT_API_KEY=sk-...
-
-# Optional — streaming STT (Deepgram / AssemblyAI):
-flyctl secrets set DEEPGRAM_API_KEY=...
-flyctl secrets set VOXRAD_STREAMING_STT_PROVIDER=deepgram
-```
-
-### 4. Deploy
-
-```bash
-flyctl deploy
-# App URL is printed at the end, e.g. https://voxrad-yourname.fly.dev
-```
-
-### Updating
-
-```bash
-git pull
-flyctl deploy
-```
-
-### Logs & status
-
-```bash
-flyctl logs          # tail live logs
-flyctl status        # machine health
-flyctl ssh console   # SSH into the container
-```
+Production uses one Lightsail server in Sydney, ECR for immutable images,
+Caddy for HTTPS and GitHub OIDC for short-lived deployment credentials. See
+[deploy-aws.md](deploy-aws.md) for the architecture and migration order.
 
 ---
 
-## Option B — On-Premises (Docker Compose)
+## Option B — On-premises (Docker Compose)
 
 ### Prerequisites
 

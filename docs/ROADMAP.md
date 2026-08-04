@@ -178,9 +178,9 @@ deployment and partner sign-on, not new code.
 
 ### Deployment
 
-- **Fly.io** — auto-deploy on push to `main` via GitHub Actions; persistent
-  volume for users.db + session secret; running at
-  `https://radspeed.com.au` (fly app `voxrad-v-hkvq`, region `syd`).
+- **AWS Sydney** — auto-deploy on push to `main` via GitHub Actions and OIDC;
+  persistent Lightsail storage for users.db and working data; immutable images
+  in ECR; running at `https://radspeed.com.au`.
 - **Docker** — `docker compose up -d` for self-hosted.
 
 ### Automated quality coverage
