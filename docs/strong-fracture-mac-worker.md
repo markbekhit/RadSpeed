@@ -33,10 +33,11 @@ the Mac.
   worker running while the Mac is awake and signed in.
 
 The worker wrapper prefers credentials from the current macOS login session and
-falls back to macOS Keychain. On this migrated Mac, the login Keychain currently
-refuses new items, so the deployed credential is memory-only: it survives sleep
-and worker/app restarts but not a full logout or reboot. After a reboot the
-website safely marks the strong model offline until the credential is refreshed.
-The website credentials belong only in the root-readable production environment
-file. Do not place either credential in a repository, shell history,
-launch-agent file, diagnostic artifact, or log.
+falls back to macOS Keychain. The deployed Mac credential is stored in the login
+Keychain and was verified by removing the login-session copy and successfully
+restarting the worker. It therefore survives a reboot once Mark signs in. The
+one-time `deploy/mac/save-strong-worker-credentials.sh` helper transfers a
+credential already present in the current login session into Keychain without
+printing or writing it to disk. The website credentials belong only in the
+root-readable production environment file. Do not place either credential in a
+repository, shell history, launch-agent file, diagnostic artifact, or log.
