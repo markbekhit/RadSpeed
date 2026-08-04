@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Scale-to-zero SageMaker endpoint for the RadSpeed fracture classifier
+
+Parameters:
+  BucketName:
+    Type: String
+  ImageUri:
+    Type: String
+  ModelDataUrl:
+    Type: String
+  SageMakerExecutionRoleArn:
+    Type: String
+
+Resources:
+  StrongFractureModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ExecutionRoleArn: !Ref SageMakerExecutionRoleArn
+      PrimaryContainer:
+        Image: !Ref ImageUri
+        ModelDataUrl: !Ref ModelDataUrl
+        Environment:
+          SAGEMAKER_PROGRAM: inference.py
+          SAGEMAKER_SUBMIT_DIRECTORY: /opt/ml/code
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  StrongFractureEndpointConfig:
+    Type: AWS::SageMaker::EndpointConfig
+    Properties:
+      AsyncInferenceConfig:
+        ClientConfig:
+          MaxConcurrentInvocationsPerInstance: 1
+        OutputConfig:
+          S3OutputPath: !Sub "s3://${BucketName}/async-output/"
+          S3FailurePath: !Sub "s3://${BucketName}/async-failure/"
+      ProductionVariants:
+        - InitialInstanceCount: 1
+          InstanceType: ml.g4dn.xlarge
+          ModelName: !GetAtt StrongFractureModel.ModelName
+          VariantName: AllTraffic
+          InitialVariantWeight: 1.0
+          VolumeSizeInGB: 20
+          ContainerStartupHealthCheckTimeoutInSeconds: 900
+          ModelDataDownloadTimeoutInSeconds: 900
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  StrongFractureEndpoint:
+    Type: AWS::SageMaker::Endpoint
+    Properties:
+      EndpointName: radspeed-strong-fracture
+      EndpointConfigName: !GetAtt StrongFractureEndpointConfig.EndpointConfigName
+      Tags:
+        - Key: Project
+          Value: RadSpeed
+
+  EndpointScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: StrongFractureEndpoint
+    Properties:
+      MaxCapacity: 1
+      MinCapacity: 0
+      ResourceId: endpoint/radspeed-strong-fracture/variant/AllTraffic
+      ScalableDimension: sagemaker:variant:DesiredInstanceCount
+      ServiceNamespace: sagemaker
+
+  QueueTrackingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: radspeed-strong-fracture-queue
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref EndpointScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 1.0
+        ScaleInCooldown: 120
+        ScaleOutCooldown: 0
+        CustomizedMetricSpecification:
+          MetricName: ApproximateBacklogSizePerInstance
+          Namespace: AWS/SageMaker
+          Statistic: Average
+          Dimensions:
+            - Name: EndpointName
+              Value: radspeed-strong-fracture
+
+  WakeScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: radspeed-strong-fracture-wake
+      PolicyType: StepScaling
+      ScalingTargetId: !Ref EndpointScalableTarget
+      StepScalingPolicyConfiguration:
+        AdjustmentType: ChangeInCapacity
+        Cooldown: 60
+        MetricAggregationType: Maximum
+        StepAdjustments:
+          - MetricIntervalLowerBound: 0
+            ScalingAdjustment: 1
+
+  WakeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: radspeed-strong-fracture-backlog-without-gpu
+      AlarmDescription: Wake the scale-to-zero fracture endpoint for a queued study
+      Namespace: AWS/SageMaker
+      MetricName: HasBacklogWithoutCapacity
+      Dimensions:
+        - Name: EndpointName
+          Value: radspeed-strong-fracture
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref WakeScalingPolicy
+
+Outputs:
+  EndpointName:
+    Value: !GetAtt StrongFractureEndpoint.EndpointName

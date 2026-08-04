@@ -66,6 +66,7 @@ from llm.fracture_locator import (
     locate_fracture_candidates,
     locate_wrist_fracture_candidates,
 )
+from llm.strong_fracture_model import score_strong_fracture_images
 from llm.impressions import stream_impression
 from llm.model_compat import completion_options
 from llm.worksheet import (
@@ -804,6 +805,7 @@ async def fracture_analysis(
                     chest_scorer=score_chest_images,
                     general_locator=locate_fracture_candidates,
                     wrist_locator=locate_wrist_fracture_candidates,
+                    strong_scorer=score_strong_fracture_images,
                 )
     except FractureImageError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

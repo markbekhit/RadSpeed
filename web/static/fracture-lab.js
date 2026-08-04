@@ -602,7 +602,7 @@
           create(
             "p",
             "model-result",
-            `Public-dataset fracture estimate: ${Math.round(model.highest_view_probability * 100)}% on the highest view.`,
+            `Public-dataset fracture estimate: ${Math.round(model.highest_view_probability * 100)}% on the highest view${model.study_fusion ? " (not separately calibrated across views)" : ""}.`,
           ),
         );
         if (viewScores) card.append(create("p", "model-detail", viewScores));

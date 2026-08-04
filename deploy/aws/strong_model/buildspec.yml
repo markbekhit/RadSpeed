@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "${IMAGE_REPO_URI%%/*}"
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "763104351884.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - IMAGE_TAG="$(git rev-parse --short=12 HEAD)-strong-v1"
+  build:
+    commands:
+      - docker build --pull -t "$IMAGE_REPO_URI:$IMAGE_TAG" deploy/aws/strong_model
+  post_build:
+    commands:
+      - docker push "$IMAGE_REPO_URI:$IMAGE_TAG"
+      - printf '%s' "$IMAGE_REPO_URI:$IMAGE_TAG" > /tmp/radspeed-strong-image-uri.txt

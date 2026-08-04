@@ -226,6 +226,52 @@ class FractureAnalysisTests(unittest.TestCase):
         self.assertNotIn("detector", frontier_text)
         self.assertNotIn("proposal", frontier_text)
 
+    def test_general_study_returns_strong_classifier_independently(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent frontier opinion.")
+        )
+        strong_scorer = MagicMock(
+            return_value={
+                "model": "calibrated_two_encoder_tiled_ensemble",
+                "view_probabilities": [0.41],
+                "highest_view_probability": 0.41,
+                "study_status": "suspected_fracture",
+                "study_fusion": "maximum_of_view_scores_not_study_calibrated",
+                "views": [],
+            }
+        )
+        images = prepare_fracture_images([_png(width=120, height=96)])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            _, _, supporting_models = analyse_fracture_images(
+                images, strong_scorer=strong_scorer
+            )
+
+        self.assertEqual(len(supporting_models), 1)
+        opinion = supporting_models[0]
+        self.assertEqual(opinion["role"], "calibrated_extremity_fracture_classifier")
+        self.assertEqual(opinion["highest_view_probability"], 0.41)
+        self.assertEqual(opinion["evaluation"]["auc"], 0.892)
+        strong_scorer.assert_called_once_with(images)
+        frontier_text = client.chat.completions.create.call_args.kwargs["messages"][
+            1
+        ]["content"][0]["text"]
+        self.assertNotIn("0.41", frontier_text)
+
+    def test_chest_study_does_not_run_extremity_classifier(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            _assessment("Independent chest opinion.", study_region="chest_ribs")
+        )
+        strong_scorer = MagicMock()
+        images = prepare_fracture_images([_png(width=120, height=96)])
+
+        with patch("llm.fracture_analysis.OpenAI", return_value=client):
+            analyse_fracture_images(images, strong_scorer=strong_scorer)
+
+        strong_scorer.assert_not_called()
+
     def test_wrist_study_uses_paediatric_specialist_locator(self):
         client = MagicMock()
         client.chat.completions.create.return_value = _completion(

@@ -283,6 +283,9 @@ def analyse_fracture_images(
     wrist_locator: Optional[
         Callable[[list[PreparedFractureImage]], dict[str, Any]]
     ] = None,
+    strong_scorer: Optional[
+        Callable[[list[PreparedFractureImage]], dict[str, Any]]
+    ] = None,
 ) -> tuple[FractureAssessment, str, list[dict[str, Any]]]:
     """Return one frontier read plus independent, anatomy-routed model opinions."""
     if not images:
@@ -334,6 +337,38 @@ def analyse_fracture_images(
                     type(exc).__name__,
                 )
     else:
+        if strong_scorer is not None:
+            try:
+                strong_result = strong_scorer(images)
+                supporting_models.append(
+                    {
+                        **strong_result,
+                        "kind": "classifier",
+                        "role": "calibrated_extremity_fracture_classifier",
+                        "label": "Open two-model fracture classifier",
+                        "scope": "Upper- and lower-limb radiographs",
+                        "probability_kind": (
+                            "public_dataset_estimate_not_patient_specific"
+                        ),
+                        "evaluation": {
+                            "auc": 0.892,
+                            "cases": 1132,
+                            "dataset": "OrthoFrac-XR independent external test set",
+                            "limitation": (
+                                "Broad extremity evidence only; high false-alarm rate, "
+                                "weak shoulder/carpal performance and no chest, rib or "
+                                "spine validation. The highest-view score is not a "
+                                "study-level calibrated probability."
+                            ),
+                        },
+                    }
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Strong fracture classifier unavailable (%s); continuing with "
+                    "the other independent reads.",
+                    type(exc).__name__,
+                )
         selected_locator = wrist_locator if is_wrist else general_locator
         if selected_locator is None and is_wrist:
             selected_locator = general_locator
