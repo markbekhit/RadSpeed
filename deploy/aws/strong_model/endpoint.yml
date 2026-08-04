@@ -40,11 +40,11 @@ Resources:
       ProductionVariants:
         - InitialInstanceCount: 1
           InstancePools:
-            - InstanceType: ml.g4dn.xlarge
+            - InstanceType: ml.g6.xlarge
               Priority: 1
-            - InstanceType: ml.g4dn.2xlarge
+            - InstanceType: ml.g6.2xlarge
               Priority: 2
-            - InstanceType: ml.g5.xlarge
+            - InstanceType: ml.g5.2xlarge
               Priority: 3
           ModelName: !GetAtt StrongFractureModel.ModelName
           VariantName: AllTraffic
