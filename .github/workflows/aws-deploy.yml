@@ -1,0 +1,130 @@
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Test and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency: radspeed-aws-deploy
+    env:
+      AWS_REGION: ap-southeast-2
+      INSTANCE_NAME: radspeed-web
+      INSTANCE_HOST: ${{ vars.AWS_LIGHTSAIL_HOST }}
+      ECR_REPOSITORY: radspeed/web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+
+      - name: Install test runtime
+        run: |
+          python -m pip install -r requirements-test.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run automated quality gates
+        run: |
+          set -o pipefail
+          {
+            python -m unittest discover -v
+            python -m evals.clinical_quality
+            pytest e2e --browser chromium --tracing=retain-on-failure --screenshot=only-on-failure
+          } 2>&1 | tee python-tests.log
+
+      - name: Configure short-lived AWS access
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and publish immutable image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          IMAGE_URI="$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build --tag "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          echo "RADSPEED_IMAGE=$IMAGE_URI" >> "$GITHUB_ENV"
+
+      - name: Prepare temporary SSH access
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.AWS_LIGHTSAIL_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/radspeed-aws
+          chmod 600 ~/.ssh/radspeed-aws
+          RUNNER_IP="$(curl -fsSL https://checkip.amazonaws.com | tr -d '[:space:]')"
+          test -n "$RUNNER_IP"
+          echo "RUNNER_IP=$RUNNER_IP" >> "$GITHUB_ENV"
+          aws lightsail open-instance-public-ports \
+            --region "$AWS_REGION" \
+            --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
+          sleep 5
+          ssh-keyscan -H "$INSTANCE_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/radspeed-aws \
+            deploy/aws/docker-compose.production.yml \
+            deploy/aws/Caddyfile \
+            "ubuntu@$INSTANCE_HOST:/tmp/"
+          aws ecr get-login-password --region "$AWS_REGION" | \
+            ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+              "sudo docker login --username AWS --password-stdin '${{ steps.ecr-login.outputs.registry }}'"
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+            "sudo install -m 640 -o root -g docker /tmp/docker-compose.production.yml /opt/radspeed/docker-compose.yml && \
+             sudo install -m 640 -o root -g docker /tmp/Caddyfile /opt/radspeed/Caddyfile && \
+             cd /opt/radspeed && \
+             sudo RADSPEED_IMAGE='$RADSPEED_IMAGE' docker compose pull && \
+             sudo RADSPEED_IMAGE='$RADSPEED_IMAGE' docker compose up -d --remove-orphans && \
+             sudo docker image prune -f"
+
+      - name: Verify deployed health
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent \
+            --retry 12 --retry-delay 10 --retry-all-errors \
+            "http://$INSTANCE_HOST/health"
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+            "cd /opt/radspeed && sudo RADSPEED_IMAGE='$RADSPEED_IMAGE' docker compose ps"
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aws-deploy-diagnostics
+          path: |
+            python-tests.log
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Close temporary SSH access
+        if: always() && env.RUNNER_IP != ''
+        run: |
+          aws lightsail close-instance-public-ports \
+            --region "$AWS_REGION" \
+            --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
+
