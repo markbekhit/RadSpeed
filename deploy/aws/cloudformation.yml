@@ -134,20 +134,19 @@ Resources:
               - 0.0.0.0/0
             Ipv6Cidrs:
               - ::/0
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash
-          set -euxo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install -y docker.io docker-compose-v2 ca-certificates curl
-          systemctl enable --now docker
-          usermod -aG docker ubuntu
-          install -d -m 0750 -o ubuntu -g docker /opt/radspeed
-          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/data
-          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/data
-          install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/config
-          touch /var/lib/radspeed-bootstrap-complete
+      UserData: |
+        #!/bin/bash
+        set -euxo pipefail
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y docker.io docker-compose-v2 ca-certificates curl
+        systemctl enable --now docker
+        usermod -aG docker ubuntu
+        install -d -m 0750 -o ubuntu -g docker /opt/radspeed
+        install -d -m 0750 -o ubuntu -g docker /opt/radspeed/data
+        install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/data
+        install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/config
+        touch /var/lib/radspeed-bootstrap-complete
       Tags:
         - Key: Project
           Value: RadSpeed
@@ -205,4 +204,3 @@ Outputs:
   StaticIpAddress:
     Description: Stable public address for DNS and deployment
     Value: !GetAtt WebStaticIp.IpAddress
-
