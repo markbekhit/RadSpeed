@@ -88,6 +88,12 @@ Resources:
                   - ecr:PutImage
                   - ecr:UploadLayerPart
                 Resource: !GetAtt ModelRepository.Arn
+              - Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:BatchGetImage
+                  - ecr:GetDownloadUrlForLayer
+                Resource: !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:763104351884:repository/huggingface-pytorch-inference"
 
   ModelImageBuild:
     Type: AWS::CodeBuild::Project
