@@ -560,18 +560,22 @@
       rect.setAttribute("height", box.y_max - box.y_min);
       rect.setAttribute("fill", "none");
       rect.setAttribute("stroke", colour);
-      rect.setAttribute("stroke-width", "7");
+      rect.setAttribute("stroke-width", supporting ? "4" : "7");
       rect.setAttribute("vector-effect", "non-scaling-stroke");
-      if (supporting) rect.setAttribute("stroke-dasharray", "18 12");
+      if (supporting) {
+        rect.setAttribute("class", "supporting-attention-cue");
+        rect.setAttribute("stroke-dasharray", "14 10");
+        rect.setAttribute("opacity", ".85");
+        svg.append(rect);
+        return;
+      }
       const label = document.createElementNS(namespace, "text");
       label.setAttribute("x", Math.max(5, box.x_min + 8));
       label.setAttribute("y", Math.max(32, box.y_min - 10));
       label.setAttribute("fill", colour);
       label.setAttribute("font-size", "28");
       label.setAttribute("font-weight", "700");
-      label.textContent = supporting
-        ? `Open model ${index + 1}: attention cue`
-        : `${index + 1}: ${box.label}`;
+      label.textContent = `${index + 1}: ${box.label}`;
       svg.append(rect, label);
     });
   };
