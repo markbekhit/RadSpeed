@@ -50,7 +50,7 @@ future work.
 The benchmark HTML is stored outside the public static directory and both the
 page, live-analysis route and each benchmark image route use the standard
 RadSpeed authentication dependency.
-Production images live on the persistent Fly volume under
+Production images live on persistent AWS Lightsail storage under
 `/data/fracture_workbench/images` and are not included in the Git repository.
 `RADSPEED_FRACTURE_WORKBENCH_DIR` can override the data root for local tests.
 
