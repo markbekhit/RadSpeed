@@ -1,8 +1,8 @@
-ARG DLC_IMAGE=763104351884.dkr.ecr.ap-southeast-2.amazonaws.com/pytorch-inference:2.6.0-gpu-py311-cu124-ubuntu22.04-sagemaker
+ARG DLC_IMAGE=763104351884.dkr.ecr.ap-southeast-2.amazonaws.com/huggingface-pytorch-inference:2.6.0-transformers5.5.3-gpu-py312-cu124-ubuntu22.04
 FROM ${DLC_IMAGE}
 
 RUN pip install --no-cache-dir \
-    "transformers==4.55.4" \
+    "transformers==5.5.3" \
     "accelerate==1.10.0" \
     "scikit-learn==1.7.1" \
     "joblib==1.5.1" \
