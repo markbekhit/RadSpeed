@@ -143,6 +143,15 @@ Resources:
         apt-get install -y docker.io docker-compose-v2 ca-certificates curl
         systemctl enable --now docker
         usermod -aG docker ubuntu
+        if [ ! -f /swapfile ]; then
+          fallocate -l 2G /swapfile
+          chmod 600 /swapfile
+          mkswap /swapfile
+        fi
+        swapon /swapfile || true
+        grep -q '^/swapfile ' /etc/fstab || echo '/swapfile none swap sw 0 0' >> /etc/fstab
+        echo 'vm.swappiness=10' > /etc/sysctl.d/99-radspeed-swap.conf
+        sysctl --system
         install -d -m 0750 -o ubuntu -g docker /opt/radspeed
         install -d -m 0750 -o ubuntu -g docker /opt/radspeed/data
         install -d -m 0750 -o ubuntu -g docker /opt/radspeed/caddy/data
