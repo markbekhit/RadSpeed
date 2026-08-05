@@ -35,6 +35,7 @@ MRI of the thoracic spine was performed using T1-weighted, T2-weighted, and STIR
 **Instructions:**
 - Create an impression from findings, into a brief description in bullet points.
 - Include only clinically relevant findings. Minor incidental findings that are fully described in the body do not need to be restated here.
+- Translate moderate foraminal stenosis into potential irritation of the relevant exiting nerve root, and marked/severe foraminal stenosis into likely compression of that root, naming the side and root when the level permits. Do not make this inference for mild, canal or subarticular stenosis, or contradict an explicitly dictated nerve-root relationship.
 - For a normal/negative study, include a closing statement where appropriate, e.g. 'No cause for the patient's symptoms identified on this examination.'
 - **Sample:**
   - Mild thoracic spondylosis, most significant at [level].

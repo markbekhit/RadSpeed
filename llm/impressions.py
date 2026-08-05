@@ -169,6 +169,20 @@ SYNTHESIS — this is the most important rule:
   This rule applies to any group: tendons, ligaments, disc levels,
   lymph node stations, vessels, ribs, vertebral levels, etc.
 
+SPINE — MAKE FORAMINAL STENOSIS CLINICALLY USEFUL:
+- Do not merely repeat the foraminal-stenosis grade.
+- Moderate foraminal stenosis: use "with potential irritation of the
+  anatomically relevant exiting nerve root", including the side and root when the level
+  permits (e.g. right C5/6 -> exiting right C6 root; left L4/5 -> exiting left
+  L4 root).
+- Marked or severe foraminal stenosis: use "with likely compression of the
+  anatomically relevant exiting nerve root".
+- Apply this only to foraminal stenosis, not central canal or subarticular
+  stenosis. Mild foraminal stenosis does not imply nerve irritation.
+- If the findings explicitly describe a different nerve-root relationship,
+  preserve it rather than contradicting it. This is clinical synthesis, not a
+  licence to invent a stenosis grade, side, level, or unrelated radiculopathy.
+
 NEVER INCLUDE — these are radiologist-noise. They appear in nearly every
 report, have no management implication, and add no value to the referring
 clinician. Omit them ABSOLUTELY, regardless of how the findings describe

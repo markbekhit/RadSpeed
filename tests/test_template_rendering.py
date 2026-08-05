@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import llm.format as fmt
+import llm.impressions as impression_generator
 from config.config import config
 
 
@@ -71,6 +72,8 @@ class BundledTemplateTests(unittest.TestCase):
                 self.assertLess(levels, final_checks)
                 self.assertNotIn("mention ALL", content)
                 self.assertNotIn("ALWAYS report", content)
+                self.assertIn("potential irritation", content)
+                self.assertIn("likely compression", content)
 
     def test_lumbar_spine_templates_keep_only_two_routine_final_checks(self):
         for name in ("MRI_Spine_Lumbar.txt", "CT_Spine_Lumbar.txt"):
@@ -90,6 +93,24 @@ class BundledTemplateTests(unittest.TestCase):
 
 
 class StructuredReportRenderingTests(unittest.TestCase):
+    def test_full_report_prompt_synthesises_foraminal_nerve_root_relevance(self):
+        prompt = fmt._report_system_message("### Impression:")
+        self.assertIn("moderate foraminal stenosis", prompt)
+        self.assertIn("potential irritation", prompt)
+        self.assertIn("marked or severe foraminal stenosis", prompt)
+        self.assertIn("likely compression", prompt)
+        self.assertIn("exiting right C6 root", prompt)
+        self.assertIn("exiting left L4 root", prompt)
+        self.assertIn("not canal or subarticular stenosis", prompt)
+
+    def test_standalone_impressions_use_the_same_foraminal_rule(self):
+        prompt = impression_generator._IMPRESSION_SYSTEM_PROMPT
+        self.assertIn("Moderate foraminal stenosis", prompt)
+        self.assertIn("potential irritation", prompt)
+        self.assertIn("Marked or severe foraminal stenosis", prompt)
+        self.assertIn("likely compression", prompt)
+        self.assertIn("Mild foraminal stenosis does not imply nerve irritation", prompt)
+
     def test_three_impression_bullets_are_numbered_for_reliable_paste(self):
         report = (
             "**Findings:**\n- Finding detail one.\n- Finding detail two.\n- Finding detail three.\n\n"
