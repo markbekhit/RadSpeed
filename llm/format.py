@@ -269,7 +269,7 @@ You are an advanced LLM, extensively trained in understanding dictated radiology
 
 1. **Error Correction:** Identify and correct grammatical errors, spelling mistakes, and typographical errors introduced during transcription. The context is radiology — use appropriate medical terminology.
 
-2. **Structure and formatting — MANDATORY:** Present the report sections in EXACTLY the order they appear in the template, regardless of the order the radiologist dictated them. If the radiologist described bones before tendons but the template lists tendons before bones, write tendons first. Dictation order is irrelevant — template order governs absolutely. Use the EXACT section header text shown in the template — do NOT rename, reword, merge, or create new sections. Use **bold** for section headers — do NOT use Markdown heading symbols (##, ###). In the Findings section, group structures anatomically (e.g. menisci together, cruciate ligaments together, collateral ligaments together, cartilage together, tendons together, soft tissues together, bones together) with a blank line between each group.
+2. **Structure and formatting — MANDATORY:** Present the report sections in EXACTLY the order they appear in the template, regardless of the order the radiologist dictated them. If the radiologist described bones before tendons but the template lists tendons before bones, write tendons first. Dictation order is irrelevant — template order governs absolutely. Use the same section names shown in the template — do NOT rename, reword, merge, or create new sections — but render every top-level report section header in UPPERCASE with a colon (for example, **FINDINGS:** and **IMPRESSION:**). Use **bold** for section headers — do NOT use Markdown heading symbols (##, ###). In the Findings section, group structures anatomically (e.g. menisci together, cruciate ligaments together, collateral ligaments together, cartilage together, tendons together, soft tissues together, bones together) with a blank line between each group.
 
 3. **Capitalisation:** After each finding label and colon, capitalise the first word. For example: "ACL: Intact" not "ACL: intact"; "Medial meniscus: Oblique undersurface tear" not "Medial meniscus: oblique undersurface tear".
 
@@ -1007,9 +1007,65 @@ def number_long_impression_lists(text: str) -> str:
     return "\n".join(lines)
 
 
+_TOP_LEVEL_REPORT_HEADERS = frozenset({
+    "exam",
+    "examination",
+    "procedure",
+    "technique",
+    "history",
+    "clinical history",
+    "clinical details",
+    "clinical information",
+    "clinical indication",
+    "clinical question",
+    "indication",
+    "comparison",
+    "comparisons",
+    "prior",
+    "priors",
+    "findings",
+    "impression",
+    "conclusion",
+    "opinion",
+    "recommendation",
+    "recommendations",
+})
+
+
+def uppercase_report_section_headings(text: str) -> str:
+    """Canonicalise recognised top-level report headers without touching labels."""
+    output = []
+    for line in text.splitlines():
+        indent = line[:len(line) - len(line.lstrip())]
+        content = line.strip()
+        hash_prefix = ""
+        hash_match = re.match(r"^(#{1,6}\s+)", content)
+        if hash_match:
+            hash_prefix = hash_match.group(1)
+            content = content[hash_match.end():].strip()
+
+        bold_marker = ""
+        if content.startswith("**") or content.startswith("__"):
+            bold_marker = content[:2]
+
+        label = content.replace("**", "").replace("__", "").strip()
+        label = label.rstrip(":").strip()
+        normalised = re.sub(r"\s+", " ", label).casefold()
+        if normalised in _TOP_LEVEL_REPORT_HEADERS:
+            wrapper = bold_marker
+            output.append(
+                f"{indent}{hash_prefix}{wrapper}{label.upper()}:{wrapper}"
+            )
+        else:
+            output.append(line)
+    return "\n".join(output)
+
+
 def postprocess_report(text: str) -> str:
     """Apply deterministic presentation fixes to a complete report."""
-    return number_long_impression_lists(capitalize_after_colon(text))
+    text = capitalize_after_colon(text)
+    text = number_long_impression_lists(text)
+    return uppercase_report_section_headings(text)
 
 
 def capitalize_after_colon(text: str) -> str:

@@ -93,6 +93,34 @@ class BundledTemplateTests(unittest.TestCase):
 
 
 class StructuredReportRenderingTests(unittest.TestCase):
+    def test_top_level_report_headers_are_uppercase_with_colons(self):
+        report = (
+            "### Exam\nMRI lumbar spine\n\n"
+            "**Clinical Details:**\nBack pain.\n\n"
+            "**History**\nPrevious surgery.\n\n"
+            "**PRIORS:**\nMRI 1/1/2025.\n\n"
+            "**Findings:**\n**L4/5:** Moderate right foraminal stenosis.\n"
+            "Facet joints: Mild arthropathy.\n\n"
+            "**Impression**\n- Degenerative change."
+        )
+
+        processed = fmt.postprocess_report(report)
+
+        self.assertIn("### EXAM:", processed)
+        self.assertIn("**CLINICAL DETAILS:**", processed)
+        self.assertIn("**HISTORY:**", processed)
+        self.assertIn("**PRIORS:**", processed)
+        self.assertIn("**FINDINGS:**", processed)
+        self.assertIn("**IMPRESSION:**", processed)
+        self.assertIn("**L4/5:**", processed)
+        self.assertIn("Facet joints: Mild arthropathy.", processed)
+
+    def test_report_prompt_requires_uppercase_section_headers(self):
+        prompt = fmt._report_system_message("### Findings:\n\n### Impression:")
+        self.assertIn("top-level report section header in UPPERCASE", prompt)
+        self.assertIn("**FINDINGS:**", prompt)
+        self.assertIn("**IMPRESSION:**", prompt)
+
     def test_full_report_prompt_synthesises_foraminal_nerve_root_relevance(self):
         prompt = fmt._report_system_message("### Impression:")
         self.assertIn("moderate foraminal stenosis", prompt)

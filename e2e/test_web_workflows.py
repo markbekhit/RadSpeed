@@ -430,6 +430,9 @@ def test_qscan_copy_starts_at_priors_and_keeps_numbered_conclusions(
 ):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")
+    expect(page.locator("#btn-copy-from-comparison")).to_contain_text(
+        "Copy Comparison/Findings"
+    )
     page.evaluate(
         """() => {
           setReport(
