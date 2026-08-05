@@ -457,9 +457,15 @@ def _build_style_preamble(style: Optional[dict] = None) -> str:
     if impression == "numbered":
         lines.append("- Format the Impression section as a numbered list (1., 2., 3.).")
     elif impression == "prose":
-        lines.append("- Format the Impression section as flowing prose, not a list.")
+        lines.append(
+            "- Use flowing prose when the Impression/Conclusion has one or two "
+            "conclusions; if it has three or more, use a numbered list (1., 2., 3.)."
+        )
     else:
-        lines.append("- Format the Impression section as a bulleted list (one bullet per point).")
+        lines.append(
+            "- Use dash-prefixed lines when the Impression/Conclusion has one or "
+            "two points; if it has three or more, use a numbered list (1., 2., 3.)."
+        )
 
     negation = _get("negation_phrasing", "no_evidence_of")
     if negation == "no_x_identified":
@@ -631,7 +637,7 @@ def _create_structured_report(
             **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
         if response.choices and response.choices[0].message.content:
-            return capitalize_after_colon(response.choices[0].message.content)
+            return postprocess_report(response.choices[0].message.content)
         else:
             return None
 
@@ -947,6 +953,63 @@ def format_text(
 
 
 
+_IMPRESSION_HEADING_RE = re.compile(
+    r"^\s*(?:#{1,6}\s*)?(?:\*\*|__)?\s*"
+    r"(?:impression|conclusion|opinion)\s*:?\s*(?:\*\*|__)?\s*$",
+    re.IGNORECASE,
+)
+_REPORT_HEADING_RE = re.compile(
+    r"^\s*(?:#{1,6}\s*)?(?:\*\*|__)?\s*"
+    r"[A-Za-z][A-Za-z0-9 /&()+,.'’\-]{1,80}:\s*(?:\*\*|__)?\s*$"
+)
+_MARKDOWN_BULLET_RE = re.compile(r"^(\s*)[-*+•]\s+(.*)$")
+
+
+def number_long_impression_body(text: str) -> str:
+    """Number a headingless impression body when it contains 3+ bullets."""
+    lines = text.splitlines()
+    bullet_indexes = [
+        index for index, line in enumerate(lines) if _MARKDOWN_BULLET_RE.match(line)
+    ]
+    if len(bullet_indexes) >= 3:
+        for number, line_index in enumerate(bullet_indexes, start=1):
+            match = _MARKDOWN_BULLET_RE.match(lines[line_index])
+            lines[line_index] = f"{match.group(1)}{number}. {match.group(2)}"
+    return "\n".join(lines)
+
+
+def number_long_impression_lists(text: str) -> str:
+    """Use reliable explicit numbering for 3+ Impression/Conclusion points."""
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines):
+        if not _IMPRESSION_HEADING_RE.match(lines[index]):
+            index += 1
+            continue
+
+        end = index + 1
+        while end < len(lines):
+            if (
+                _REPORT_HEADING_RE.match(lines[end])
+                and not _IMPRESSION_HEADING_RE.match(lines[end])
+            ):
+                break
+            end += 1
+
+        numbered_body = number_long_impression_body(
+            "\n".join(lines[index + 1:end])
+        ).splitlines()
+        lines[index + 1:end] = numbered_body
+        index = end
+
+    return "\n".join(lines)
+
+
+def postprocess_report(text: str) -> str:
+    """Apply deterministic presentation fixes to a complete report."""
+    return number_long_impression_lists(capitalize_after_colon(text))
+
+
 def capitalize_after_colon(text: str) -> str:
     """Capitalize the first letter following ': ' in report text.
 
@@ -1103,7 +1166,7 @@ def apply_report_feedback(report: str, feedback: str, selected_text: str = "") -
             ],
             **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
-        return capitalize_after_colon(resp.choices[0].message.content.strip())
+        return postprocess_report(resp.choices[0].message.content.strip())
     except Exception as e:
         logger.error("apply_report_feedback error: %s", e, exc_info=True)
         raise

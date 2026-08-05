@@ -114,7 +114,10 @@
                 aborted = true;
                 throw new Error(obj.error);
               } else if (obj.done) {
-                // graceful end
+                if (obj.report) {
+                  buffer = obj.report;
+                  setOutput(buffer, false);
+                }
               }
             } catch (e) {
               if (aborted) throw e;

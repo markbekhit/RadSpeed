@@ -90,6 +90,44 @@ class BundledTemplateTests(unittest.TestCase):
 
 
 class StructuredReportRenderingTests(unittest.TestCase):
+    def test_three_impression_bullets_are_numbered_for_reliable_paste(self):
+        report = (
+            "**Findings:**\n- Finding detail one.\n- Finding detail two.\n- Finding detail three.\n\n"
+            "**Impression:**\n- First conclusion.\n- Second conclusion.\n- Third conclusion."
+        )
+
+        processed = fmt.number_long_impression_lists(report)
+
+        self.assertIn("**Findings:**\n- Finding detail one.", processed)
+        self.assertIn(
+            "**Impression:**\n1. First conclusion.\n2. Second conclusion.\n3. Third conclusion.",
+            processed,
+        )
+
+    def test_one_or_two_conclusion_points_remain_short_dash_lists(self):
+        report = "CONCLUSION:\n- First conclusion.\n- Second conclusion."
+        self.assertEqual(fmt.number_long_impression_lists(report), report)
+
+    def test_opinion_heading_uses_the_same_three_point_numbering_rule(self):
+        report = "OPINION:\n• One.\n• Two.\n• Three."
+        self.assertEqual(
+            fmt.number_long_impression_lists(report),
+            "OPINION:\n1. One.\n2. Two.\n3. Three.",
+        )
+
+    def test_default_impression_prompt_switches_to_numbering_at_three_points(self):
+        prompt = fmt._build_style_preamble({"impression_style": "bulleted"})
+        self.assertIn("one or two points", prompt)
+        self.assertIn("three or more", prompt)
+        self.assertIn("numbered list", prompt)
+
+    def test_headingless_impression_tool_output_is_also_numbered(self):
+        body = "- One.\n- Two.\n- Three."
+        self.assertEqual(
+            fmt.number_long_impression_body(body),
+            "1. One.\n2. Two.\n3. Three.",
+        )
+
     def test_selected_prior_is_clearly_delimited_as_reference_only(self):
         block = fmt._build_patient_context_block({
             "patient_id": "SYNTH-MRN-7",

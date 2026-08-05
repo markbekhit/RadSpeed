@@ -425,6 +425,77 @@ def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
     assert errors == []
 
 
+def test_qscan_copy_starts_at_priors_and_keeps_numbered_conclusions(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          setReport(
+            "**Exam:**\\nMRI lumbar spine\\n\\n" +
+            "**Technique:**\\nRoutine protocol.\\n\\n" +
+            "**PRIORS:**\\nMRI 1/1/2025.\\n\\n" +
+            "**Findings:**\\nNo fracture.\\n\\n" +
+            "**Impression:**\\n1. First conclusion.\\n2. Second conclusion.\\n3. Third conclusion."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "rich";
+          window.__qscanClipboard = {};
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+              write: async (items) => {
+                for (const type of items[0].types) {
+                  window.__qscanClipboard[type] =
+                    await (await items[0].getType(type)).text();
+                }
+              },
+            },
+          });
+        }"""
+    )
+
+    page.locator("#btn-copy-from-comparison").click()
+    page.wait_for_function("() => Boolean(window.__qscanClipboard['text/plain'])")
+    clipboard = page.evaluate("window.__qscanClipboard")
+    assert clipboard["text/plain"].startswith("PRIORS:\nMRI 1/1/2025.")
+    assert "Exam:" not in clipboard["text/plain"]
+    assert "Technique:" not in clipboard["text/plain"]
+    assert "1. First conclusion." in clipboard["text/plain"]
+    expect(page.locator("#status")).to_contain_text("copied from Comparison")
+    assert errors == []
+
+
+def test_qscan_copy_falls_back_to_findings_and_short_lists_use_hyphens(
+    page: Page, base_url: str
+):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          setReport(
+            "**Exam:**\\nCT chest\\n\\n" +
+            "**Findings:**\\nNo acute abnormality.\\n\\n" +
+            "**Conclusion:**\\n- No acute abnormality.\\n- No follow-up required."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "plain";
+          window.__qscanPlain = "";
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: { writeText: async (text) => { window.__qscanPlain = text; } },
+          });
+        }"""
+    )
+
+    page.locator("#btn-copy-from-comparison").click()
+    page.wait_for_function("() => Boolean(window.__qscanPlain)")
+    copied = page.evaluate("window.__qscanPlain")
+    assert copied.startswith("Findings:\nNo acute abnormality.")
+    assert "Exam:" not in copied
+    assert "- No acute abnormality.\n- No follow-up required." in copied
+
+
 def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")

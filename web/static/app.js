@@ -215,6 +215,8 @@ function setUI(mode) {
   $("btn-stop").disabled        = !["recording", "paused"].includes(mode);
   $("btn-format").disabled      = !["transcribed", "done"].includes(mode);
   $("btn-copy").disabled        = mode !== "done";
+  const btnCopyFromComparison = $("btn-copy-from-comparison");
+  if (btnCopyFromComparison) btnCopyFromComparison.disabled = mode !== "done";
   $("btn-edit-toggle").disabled = mode !== "done";
   $("btn-refine").disabled      = mode !== "done" || fbState.isRecording;
   // Phase 1 / 2 buttons — gated on having a report to act on.
@@ -1819,7 +1821,9 @@ function _clipboardListLines(list, depth = 0) {
         .map(_clipboardInlineText)
         .join("")
     );
-    const prefix = ordered ? `${start + index}. ` : "• ";
+    // ASCII hyphens survive Qscan/PowerScribe text fields more reliably than
+    // typographic bullet glyphs. Long impression lists are numbered server-side.
+    const prefix = ordered ? `${start + index}. ` : "- ";
     if (directText) lines.push(`${"  ".repeat(depth)}${prefix}${directText}`);
 
     Array.from(item.children)
@@ -1916,8 +1920,44 @@ function _trackReportEdit(currentReport) {
     .catch(() => {});
 }
 
-async function copyReport() {
-  const markdown = $("report-raw").value;
+function _normaliseReportHeading(line) {
+  return String(line || "")
+    .trim()
+    .replace(/^#{1,6}\s*/, "")
+    .replace(/^(?:\*\*|__)/, "")
+    .replace(/(?:\*\*|__)$/, "")
+    .replace(/:\s*$/, "")
+    .trim()
+    .toLowerCase();
+}
+
+function _reportFromComparisonOrFindings(markdown) {
+  const lines = String(markdown || "").replace(/\r\n?/g, "\n").split("\n");
+  const comparisonHeadings = new Set([
+    "comparison", "comparisons", "prior", "priors", "prior imaging",
+  ]);
+  let findingsIndex = -1;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = _normaliseReportHeading(lines[index]);
+    if (comparisonHeadings.has(heading)) {
+      return { markdown: lines.slice(index).join("\n").trim(), startsAt: "Comparison" };
+    }
+    if (findingsIndex === -1 && heading === "findings") findingsIndex = index;
+  }
+
+  if (findingsIndex !== -1) {
+    return { markdown: lines.slice(findingsIndex).join("\n").trim(), startsAt: "Findings" };
+  }
+  return { markdown: String(markdown || "").trim(), startsAt: "full report" };
+}
+
+async function copyReport(options = {}) {
+  const fullMarkdown = $("report-raw").value;
+  const selection = options.fromComparison
+    ? _reportFromComparisonOrFindings(fullMarkdown)
+    : { markdown: fullMarkdown, startsAt: "full report" };
+  const markdown = selection.markdown;
   if (!markdown.trim()) return;
   const fmt = _pasteFormat();
   // Always render fresh from the raw markdown source. In Edit mode the visible
@@ -1941,6 +1981,7 @@ async function copyReport() {
     fmt === "markdown" ? " (markdown)" :
     fmt === "plain"    ? " (plain)" :
                          "";
+  const scopeSuffix = options.fromComparison ? ` from ${selection.startsAt}` : "";
 
   try {
     if (payload.html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
@@ -1955,8 +1996,8 @@ async function copyReport() {
       throw new Error("Clipboard API unavailable");
     }
     state.reportCopied = true;
-    setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
-    _trackReportEdit(markdown);
+    setStatus(`Report copied${scopeSuffix} to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+    _trackReportEdit(fullMarkdown);
     return;
   } catch {
     // Fallback: use a contenteditable div + execCommand("copy").
@@ -1984,7 +2025,7 @@ async function copyReport() {
       const ok = document.execCommand("copy");
       if (ok) {
         state.reportCopied = true;
-        setStatus(`Report copied to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+        setStatus(`Report copied${scopeSuffix} to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
       } else {
         setStatus("Copy failed — select and copy manually.", "error");
       }
@@ -3332,6 +3373,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-stop").addEventListener("click", stopRecording);
   $("btn-format").addEventListener("click", formatReport);
   $("btn-copy").addEventListener("click", copyReport);
+  if ($("btn-copy-from-comparison")) {
+    $("btn-copy-from-comparison").addEventListener(
+      "click",
+      () => copyReport({ fromComparison: true }),
+    );
+  }
   $("btn-edit-toggle").addEventListener("click", toggleReportEdit);
   $("btn-lookup").addEventListener("click", lookupPatient);
   if ($("btn-next-case")) $("btn-next-case").addEventListener("click", () => nextCase());

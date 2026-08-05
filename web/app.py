@@ -47,9 +47,10 @@ from llm.hl7_export import save_hl7_report
 from llm.hl7_import import archive_order, list_inbox
 from llm.format import (
     apply_report_feedback,
-    capitalize_after_colon,
     format_text,
     join_template,
+    number_long_impression_body,
+    postprocess_report,
     split_template,
     stream_format_text,
 )
@@ -441,6 +442,7 @@ def api_impressions_stream(req: ImpressionsRequest, request: Request):
         return StreamingResponse(_err(), media_type="text/event-stream")
 
     def _generate():
+        full_impression = ""
         try:
             for chunk in stream_impression(
                 findings=findings,
@@ -449,12 +451,14 @@ def api_impressions_stream(req: ImpressionsRequest, request: Request):
                 with_guidelines=bool(req.with_guidelines),
             ):
                 if chunk:
+                    full_impression += chunk
                     yield f'data: {json.dumps({"token": chunk})}\n\n'
         except Exception as e:
             logger.error("Impressions stream error: %s", e, exc_info=True)
             yield f'data: {json.dumps({"error": str(e)})}\n\n'
             return
-        yield 'data: {"done": true}\n\n'
+        corrected = number_long_impression_body(full_impression.strip())
+        yield f'data: {json.dumps({"done": True, "report": corrected})}\n\n'
 
     return StreamingResponse(
         _generate(),
@@ -508,7 +512,7 @@ def api_impressions_text(req: ImpressionsRequest, request: Request):
         logger.error("Impressions text generation error: %s", e, exc_info=True)
         raise HTTPException(status_code=502, detail=f"Generation failed: {e}")
 
-    text = "".join(chunks).strip()
+    text = number_long_impression_body("".join(chunks).strip())
     return PlainTextResponse(
         text,
         headers={"X-RadSpeed-Remaining": str(remaining)},
@@ -2175,7 +2179,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
 
         # Apply post-processing (capitalise after colons) to the full report.
         # Send corrected version so the client can replace the streamed text.
-        corrected_report = capitalize_after_colon(full_report)
+        corrected_report = postprocess_report(full_report)
 
         fhir_saved = False
         if _user_fhir_enabled(user) and corrected_report:
