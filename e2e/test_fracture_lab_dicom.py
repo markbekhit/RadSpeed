@@ -1,8 +1,10 @@
 """Regression coverage for private, browser-only Fracture Lab DICOM import."""
 from __future__ import annotations
 
+import io
 import json
 import struct
+import zipfile
 
 from playwright.sync_api import Page, expect
 
@@ -147,4 +149,68 @@ def test_dicom_is_rasterised_locally_before_upload(page: Page, base_url: str):
     assert b"SYNTHETIC^PATIENT" not in payload
     assert b"SYNTHETIC-MRN-123" not in payload
     assert b"DICM" not in payload
+    assert errors == []
+
+
+def test_zip_and_folder_study_imports_are_available(page: Page, base_url: str, tmp_path):
+    errors: list[str] = []
+    page.on("console", lambda message: errors.append(message.text) if message.type == "error" else None)
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.route(
+        "**/fracture-workbench/images/**",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="image/gif",
+            body=(
+                b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00"
+                b"\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00"
+                b"\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+            ),
+        ),
+    )
+    page.route(
+        "**/static/vendor/tesseract/tesseract.min.js*",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="application/javascript",
+            body="""
+              window.Tesseract = {
+                createWorker: async () => ({
+                  recognize: async () => ({ data: { tsv:
+                    "level\\tpage_num\\tblock_num\\tpar_num\\tline_num\\tword_num\\tleft\\ttop\\twidth\\theight\\tconf\\ttext\\n"
+                  }}),
+                  terminate: async () => {},
+                }),
+              };
+            """,
+        ),
+    )
+
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as study:
+        study.writestr("synthetic-study/view-1.dcm", _synthetic_multiframe_dicom())
+
+    page.goto(f"{base_url}/fracture-workbench")
+    file_input = page.locator("#fracture-file-input")
+    folder_input = page.locator("#fracture-folder-input")
+    assert file_input.get_attribute("accept") is None
+    expect(folder_input).to_have_attribute("webkitdirectory", "")
+    expect(page.get_by_role("button", name="Choose folder")).to_be_visible()
+
+    file_input.set_input_files(
+        {
+            "name": "synthetic-study.zip",
+            "mimeType": "application/zip",
+            "buffer": archive.getvalue(),
+        }
+    )
+    expect(page.locator(".fracture-preview.privacy-ready")).to_have_count(2, timeout=30_000)
+
+    page.get_by_role("button", name="Clear").click()
+    expect(page.locator(".fracture-preview")).to_have_count(0)
+    study_directory = tmp_path / "synthetic-study"
+    study_directory.mkdir()
+    (study_directory / "view-without-extension").write_bytes(_synthetic_multiframe_dicom())
+    folder_input.set_input_files(str(study_directory))
+    expect(page.locator(".fracture-preview.privacy-ready")).to_have_count(2, timeout=30_000)
     assert errors == []

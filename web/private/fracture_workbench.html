@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Fracture Lab · RadSpeed</title>
-  <link rel="stylesheet" href="/static/fracture-lab.css?v=dicom-import-1">
+  <link rel="stylesheet" href="/static/fracture-lab.css?v=dicom-import-2">
   <style>
     :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; }
     body { margin: 0; background: #09090b; color: #f4f4f5; }
@@ -42,12 +42,13 @@
       </div>
       <span class="privacy-pill">Not saved by RadSpeed</span>
     </div>
-    <p class="analysis-intro">Add up to four views from one study. DICOM files are converted to image pixels in this browser, so their original files and identifying metadata never leave this device. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. The cleaned copies receive one frontier-model read and separate open-model checks. For limb X-rays, the stronger two-model classifier runs on a GPU that switches off while idle, so the first analysis after a quiet period can take several minutes.</p>
-    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images or DICOM files">
-      <strong>Drop or choose DICOMs, or paste screenshots</strong>
-      <span>DICOM, PNG, JPEG or WebP · up to 4 views</span>
+    <p class="analysis-intro">Add up to four views from one study. You can choose individual files, a whole folder or a ZIP. DICOM files and ZIPs are opened in this browser, so their original files and identifying metadata never leave this device. RadSpeed identifies the anatomy automatically. Before upload, your browser checks for visible text and blacks it out locally. The cleaned copies receive one frontier-model read and separate open-model checks. For limb X-rays, the stronger two-model classifier runs on a GPU that switches off while idle, so the first analysis after a quiet period can take several minutes.</p>
+    <div id="fracture-drop-zone" class="fracture-drop-zone" tabindex="0" role="button" aria-label="Choose, paste or drop X-ray images, DICOM files or a ZIP">
+      <strong>Drop DICOMs or a ZIP, or paste screenshots</strong>
+      <span>Choose individual files or a whole folder · up to 4 views</span>
     </div>
-    <input id="fracture-file-input" type="file" accept=".dcm,.dicom,application/dicom,image/png,image/jpeg,image/webp" multiple hidden>
+    <input id="fracture-file-input" type="file" multiple hidden>
+    <input id="fracture-folder-input" type="file" webkitdirectory directory multiple hidden>
     <div id="fracture-preview-list" class="fracture-preview-list" aria-live="polite"></div>
     <section id="fracture-privacy-panel" class="privacy-review" aria-labelledby="fracture-privacy-heading" hidden>
       <div>
@@ -63,7 +64,8 @@
     <label class="context-label" for="fracture-context">Optional clinical context <span>(no patient identifiers)</span></label>
     <input id="fracture-context" class="context-input" type="text" maxlength="500" placeholder="e.g. FOOSH, focal radial styloid tenderness">
     <div class="analysis-actions">
-      <button id="fracture-choose" type="button">Choose files</button>
+      <button id="fracture-choose" type="button">Choose files or ZIP</button>
+      <button id="fracture-choose-folder" type="button">Choose folder</button>
       <button id="fracture-clear" type="button" disabled>Clear</button>
       <button id="fracture-analyse" class="primary-action" type="button" disabled>Analyse study</button>
     </div>
@@ -12546,6 +12548,6 @@
 </script>
   <script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>
   <script src="/static/vendor/daikon/daikon.min.js?v=1.2.46"></script>
-  <script src="/static/fracture-lab.js?v=mac-worker-1"></script>
+  <script src="/static/fracture-lab.js?v=study-import-2"></script>
 </body>
 </html>

@@ -4,6 +4,9 @@
   const MAX_IMAGES = 4;
   const MAX_BYTES = 12 * 1024 * 1024;
   const MAX_DICOM_BYTES = 64 * 1024 * 1024;
+  const MAX_ZIP_BYTES = 256 * 1024 * 1024;
+  const MAX_ZIP_ENTRIES = 10_000;
+  const MAX_ZIP_EXPANDED_BYTES = MAX_DICOM_BYTES * MAX_IMAGES;
   const MAX_SOURCE_PIXELS = 24_000_000;
   const MAX_OUTPUT_EDGE = 3000;
   const MAX_OCR_EDGE = 2200;
@@ -22,9 +25,11 @@
 
   const byId = (id) => document.getElementById(id);
   const input = byId("fracture-file-input");
+  const folderInput = byId("fracture-folder-input");
   const dropZone = byId("fracture-drop-zone");
   const previewList = byId("fracture-preview-list");
   const chooseButton = byId("fracture-choose");
+  const chooseFolderButton = byId("fracture-choose-folder");
   const clearButton = byId("fracture-clear");
   const analyseButton = byId("fracture-analyse");
   const contextInput = byId("fracture-context");
@@ -35,7 +40,7 @@
   const result = byId("fracture-result");
 
   if (
-    !input || !dropZone || !previewList || !analyseButton || !result ||
+    !input || !folderInput || !dropZone || !previewList || !analyseButton || !result ||
     !privacyPanel || !privacySummary || !privacyConfirm
   ) return;
 
@@ -78,6 +83,7 @@
     const privacyReady = allPrivacyReady();
     clearButton.disabled = analysisBusy || importBusy || files.length === 0;
     chooseButton.disabled = analysisBusy || importBusy || files.length >= MAX_IMAGES;
+    chooseFolderButton.disabled = analysisBusy || importBusy || files.length >= MAX_IMAGES;
     privacyConfirm.disabled = analysisBusy || importBusy || !privacyReady;
     analyseButton.disabled = (
       analysisBusy || importBusy || !privacyReady || !privacyConfirm.checked
@@ -204,10 +210,154 @@
 
   const isDicomCandidate = (file) => {
     const name = (file.name || "").toLowerCase();
-    return name.endsWith(".dcm") || name.endsWith(".dicom") ||
+    return name.endsWith(".dcm") || name.endsWith(".dicom") || name.endsWith(".ima") ||
       file.type === "application/dicom" ||
       file.type === "application/dicom+binary" ||
       (!file.type || file.type === "application/octet-stream");
+  };
+
+  const isZipCandidate = (file) => {
+    const name = (file.name || "").toLowerCase();
+    return name.endsWith(".zip") || file.type === "application/zip" ||
+      file.type === "application/x-zip-compressed";
+  };
+
+  const zipEntryType = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.endsWith(".png")) return "image/png";
+    if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+    if (lower.endsWith(".webp")) return "image/webp";
+    if (lower.endsWith(".dcm") || lower.endsWith(".dicom") || lower.endsWith(".ima")) {
+      return "application/dicom";
+    }
+    return "application/octet-stream";
+  };
+
+  const looksLikeDicom = (contents) => {
+    if (contents.length >= 132 && String.fromCharCode(...contents.slice(128, 132)) === "DICM") {
+      return true;
+    }
+    return contents.length >= 8 && contents[1] === 0 && [0x02, 0x08, 0x10, 0x28].includes(contents[0]);
+  };
+
+  const inflateZipEntry = async (contents) => {
+    if (!("DecompressionStream" in window)) {
+      throw new Error("This browser cannot open compressed ZIP files. Choose the folder instead.");
+    }
+    try {
+      const reader = new Blob([contents]).stream()
+        .pipeThrough(new DecompressionStream("deflate-raw"))
+        .getReader();
+      const chunks = [];
+      let size = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.length;
+        if (size > MAX_DICOM_BYTES) {
+          await reader.cancel();
+          throw new Error("Each file inside the ZIP must be 64 MB or smaller.");
+        }
+        chunks.push(value);
+      }
+      return new Uint8Array(await new Blob(chunks).arrayBuffer());
+    } catch (error) {
+      if (error.message?.includes("64 MB")) throw error;
+      throw new Error("A file inside this ZIP could not be decompressed.");
+    }
+  };
+
+  const readZipEntries = async (file) => {
+    if (file.size > MAX_ZIP_BYTES) {
+      throw new Error("The ZIP must be 256 MB or smaller.");
+    }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const minimumEocdOffset = Math.max(0, bytes.length - 65_557);
+    let eocdOffset = -1;
+    for (let offset = bytes.length - 22; offset >= minimumEocdOffset; offset -= 1) {
+      if (view.getUint32(offset, true) === 0x06054b50) {
+        eocdOffset = offset;
+        break;
+      }
+    }
+    if (eocdOffset < 0) throw new Error("This ZIP could not be opened.");
+    const diskNumber = view.getUint16(eocdOffset + 4, true);
+    const centralDisk = view.getUint16(eocdOffset + 6, true);
+    const entryCount = view.getUint16(eocdOffset + 10, true);
+    const centralOffset = view.getUint32(eocdOffset + 16, true);
+    if (diskNumber || centralDisk) throw new Error("Multi-part ZIP files are not supported.");
+    if (entryCount === 0xffff || entryCount > MAX_ZIP_ENTRIES) {
+      throw new Error("This ZIP contains too many files.");
+    }
+
+    const decoder = new TextDecoder("utf-8");
+    const entries = [];
+    let offset = centralOffset;
+    for (let index = 0; index < entryCount; index += 1) {
+      if (offset + 46 > bytes.length || view.getUint32(offset, true) !== 0x02014b50) {
+        throw new Error("This ZIP's file list is damaged.");
+      }
+      const flags = view.getUint16(offset + 8, true);
+      const method = view.getUint16(offset + 10, true);
+      const compressedSize = view.getUint32(offset + 20, true);
+      const expandedSize = view.getUint32(offset + 24, true);
+      const nameLength = view.getUint16(offset + 28, true);
+      const extraLength = view.getUint16(offset + 30, true);
+      const commentLength = view.getUint16(offset + 32, true);
+      const localOffset = view.getUint32(offset + 42, true);
+      const end = offset + 46 + nameLength + extraLength + commentLength;
+      if (end > bytes.length) throw new Error("This ZIP's file list is damaged.");
+      const name = decoder.decode(bytes.subarray(offset + 46, offset + 46 + nameLength));
+      offset = end;
+
+      const basename = name.split("/").filter(Boolean).at(-1) || "";
+      if (!basename || name.endsWith("/") || name.startsWith("__MACOSX/") ||
+          basename === ".DS_Store" || basename.toUpperCase() === "DICOMDIR") continue;
+      entries.push({ name: basename, flags, method, compressedSize, expandedSize, localOffset });
+    }
+
+    const extracted = [];
+    let inspected = 0;
+    let expandedBytes = 0;
+    for (const entry of entries) {
+      if (extracted.length >= MAX_IMAGES) break;
+      inspected += 1;
+      if (entry.flags & 1) throw new Error("Password-protected ZIP files are not supported.");
+      if (![0, 8].includes(entry.method)) {
+        throw new Error("This ZIP uses an unsupported compression format.");
+      }
+      if (entry.expandedSize > MAX_DICOM_BYTES) {
+        throw new Error("Each file inside the ZIP must be 64 MB or smaller.");
+      }
+      expandedBytes += entry.expandedSize;
+      if (expandedBytes > MAX_ZIP_EXPANDED_BYTES) {
+        throw new Error("The files inside the ZIP are too large to open safely.");
+      }
+      if (entry.localOffset + 30 > bytes.length ||
+          view.getUint32(entry.localOffset, true) !== 0x04034b50) {
+        throw new Error("This ZIP contains a damaged file.");
+      }
+      const localNameLength = view.getUint16(entry.localOffset + 26, true);
+      const localExtraLength = view.getUint16(entry.localOffset + 28, true);
+      const dataStart = entry.localOffset + 30 + localNameLength + localExtraLength;
+      const dataEnd = dataStart + entry.compressedSize;
+      if (dataEnd > bytes.length) throw new Error("This ZIP contains a damaged file.");
+      let contents = bytes.slice(dataStart, dataEnd);
+      if (entry.method === 8) {
+        contents = await inflateZipEntry(contents);
+      }
+      if (contents.length !== entry.expandedSize) {
+        throw new Error("A file inside this ZIP is incomplete.");
+      }
+      const type = zipEntryType(entry.name);
+      if (type === "application/octet-stream" && !looksLikeDicom(contents)) continue;
+      extracted.push(new File([contents], entry.name, { type }));
+    }
+    if (!extracted.length) {
+      throw new Error("No supported DICOM or image files were found in this ZIP.");
+    }
+    return { extracted, omitted: Math.max(0, entries.length - inspected) };
   };
 
   const dicomWindow = (image, pixels) => {
@@ -593,11 +743,25 @@
     let rejection = "";
     const added = [];
     let omittedFrames = 0;
+    let omittedArchiveFiles = 0;
     try {
-      for (const file of incoming) {
+      const queue = [...incoming];
+      while (queue.length) {
+        const file = queue.shift();
         if (files.length >= MAX_IMAGES) {
           rejection = "Use no more than four views from one study.";
           break;
+        }
+        if (isZipCandidate(file)) {
+          setStatus("Opening ZIP and converting DICOM image pixels locally…");
+          try {
+            const { extracted, omitted } = await readZipEntries(file);
+            queue.unshift(...extracted);
+            omittedArchiveFiles += omitted;
+          } catch (error) {
+            rejection = error.message || "This ZIP could not be opened.";
+          }
+          continue;
         }
         if (isDicomCandidate(file)) {
           if (file.size > MAX_DICOM_BYTES) {
@@ -620,7 +784,7 @@
           continue;
         }
         if (!supportedTypes.has(file.type)) {
-          rejection = "Use DICOM, PNG, JPEG or WebP images.";
+          rejection = "Use DICOM, ZIP, PNG, JPEG or WebP files.";
           continue;
         }
         if (file.size > MAX_BYTES) {
@@ -634,10 +798,13 @@
     } finally {
       importBusy = false;
       input.value = "";
+      folderInput.value = "";
       renderPreviews();
     }
     if (omittedFrames) {
       rejection = `Only the first four views were added; ${omittedFrames} additional DICOM frame${omittedFrames === 1 ? " was" : "s were"} omitted.`;
+    } else if (omittedArchiveFiles) {
+      rejection = "Only the first four views were added; additional files in the ZIP were omitted.";
     }
     setStatus(
       rejection || (added.length ? "Preparing images and checking visible text locally…" : ""),
@@ -652,6 +819,7 @@
     files.forEach(releaseItem);
     files.length = 0;
     input.value = "";
+    folderInput.value = "";
     privacyConfirm.checked = false;
     renderPreviews();
     resetResult();
@@ -889,10 +1057,12 @@
   };
 
   chooseButton.addEventListener("click", () => input.click());
+  chooseFolderButton.addEventListener("click", () => folderInput.click());
   clearButton.addEventListener("click", clearFiles);
   analyseButton.addEventListener("click", analyse);
   privacyConfirm.addEventListener("change", updateControls);
   input.addEventListener("change", () => addFiles(input.files));
+  folderInput.addEventListener("change", () => addFiles(folderInput.files));
   dropZone.addEventListener("click", () => input.click());
   dropZone.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {

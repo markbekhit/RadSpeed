@@ -90,7 +90,8 @@ These are confirmed in code on `main` as of this update — not aspirations.
   report fragment. It does not calculate a category or management plan.
 - **OAuth (Google + Microsoft)** with per-user settings persisted in SQLite.
 - **Fracture Lab** — authenticated experimental review with an ephemeral live
-  path for one to four radiograph screenshots or DICOM views. DICOM files are
+  path for one to four radiograph screenshots or DICOM views, selected as
+  individual files, a whole folder or a ZIP. DICOM files and ZIP archives are
   decoded and windowed locally, and only their pixel canvases proceed to the
   privacy preview, so the original files, filenames and identifying metadata
   never leave the device. A bundled browser-only text
