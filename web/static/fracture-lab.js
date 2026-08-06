@@ -468,43 +468,78 @@
       const width = Number(cells[8]);
       const height = Number(cells[9]);
       if (!text || ![confidence, left, top, width, height].every(Number.isFinite)) return [];
-      return [{ text, confidence, left, top, width, height }];
+      return [{
+        text,
+        confidence,
+        left,
+        top,
+        width,
+        height,
+        lineKey: cells.slice(1, 5).join(":"),
+      }];
     });
   };
 
-  const shouldRedactWord = (word, width, height) => {
+  const isSensitiveLabel = (word) => {
+    const marker = normaliseMarker(word.text);
+    return /^(?:PATIENT|PATIENTNAME|NAME|DOB|DATEOFBIRTH|BIRTHDATE|MRN|URN|NHI|IHI|PID|UHID|ID|PATIENTID|ACCESSION|ACCESSIONNUMBER|ACCNO|MEDICARE)$/.test(marker);
+  };
+
+  const shouldRedactStandaloneIdentifier = (word, width, height) => {
     const marker = normaliseMarker(word.text);
     if (safeImageMarkers.has(marker)) return false;
     if (!/[A-Za-z0-9]/.test(word.text) || word.width < 2 || word.height < 2) return false;
-
     const nearEdge = (
       word.left < width * 0.22 || word.left + word.width > width * 0.78 ||
       word.top < height * 0.25 || word.top + word.height > height * 0.80
     );
-    const sensitiveLabel = /^(?:PATIENT|NAME|DOB|BIRTH|MRN|URN|ID|ACCESSION|ACC|HOSPITAL|MEDICARE)/.test(marker);
-    const usefulLength = marker.length >= 2 || /\d{2,}/.test(word.text);
-    return sensitiveLabel || (usefulLength && word.confidence >= (nearEdge ? 22 : 45));
+    if (!nearEdge || word.confidence < 55) return false;
+    const compact = word.text.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const digitCount = (compact.match(/\d/g) || []).length;
+    const hasLetters = /[A-Z]/.test(compact);
+    const dateLike = /^(?:\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}|\d{4}[-/.]\d{1,2}[-/.]\d{1,2})$/.test(word.text.trim());
+    return dateLike || digitCount >= 6 || (hasLetters && digitCount >= 4 && compact.length >= 7);
   };
 
   const redactionsFromTsv = (tsv, ocrWidth, ocrHeight, scale) => {
     const sourceWidth = ocrWidth / scale;
     const sourceHeight = ocrHeight / scale;
-    return parseTsvWords(tsv)
-      .filter((word) => shouldRedactWord(word, ocrWidth, ocrHeight))
-      .map((word) => {
-        const padding = Math.max(4, Math.round(word.height * 0.22));
-        const left = Math.max(0, word.left - padding);
-        const top = Math.max(0, word.top - padding);
-        const right = Math.min(ocrWidth, word.left + word.width + padding);
-        const bottom = Math.min(ocrHeight, word.top + word.height + padding);
-        return {
-          x: Math.round(left / scale),
-          y: Math.round(top / scale),
-          width: Math.min(Math.round((right - left) / scale), Math.round(sourceWidth)),
-          height: Math.min(Math.round((bottom - top) / scale), Math.round(sourceHeight)),
-          source: "automatic",
-        };
-      });
+    const words = parseTsvWords(tsv);
+    const sensitiveLines = new Set(
+      words.filter(isSensitiveLabel).map((word) => word.lineKey),
+    );
+    const groups = [];
+
+    sensitiveLines.forEach((lineKey) => {
+      const lineWords = words.filter((word) => (
+        word.lineKey === lineKey && word.confidence >= 20 &&
+        /[A-Za-z0-9]/.test(word.text) && !safeImageMarkers.has(normaliseMarker(word.text))
+      ));
+      if (lineWords.length) groups.push(lineWords);
+    });
+    words
+      .filter((word) => !sensitiveLines.has(word.lineKey))
+      .filter((word) => shouldRedactStandaloneIdentifier(word, ocrWidth, ocrHeight))
+      .forEach((word) => groups.push([word]));
+
+    return groups.map((group) => {
+      const leftEdge = Math.min(...group.map((word) => word.left));
+      const topEdge = Math.min(...group.map((word) => word.top));
+      const rightEdge = Math.max(...group.map((word) => word.left + word.width));
+      const bottomEdge = Math.max(...group.map((word) => word.top + word.height));
+      const padding = Math.max(4, Math.round((bottomEdge - topEdge) * 0.22));
+      const left = Math.max(0, leftEdge - padding);
+      const top = Math.max(0, topEdge - padding);
+      const right = Math.min(ocrWidth, rightEdge + padding);
+      const bottom = Math.min(ocrHeight, bottomEdge + padding);
+      return {
+        x: Math.round(left / scale),
+        y: Math.round(top / scale),
+        width: Math.min(Math.round((right - left) / scale), Math.round(sourceWidth)),
+        height: Math.min(Math.round((bottom - top) / scale), Math.round(sourceHeight)),
+        source: "automatic",
+      };
+    });
   };
 
   const getPrivacyWorker = async () => {
@@ -545,11 +580,29 @@
     let draft = null;
     const redraw = () => drawScrubbed(canvas.getContext("2d", { alpha: false }), item, draft);
 
-    canvas.addEventListener("pointerdown", (event) => {
+    canvas.addEventListener("pointerdown", async (event) => {
       if (analysisBusy || !stateIsReviewable(item)) return;
       event.preventDefault();
       privacyConfirm.checked = false;
-      start = pointerPosition(event, canvas);
+      const point = pointerPosition(event, canvas);
+      const selectedIndex = item.redactions.findLastIndex((box) => (
+        point.x >= box.x && point.x <= box.x + box.width &&
+        point.y >= box.y && point.y <= box.y + box.height
+      ));
+      if (selectedIndex >= 0) {
+        item.redactions.splice(selectedIndex, 1);
+        try {
+          await refreshScrubbedFile(item);
+          setStatus("Blackout removed. Check the preview again, then confirm privacy.");
+        } catch (error) {
+          item.state = "error";
+          item.error = error.message;
+          setStatus(error.message, true);
+        }
+        renderPreviews();
+        return;
+      }
+      start = point;
       draft = { x: start.x, y: start.y, width: 0, height: 0 };
       canvas.setPointerCapture(event.pointerId);
       updateControls();
@@ -609,7 +662,7 @@
         const canvas = create("canvas", "fracture-preview-canvas");
         canvas.width = item.sourceCanvas.width;
         canvas.height = item.sourceCanvas.height;
-        canvas.setAttribute("aria-label", `Cleaned X-ray view ${index + 1}. Drag to black out anything missed.`);
+        canvas.setAttribute("aria-label", `Cleaned X-ray view ${index + 1}. Drag to black out anything missed, or click a blackout to remove it.`);
         drawScrubbed(canvas.getContext("2d", { alpha: false }), item);
         attachRedactionDrawing(canvas, item);
         shell.append(canvas);
@@ -630,17 +683,16 @@
         create("span", item.state === "error" ? "privacy-state error" : "privacy-state", describeItemState(item)),
       );
       const controls = create("div", "privacy-image-actions");
-      const undo = create("button", "privacy-mini-button", "Undo blackout");
+      const undo = create("button", "privacy-mini-button", "Remove last blackout");
       undo.type = "button";
-      undo.disabled = analysisBusy || !item.redactions.some((box) => box.source === "manual");
+      undo.disabled = analysisBusy || item.redactions.length === 0;
       undo.addEventListener("click", async () => {
-        const lastManual = item.redactions.findLastIndex((box) => box.source === "manual");
-        if (lastManual < 0) return;
-        item.redactions.splice(lastManual, 1);
+        if (!item.redactions.length) return;
+        item.redactions.pop();
         privacyConfirm.checked = false;
         try {
           await refreshScrubbedFile(item);
-          setStatus("Last manual blackout removed. Check the preview again.");
+          setStatus("Last blackout removed. Check the preview again, then confirm privacy.");
         } catch (error) {
           item.state = "error";
           item.error = error.message;

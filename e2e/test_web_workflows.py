@@ -167,9 +167,13 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
                 createWorker: async () => ({
                   recognize: async () => ({ data: { tsv:
                     "level\\tpage_num\\tblock_num\\tpar_num\\tline_num\\tword_num\\tleft\\ttop\\twidth\\theight\\tconf\\ttext\\n" +
-                    "5\\t1\\t1\\t1\\t1\\t1\\t8\\t8\\t32\\t12\\t96\\tPATIENT\\n" +
-                    "5\\t1\\t1\\t1\\t1\\t2\\t44\\t8\\t36\\t12\\t96\\tNAME\\n" +
-                    "5\\t1\\t1\\t1\\t2\\t1\\t80\\t80\\t8\\t8\\t96\\tR"
+                    "5\\t1\\t1\\t1\\t1\\t1\\t4\\t8\\t24\\t10\\t96\\tPATIENT\\n" +
+                    "5\\t1\\t1\\t1\\t1\\t2\\t30\\t8\\t16\\t10\\t96\\tNAME\\n" +
+                    "5\\t1\\t1\\t1\\t1\\t3\\t48\\t8\\t40\\t10\\t96\\tSYNTHETIC\\n" +
+                    "5\\t1\\t1\\t1\\t2\\t1\\t4\\t30\\t18\\t10\\t96\\tMRN\\n" +
+                    "5\\t1\\t1\\t1\\t2\\t2\\t24\\t30\\t50\\t10\\t96\\tTEST12345\\n" +
+                    "5\\t1\\t1\\t1\\t3\\t1\\t8\\t68\\t32\\t10\\t96\\tWRIST\\n" +
+                    "5\\t1\\t1\\t1\\t4\\t1\\t80\\t80\\t8\\t8\\t96\\tR"
                   }}),
                   terminate: async () => {},
                 }),
@@ -229,30 +233,40 @@ def test_fracture_lab_analyses_uploaded_multiview_study(page: Page, base_url: st
     )
     expect(page.locator("#fracture-analyse")).to_be_disabled()
 
-    # The simulated patient-name boxes are blacked out, while the standard
-    # right-side marker is intentionally retained.
+    # Identifier-labelled lines are covered. Ordinary anatomical text and the
+    # standard right-side marker are intentionally retained.
     pixels = page.locator(".fracture-preview-canvas").evaluate(
         """canvas => ({
           redacted: Array.from(canvas.getContext('2d').getImageData(10, 10, 1, 1).data),
+          identifier: Array.from(canvas.getContext('2d').getImageData(10, 34, 1, 1).data),
+          anatomy: Array.from(canvas.getContext('2d').getImageData(12, 72, 1, 1).data),
           marker: Array.from(canvas.getContext('2d').getImageData(82, 82, 1, 1).data),
         })"""
     )
     assert pixels["redacted"][:3] == [0, 0, 0]
+    assert pixels["identifier"][:3] == [0, 0, 0]
+    assert pixels["anatomy"][:3] == [110, 110, 110]
     assert pixels["marker"][:3] == [110, 110, 110]
 
     page.locator(".fracture-preview-canvas").scroll_into_view_if_needed()
     canvas_box = page.locator(".fracture-preview-canvas").bounding_box()
     assert canvas_box
+    page.mouse.click(canvas_box["x"] + canvas_box["width"] * 0.10, canvas_box["y"] + canvas_box["height"] * 0.10)
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text("1 text area covered")
+    assert page.locator(".fracture-preview-canvas").evaluate(
+        "canvas => Array.from(canvas.getContext('2d').getImageData(10, 10, 1, 1).data).slice(0, 3)"
+    ) == [110, 110, 110]
+
     page.mouse.move(canvas_box["x"] + canvas_box["width"] * 0.52, canvas_box["y"] + canvas_box["height"] * 0.52)
     page.mouse.down()
     page.mouse.move(canvas_box["x"] + canvas_box["width"] * 0.70, canvas_box["y"] + canvas_box["height"] * 0.70)
     page.mouse.up()
-    expect(page.locator("#fracture-privacy-summary")).to_contain_text("3 text areas covered")
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text("2 text areas covered")
     assert page.locator(".fracture-preview-canvas").evaluate(
         "canvas => Array.from(canvas.getContext('2d').getImageData(56, 56, 1, 1).data).slice(0, 3)"
     ) == [0, 0, 0]
-    page.get_by_role("button", name="Undo blackout").click()
-    expect(page.locator("#fracture-privacy-summary")).to_contain_text("2 text areas covered")
+    page.get_by_role("button", name="Remove last blackout").click()
+    expect(page.locator("#fracture-privacy-summary")).to_contain_text("1 text area covered")
 
     page.locator("#fracture-privacy-confirm").check()
     expect(page.locator("#fracture-analyse")).to_be_enabled()

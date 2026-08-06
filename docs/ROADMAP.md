@@ -95,8 +95,9 @@ These are confirmed in code on `main` as of this update — not aspirations.
   decoded and windowed locally, and only their pixel canvases proceed to the
   privacy preview, so the original files, filenames and identifying metadata
   never leave the device. A bundled browser-only text
-  recogniser automatically blacks out detected text before upload, preserves
-  standard laterality/view markers, and supports manual drag-to-blackout. The
+  recogniser conservatively blacks out identifier-labelled lines and ID-like
+  strings before upload, preserves standard laterality/view markers, and
+  supports manual drag-to-blackout plus removal of any incorrect blackout. The
   analysis endpoint requires confirmation of the exact cleaned previews. Only
   those generic-filename copies leave the browser; RadSpeed strips metadata as
   a second layer, reviews the views together with the configured frontier
