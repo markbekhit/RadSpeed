@@ -145,6 +145,62 @@ textarea { resize: vertical; font-family: "Menlo", "Consolas", monospace; font-s
 .worklist-chip { padding: 3px 9px; font-size: 11px; }
 .worklist-chip.active { background: var(--accent); color: #050a12; border-color: var(--accent); }
 
+/* ── Indication screenshot transcription ── */
+.indication-card { padding: 10px 12px; }
+.indication-paste-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 1px dashed #35506f;
+  border-radius: 7px;
+  background: rgba(0, 194, 255, 0.025);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.indication-paste-zone:hover,
+.indication-paste-zone:focus,
+.indication-paste-zone.drag-over,
+.indication-paste-zone.is-busy {
+  border-color: var(--accent);
+  background: rgba(0, 194, 255, 0.07);
+  box-shadow: 0 0 0 2px rgba(0, 194, 255, 0.07);
+}
+.indication-paste-zone .card-title { margin-bottom: 1px; }
+.indication-paste-zone strong {
+  margin-right: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.indication-paste-zone .field-note { display: inline; }
+.indication-result {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+}
+.indication-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 7px;
+}
+.indication-actions #indication-status {
+  flex: 1;
+  color: var(--muted);
+}
+.indication-actions #indication-status.error { color: var(--red); }
+.indication-actions #indication-status.success { color: var(--green); }
+@media (max-width: 600px) {
+  .indication-paste-zone { align-items: flex-start; }
+  .indication-paste-zone .field-note { display: block; }
+  .indication-actions { flex-wrap: wrap; }
+  .indication-actions #indication-status { flex-basis: 100%; }
+}
+
 /* ── Sonographer worksheet screenshots ── */
 .worksheet-drop-zone {
   display: flex;

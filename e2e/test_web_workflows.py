@@ -79,6 +79,75 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
+def test_indication_screenshot_is_transcribed_locally_and_patient_details_start_hidden(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    external_requests: list[str] = []
+    page.on(
+        "request",
+        lambda request: external_requests.append(request.url)
+        if not request.url.startswith(base_url)
+        else None,
+    )
+    page.route(
+        "**/static/vendor/tesseract/tesseract.min.js*",
+        lambda route: route.fulfill(
+            status=200,
+            content_type="application/javascript",
+            body="""
+              window.Tesseract = {
+                createWorker: async () => ({
+                  recognize: async () => ({ data: { text:
+                    "CLINICAL INDICATION:\\nFall onto outstretched hand. Radial-sided wrist pain."
+                  }}),
+                  terminate: async () => {},
+                }),
+              };
+            """,
+        ),
+    )
+
+    page.goto(f"{base_url}/app")
+    expect(page.locator("#patient-context-details")).not_to_have_attribute("open", "")
+    expect(page.locator("#indication-paste-zone")).to_contain_text(
+        "Paste a screenshot anywhere on this page"
+    )
+    page.evaluate(
+        """() => {
+          window.__indicationClipboard = "";
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: { writeText: async (value) => { window.__indicationClipboard = value; } },
+          });
+          const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZJfQAAAAASUVORK5CYII=";
+          const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+          const file = new File([bytes], "indication.png", { type: "image/png" });
+          const data = new DataTransfer();
+          data.items.add(file);
+          document.dispatchEvent(new ClipboardEvent("paste", {
+            clipboardData: data,
+            bubbles: true,
+            cancelable: true,
+          }));
+        }"""
+    )
+
+    expect(page.locator("#indication-text")).to_have_value(
+        "Fall onto outstretched hand. Radial-sided wrist pain."
+    )
+    page.locator("#indication-text").fill(
+        "Fall onto outstretched hand. Tender anatomical snuffbox."
+    )
+    page.locator("#btn-indication-copy").click()
+    expect(page.locator("#indication-status")).to_contain_text("paste into PowerScribe")
+    assert page.evaluate("window.__indicationClipboard") == (
+        "Fall onto outstretched hand. Tender anatomical snuffbox."
+    )
+    assert external_requests == []
+    assert errors == []
+
+
 def test_authenticated_fracture_lab_is_reachable_from_radspeed(
     page: Page, base_url: str
 ):
@@ -315,7 +384,9 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
           const file = new File([bytes], "renal-worksheet.png", { type: "image/png" });
           const data = new DataTransfer();
           data.items.add(file);
-          document.dispatchEvent(new ClipboardEvent("paste", {
+          const zone = document.getElementById("worksheet-drop-zone");
+          zone.focus();
+          zone.dispatchEvent(new ClipboardEvent("paste", {
             clipboardData: data,
             bubbles: true,
             cancelable: true,
@@ -425,6 +496,7 @@ def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: st
 def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")
+    page.locator("#patient-context-details > summary").click()
     page.locator("#body-part").fill("Right knee")
     page.evaluate(
         """() => {
@@ -516,6 +588,7 @@ def test_qscan_copy_falls_back_to_findings_and_short_lists_use_hyphens(
 def test_worklist_switch_replaces_the_whole_case(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")
+    page.locator("#patient-context-details > summary").click()
     response = page.request.post(
         f"{base_url}/api/worklist/push",
         headers={"X-VoxRad-Agent-Token": "synthetic-mwl-test-token"},

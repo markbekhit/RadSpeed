@@ -1460,6 +1460,130 @@ async function archiveWorklistOrder() {
 }
 
 // ---------------------------------------------------------------------------
+// Indication screenshot transcription (browser-only OCR)
+// ---------------------------------------------------------------------------
+const INDICATION_MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+let _indicationWorkerPromise = null;
+let _indicationBusy = false;
+
+function _setIndicationStatus(message, type = "") {
+  const status = $("indication-status");
+  if (!status) return;
+  status.textContent = message;
+  status.className = type ? `field-note ${type}` : "field-note";
+}
+
+function _cleanIndicationText(value) {
+  let text = String(value || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/([A-Za-z])-\s*\n\s*(?=[a-z])/g, "$1")
+    .replace(/\s*\n+\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  text = text.replace(
+    /^(?:clinical\s+(?:details|history|indication)|indication|history|reason\s+for\s+(?:exam|examination)|request\s+details)\s*[:\-]\s*/i,
+    ""
+  );
+  return text.trim();
+}
+
+function _renderIndicationBusy(isBusy) {
+  _indicationBusy = isBusy;
+  const zone = $("indication-paste-zone");
+  const choose = $("btn-indication-choose");
+  if (zone) zone.classList.toggle("is-busy", isBusy);
+  if (choose) choose.disabled = isBusy;
+}
+
+async function _getIndicationWorker() {
+  if (!_indicationWorkerPromise) {
+    if (!window.Tesseract || !window.Tesseract.createWorker) {
+      throw new Error("Local text recognition did not load. Refresh and try again.");
+    }
+    _indicationWorkerPromise = window.Tesseract.createWorker("eng", 1, {
+      workerPath: "/static/vendor/tesseract/worker.min.js",
+      langPath: "/static/vendor/tesseract/",
+      corePath: "/static/vendor/tesseract/tesseract-core-lstm.wasm.js",
+      logger: (message) => {
+        if (!_indicationBusy || message.status !== "recognizing text") return;
+        const progress = Math.max(0, Math.min(100, Math.round((message.progress || 0) * 100)));
+        _setIndicationStatus(`Reading screenshot locally… ${progress}%`);
+      },
+    });
+  }
+  return _indicationWorkerPromise;
+}
+
+async function transcribeIndicationImage(file) {
+  if (_indicationBusy || !file) return;
+  const result = $("indication-result");
+  const text = $("indication-text");
+  const copy = $("btn-indication-copy");
+  if (!result || !text || !copy) return;
+
+  if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+    result.hidden = false;
+    _setIndicationStatus("Use a PNG, JPEG or WebP screenshot.", "error");
+    return;
+  }
+  if (file.size > INDICATION_MAX_IMAGE_BYTES) {
+    result.hidden = false;
+    _setIndicationStatus("The screenshot must be 8 MB or smaller.", "error");
+    return;
+  }
+
+  result.hidden = false;
+  text.value = "";
+  copy.disabled = true;
+  _renderIndicationBusy(true);
+  _setIndicationStatus("Starting local text recognition…");
+  try {
+    const worker = await _getIndicationWorker();
+    const recognition = await worker.recognize(file);
+    const cleaned = _cleanIndicationText(recognition?.data?.text);
+    if (!cleaned) throw new Error("No text was found. Try a tighter or clearer screenshot.");
+    text.value = cleaned;
+    copy.disabled = false;
+    _setIndicationStatus("Ready — check the text, then copy it.", "success");
+    text.focus();
+    text.select();
+  } catch (error) {
+    _setIndicationStatus(error.message || "The screenshot could not be read.", "error");
+  } finally {
+    _renderIndicationBusy(false);
+  }
+}
+
+function clearIndication() {
+  const result = $("indication-result");
+  const text = $("indication-text");
+  const input = $("indication-file-input");
+  if (text) text.value = "";
+  if (input) input.value = "";
+  if ($("btn-indication-copy")) $("btn-indication-copy").disabled = true;
+  if (result) result.hidden = true;
+  _setIndicationStatus("");
+}
+
+async function copyIndication() {
+  const text = ($("indication-text")?.value || "").trim();
+  if (!text) return;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const field = $("indication-text");
+      field.focus();
+      field.select();
+      if (!document.execCommand("copy")) throw new Error("Copy was blocked");
+    }
+    _setIndicationStatus("Copied — paste into PowerScribe.", "success");
+  } catch (_) {
+    _setIndicationStatus("Copy was blocked. Select the text and press Ctrl/Cmd+C.", "error");
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Sonographer worksheet screenshots
 // ---------------------------------------------------------------------------
 const WORKSHEET_MAX_IMAGES = 4;
@@ -3383,6 +3507,51 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-lookup").addEventListener("click", lookupPatient);
   if ($("btn-next-case")) $("btn-next-case").addEventListener("click", () => nextCase());
 
+  // A pasted image defaults to the compact indication tool. The worksheet
+  // remains the destination when its own paste zone has focus.
+  const indicationZone = $("indication-paste-zone");
+  const indicationInput = $("indication-file-input");
+  if (indicationZone && indicationInput) {
+    const chooseIndication = () => {
+      if (!_indicationBusy) indicationInput.click();
+    };
+    indicationZone.addEventListener("click", chooseIndication);
+    indicationZone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        chooseIndication();
+      }
+    });
+    $("btn-indication-choose").addEventListener("click", (event) => {
+      event.stopPropagation();
+      chooseIndication();
+    });
+    indicationInput.addEventListener("change", () => {
+      transcribeIndicationImage(indicationInput.files?.[0]);
+      indicationInput.value = "";
+    });
+    $("btn-indication-clear").addEventListener("click", clearIndication);
+    $("btn-indication-copy").addEventListener("click", copyIndication);
+    $("indication-text").addEventListener("input", () => {
+      $("btn-indication-copy").disabled = !$("indication-text").value.trim();
+    });
+    for (const eventName of ["dragenter", "dragover"]) {
+      indicationZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        indicationZone.classList.add("drag-over");
+      });
+    }
+    for (const eventName of ["dragleave", "drop"]) {
+      indicationZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        indicationZone.classList.remove("drag-over");
+      });
+    }
+    indicationZone.addEventListener("drop", (event) => {
+      transcribeIndicationImage(Array.from(event.dataTransfer?.files || [])[0]);
+    });
+  }
+
   // Worksheet screenshot paste / choose / drag-and-drop.
   const worksheetZone = $("worksheet-drop-zone");
   const worksheetInput = $("worksheet-file-input");
@@ -3417,18 +3586,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     worksheetZone.addEventListener("drop", (event) => {
       addWorksheetImages(event.dataTransfer?.files || []);
     });
+  }
 
-    document.addEventListener("paste", (event) => {
-      const files = Array.from(event.clipboardData?.items || [])
-        .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
-        .map((item) => item.getAsFile())
-        .filter(Boolean);
-      if (!files.length) return;
-      event.preventDefault();
+  document.addEventListener("paste", (event) => {
+    const files = Array.from(event.clipboardData?.items || [])
+      .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+      .map((item) => item.getAsFile())
+      .filter(Boolean);
+    if (!files.length) return;
+    event.preventDefault();
+    const worksheetSelected = worksheetZone && (
+      event.target === worksheetZone || worksheetZone.contains(event.target) ||
+      document.activeElement === worksheetZone
+    );
+    if (worksheetSelected) {
       addWorksheetImages(files);
       worksheetZone.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
+      return;
+    }
+    transcribeIndicationImage(files[0]);
+    indicationZone?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
 
   // Keep the active patient visible when the detailed form is collapsed.
   let _priorDebounce = null;

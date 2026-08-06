@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-08-02
+Updated: 2026-08-06
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -63,6 +63,11 @@ These are confirmed in code on `main` as of this update — not aspirations.
   (`stream_format_text`, `format_text(patient_context=...)`).
 - **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N).
+- **Local indication screenshot transcription** — paste an indication screenshot
+  anywhere on the reporting screen (or choose/drop an image), review and edit
+  the browser-transcribed text, then copy it as plain text for PowerScribe.
+  Recognition uses RadSpeed's bundled browser-only OCR and does not upload the
+  screenshot or extracted indication.
 - **Sonographer worksheet screenshots** — paste, choose or drop up to four
   overlapping worksheet snips. A table-aware vision pass binds measurements
   and marks to their row/column/laterality headers, excludes identifiers and
@@ -76,9 +81,10 @@ These are confirmed in code on `main` as of this update — not aspirations.
 - **Atomic worklist case switching** — moving to another order clears the
   completed case and replaces the whole patient context; unfinished work is
   protected so demographics cannot be mixed across two orders.
-- **Compact active-patient focus** — loaded demographics collapse to a pinned
-  patient / MRN / accession / study banner, keeping identity visible while
-  returning vertical space to the report.
+- **Compact active-patient focus** — patient / RIS details are closed by default
+  behind a disclosure, and loaded demographics collapse to a pinned patient /
+  MRN / accession / study banner, keeping identity visible while returning
+  vertical space to the report.
 - **Local prior comparison** — signed RadSpeed reports for the same MRN are
   surfaced per user. A prior reaches the formatting prompt only after explicit
   selection and is strongly delimited as reference-only context.
@@ -195,7 +201,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **112 Python tests + 14 Chromium E2E workflows** run before deployment and on
+- **145 Python tests + 21 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -206,7 +212,8 @@ deployment and partner sign-on, not new code.
 - Browser tests start an isolated mock-mode server and exercise public
   Impressions validation/generation, authenticated audio-segment transcription
   through streamed formatting, worksheet screenshot paste-to-report,
-  mobile overflow, and authentication rejection.
+  indication screenshot OCR/copy, patient-detail disclosure defaults, mobile
+  overflow, and authentication rejection.
 - A six-case synthetic clinical corpus gates dictated concepts, negation,
   measurements, laterality, and section order. Reference validation runs in CI;
   the deployed production model is evaluated weekly and on demand.

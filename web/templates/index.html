@@ -27,7 +27,40 @@
 
 <main>
 
-  <!-- ── Template + Patient Context ── -->
+  <!-- ── Indication screenshot transcription ── -->
+  <div class="card indication-card" id="indication-card">
+    <div
+      id="indication-paste-zone"
+      class="indication-paste-zone"
+      tabindex="0"
+      role="button"
+      aria-label="Paste or choose an indication screenshot to transcribe"
+    >
+      <div>
+        <div class="card-title">Indication screenshot</div>
+        <strong>Paste a screenshot anywhere on this page</strong>
+        <span class="field-note">Ctrl/Cmd+V · text stays on this device</span>
+      </div>
+      <button id="btn-indication-choose" class="btn btn-ghost btn-sm" type="button">Choose image</button>
+    </div>
+    <input
+      id="indication-file-input"
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      style="display:none;"
+    />
+    <div id="indication-result" class="indication-result" hidden>
+      <label class="fhir-label" for="indication-text">Transcribed indication</label>
+      <textarea id="indication-text" rows="3" placeholder="Transcribed indication will appear here"></textarea>
+      <div class="indication-actions">
+        <span id="indication-status" class="field-note" role="status" aria-live="polite"></span>
+        <button id="btn-indication-clear" class="btn btn-ghost btn-sm" type="button">Clear</button>
+        <button id="btn-indication-copy" class="btn btn-secondary btn-sm" type="button" disabled>Copy indication</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Template + Patient / RIS details ── -->
   <div class="card">
     <div class="card-title">Report Settings</div>
 
@@ -44,8 +77,8 @@
       <button id="btn-template-edit" class="btn btn-ghost btn-sm" type="button" title="View / edit templates" style="flex-shrink:0;margin-bottom:1px;">&#9998; Edit</button>
     </div>
 
-    <details id="patient-context-details" style="margin-top:10px;" open>
-      <summary><span>Patient Context</span><span id="patient-summary" class="patient-summary">No case loaded</span></summary>
+    <details id="patient-context-details" style="margin-top:10px;">
+      <summary><span>Patient / RIS details</span><span id="patient-summary" class="patient-summary">No case loaded</span></summary>
 
       <div id="worklist-panel" class="mt-8" style="display:none;">
         <div style="display:flex;gap:6px;align-items:flex-end;">
@@ -439,6 +472,7 @@
      markup before it reaches innerHTML. -->
 <script src="/static/marked.min.js?v={{ static_version }}"></script>
 <script src="/static/purify.min.js?v={{ static_version }}"></script>
+<script src="/static/vendor/tesseract/tesseract.min.js?v=7.0.0"></script>
 <script src="/static/app.js?v={{ static_version }}"></script>
 </body>
 </html>
