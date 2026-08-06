@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import unittest
+import subprocess
+import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
@@ -99,6 +101,95 @@ class StreamingProviderModelTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("model=nova-3-medical", url)
         self.assertIn("version=latest", url)
         self.assertIn("keyterm=pelvicaliectasis", url)
+
+
+class StreamingProviderSelectionTests(unittest.TestCase):
+    def _run_isolated(self, source: str) -> None:
+        result = subprocess.run(
+            [sys.executable, "-c", source],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_automatic_mode_prefers_assemblyai_medical_then_deepgram(self):
+        self._run_isolated("""
+from config.config import config
+from web.stt_providers.factory import resolve_streaming_provider_name
+config.STREAMING_STT_PROVIDER = "auto"
+config.ASSEMBLYAI_API_KEY = "synthetic-assemblyai-key"
+config.DEEPGRAM_API_KEY = "synthetic-deepgram-key"
+assert resolve_streaming_provider_name() == "assemblyai"
+config.ASSEMBLYAI_API_KEY = None
+assert resolve_streaming_provider_name() == "deepgram"
+config.DEEPGRAM_API_KEY = None
+assert resolve_streaming_provider_name() == "groq"
+""")
+
+    def test_oauth_admin_provider_change_is_persisted(self):
+        self._run_isolated("""
+from unittest.mock import patch
+from config.config import config
+from web.app import SettingsRequest, api_save_settings
+config.STREAMING_STT_PROVIDER = "groq"
+request = SettingsRequest(streaming_stt_provider="assemblyai")
+user = {"id": 1, "email": "synthetic@example.test", "name": "Synthetic"}
+with patch("web.app.oauth_enabled", return_value=True), patch(
+    "web.app._is_admin", return_value=True
+), patch("web.app.get_user_style", return_value={}), patch(
+    "web.app.save_user_style"
+), patch("web.app.save_web_settings") as save:
+    result = api_save_settings(request, user=user)
+assert result["ok"] is True
+assert config.STREAMING_STT_PROVIDER == "assemblyai"
+save.assert_called_once_with()
+""")
+
+    def test_oauth_non_admin_cannot_receive_false_success_for_model_change(self):
+        self._run_isolated("""
+from unittest.mock import patch
+from fastapi import HTTPException
+from config.config import config
+from web.app import SettingsRequest, api_save_settings
+config.STREAMING_STT_PROVIDER = "groq"
+request = SettingsRequest(streaming_stt_provider="assemblyai")
+user = {"id": 2, "email": "synthetic2@example.test", "name": "Synthetic"}
+with patch("web.app.oauth_enabled", return_value=True), patch(
+    "web.app._is_admin", return_value=False
+):
+    try:
+        api_save_settings(request, user=user)
+    except HTTPException as exc:
+        assert exc.status_code == 403
+    else:
+        raise AssertionError("model change incorrectly reported success")
+assert config.STREAMING_STT_PROVIDER == "groq"
+""")
+
+    def test_first_oauth_account_is_owner_when_no_admin_allowlist_exists(self):
+        self._run_isolated("""
+from unittest.mock import patch
+from web.app import _is_admin
+with patch("web.app.oauth_enabled", return_value=True), patch.dict(
+    "os.environ", {"RADSPEED_ADMIN_EMAILS": ""}
+):
+    assert _is_admin({"id": 1, "email": "owner@example.test"}) is True
+    assert _is_admin({"id": 2, "email": "user@example.test"}) is False
+""")
+
+    def test_web_settings_use_the_persistent_database_directory(self):
+        self._run_isolated("""
+import os
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+from config.settings import get_default_config_path
+with tempfile.TemporaryDirectory() as directory:
+    database = Path(directory) / "users.db"
+    with patch.dict("os.environ", {"VOXRAD_DB_PATH": str(database)}, clear=False):
+        assert Path(get_default_config_path()) == Path(directory) / "settings.ini"
+""")
 
 
 if __name__ == "__main__":

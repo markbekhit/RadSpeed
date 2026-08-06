@@ -44,6 +44,9 @@ These are confirmed in code on `main` as of this update — not aspirations.
   preserve the operator-owned production model secret.
 - **Multi-provider streaming STT** — Deepgram Nova-3 Medical, AssemblyAI
   Universal-3 Pro Medical Mode, Groq Whisper Large V3 Turbo segment fallback.
+  Automatic mode prefers AssemblyAI Medical when configured, then Deepgram
+  Medical, and uses Groq only as the fallback. Signed-in owner choices persist
+  across restarts.
   Voice editing by selection works including the short-utterance edge case
   (`web/stt_providers/`, `web/app.py` /ws/transcribe).
 - **Voice refinement** — select a passage, speak corrections, regenerate.

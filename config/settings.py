@@ -29,7 +29,16 @@ def _auto_save_session_key(config_path: str, key: str) -> None:
 
 def get_default_config_path():
     """Returns the platform-specific default config file path."""
-    if os.name == "nt":  # Windows
+    if explicit_path := os.environ.get("VOXRAD_SETTINGS_PATH"):
+        config_dir = os.path.dirname(os.path.abspath(explicit_path))
+        os.makedirs(config_dir, exist_ok=True)
+        return explicit_path
+    if db_path := os.environ.get("VOXRAD_DB_PATH"):
+        # Web deployments already mount the database directory persistently.
+        # Keep non-sensitive settings beside it so container replacement does
+        # not reset choices made in the Settings page.
+        config_dir = os.path.dirname(os.path.abspath(db_path))
+    elif os.name == "nt":  # Windows
         config_dir = os.path.join(os.environ["APPDATA"], "VOXRAD")
     else:  # Assuming macOS or Linux
         config_dir = os.path.join(os.path.expanduser("~"), ".voxrad")
@@ -205,7 +214,13 @@ def load_settings(web_mode: bool = False):
         if os.environ.get("VOXRAD_TEXT_MODEL"):
             config.SELECTED_MODEL = os.environ["VOXRAD_TEXT_MODEL"]
             logger.info("[web] Using VOXRAD_TEXT_MODEL: %s", config.SELECTED_MODEL)
-        if os.environ.get("VOXRAD_STREAMING_STT_PROVIDER"):
+        # A persisted UI choice wins after the environment value has seeded a
+        # new installation. This keeps the Settings page authoritative while
+        # retaining the deployment variable as a first-run default.
+        saved_provider = config_parser["DEFAULT"].get(
+            "StreamingSTTProvider", ""
+        ).strip()
+        if os.environ.get("VOXRAD_STREAMING_STT_PROVIDER") and not saved_provider:
             config.STREAMING_STT_PROVIDER = os.environ["VOXRAD_STREAMING_STT_PROVIDER"] or None
             logger.info("[web] Using VOXRAD_STREAMING_STT_PROVIDER: %s", config.STREAMING_STT_PROVIDER)
 

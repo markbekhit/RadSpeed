@@ -31,22 +31,35 @@
 
       <p class="settings-info" style="margin-bottom:10px;">
         Select a real-time streaming provider for word-by-word transcription during dictation.
-        Choosing <strong>None</strong> uses the existing Groq Whisper segment pipeline.
+        Automatic mode chooses the best available medical model and keeps Groq Whisper as a fallback.
       </p>
 
-      <!-- None / Groq Whisper -->
-      <label class="provider-option" id="opt-none">
-        <input type="radio" name="streaming_stt_provider" value="" id="radio-none" />
+      <p id="global-settings-note" class="settings-info" style="display:none;margin-bottom:10px;">
+        Shared AI model settings are read-only for this account.
+      </p>
+
+      <!-- Automatic -->
+      <label class="provider-option" id="opt-auto">
+        <input type="radio" name="streaming_stt_provider" value="auto" id="radio-auto" data-global-setting />
         <div class="provider-label">
-          <div class="provider-name">None &mdash; Groq Whisper</div>
-          <div class="provider-desc">Segment-based transcription after each pause. No streaming key required.</div>
+          <div class="provider-name">Automatic &mdash; best available <span style="color:var(--green);font-size:11px;">Recommended</span></div>
+          <div class="provider-desc">AssemblyAI Universal-3 Pro Medical, then Deepgram Nova-3 Medical, with Groq Whisper as fallback.</div>
         </div>
-        <span id="badge-groq"></span>
+      </label>
+
+      <!-- AssemblyAI -->
+      <label class="provider-option" id="opt-assemblyai">
+        <input type="radio" name="streaming_stt_provider" value="assemblyai" id="radio-assemblyai" data-global-setting />
+        <div class="provider-label">
+          <div class="provider-name">AssemblyAI Universal-3 Pro Medical</div>
+          <div class="provider-desc">Real-time streaming with Medical Mode and radiology keyterm prompting.</div>
+        </div>
+        <span id="badge-assemblyai"></span>
       </label>
 
       <!-- Deepgram -->
       <label class="provider-option" id="opt-deepgram">
-        <input type="radio" name="streaming_stt_provider" value="deepgram" id="radio-deepgram" />
+        <input type="radio" name="streaming_stt_provider" value="deepgram" id="radio-deepgram" data-global-setting />
         <div class="provider-label">
           <div class="provider-name">Deepgram Nova-3 Medical</div>
           <div class="provider-desc">Real-time streaming &mdash; word-by-word results, medical vocabulary.</div>
@@ -54,14 +67,14 @@
         <span id="badge-deepgram"></span>
       </label>
 
-      <!-- AssemblyAI -->
-      <label class="provider-option" id="opt-assemblyai">
-        <input type="radio" name="streaming_stt_provider" value="assemblyai" id="radio-assemblyai" />
+      <!-- Groq Whisper -->
+      <label class="provider-option" id="opt-groq">
+        <input type="radio" name="streaming_stt_provider" value="groq" id="radio-groq" data-global-setting />
         <div class="provider-label">
-          <div class="provider-name">AssemblyAI Universal-3 Pro Medical</div>
-          <div class="provider-desc">Real-time streaming with Medical Mode and radiology keyterm prompting.</div>
+          <div class="provider-name">Groq Whisper fallback</div>
+          <div class="provider-desc">Segment-based transcription after each pause rather than live word-by-word transcription.</div>
         </div>
-        <span id="badge-assemblyai"></span>
+        <span id="badge-groq"></span>
       </label>
 
       <p id="warn-no-key" class="settings-warning">
@@ -72,11 +85,11 @@
       <div id="groq-fields" style="margin-top:12px;">
         <div class="settings-field">
           <label for="transcription_base_url">Groq / Whisper Base URL</label>
-          <input type="text" id="transcription_base_url" placeholder="https://api.groq.com/openai/v1" />
+          <input type="text" id="transcription_base_url" placeholder="https://api.groq.com/openai/v1" data-global-setting />
         </div>
         <div class="settings-field">
           <label for="transcription_model">Transcription Model</label>
-          <input type="text" id="transcription_model" placeholder="whisper-large-v3-turbo" />
+          <input type="text" id="transcription_model" placeholder="whisper-large-v3-turbo" data-global-setting />
         </div>
       </div>
     </div>
@@ -88,11 +101,11 @@
       <div class="settings-section-title">Report Generation (LLM)</div>
       <div class="settings-field">
         <label for="text_base_url">Text Model Base URL</label>
-        <input type="text" id="text_base_url" placeholder="https://api.openai.com/v1" />
+        <input type="text" id="text_base_url" placeholder="https://api.openai.com/v1" data-global-setting />
       </div>
       <div class="settings-field">
         <label for="text_model">Text Model Name</label>
-        <input type="text" id="text_model" placeholder="gpt-5.6-sol" />
+        <input type="text" id="text_model" placeholder="gpt-5.6-sol" data-global-setting />
       </div>
       <p class="settings-info">Key status: <span id="badge-text"></span></p>
     </div>

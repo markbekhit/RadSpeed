@@ -115,7 +115,10 @@ from web.followups import (
 )
 from web.fracture_workbench import resolve_workbench_image
 from web.qa import run_qa_checks
-from web.stt_providers import get_streaming_provider
+from web.stt_providers.factory import (
+    get_streaming_provider,
+    resolve_streaming_provider_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -203,9 +206,11 @@ def _is_admin(user: dict) -> bool:
     """True when the caller may change server-wide settings.
 
     In Basic Auth mode the single shared operator is trusted. In OAuth mode
-    only emails in RADSPEED_ADMIN_EMAILS (comma-separated) may mutate global
-    process config — model IDs, base URLs, streaming provider, HL7 paths. Every
-    other authenticated user can still save their own per-user style prefs.
+    emails in RADSPEED_ADMIN_EMAILS (comma-separated) may mutate global process
+    config — model IDs, base URLs, streaming provider, HL7 paths. When no
+    allow-list has been configured, the first registered account is treated as
+    the owner so a single-user installation does not silently lock its owner
+    out of settings. Every other user can still save per-user style prefs.
 
     This closes a privilege hole: any logged-in user could otherwise point
     config.BASE_URL at an attacker server and exfiltrate the shared LLM API key
@@ -216,7 +221,9 @@ def _is_admin(user: dict) -> bool:
     allow = os.environ.get("RADSPEED_ADMIN_EMAILS", "")
     emails = {e.strip().lower() for e in allow.split(",") if e.strip()}
     email = (user.get("email") or "").lower()
-    return bool(email) and email in emails
+    if emails:
+        return bool(email) and email in emails
+    return user.get("id") == 1
 
 
 def _user_style(user: dict) -> Optional[dict]:
@@ -2905,6 +2912,8 @@ _STYLE_ALLOWED = {
     "style_paste_format": {"rich", "plain", "markdown"},
 }
 
+_STREAMING_STT_PROVIDERS = {"auto", "groq", "deepgram", "assemblyai"}
+
 
 @app.get("/api/capabilities")
 def api_capabilities():
@@ -2912,7 +2921,7 @@ def api_capabilities():
     provider = get_streaming_provider()
     return {
         "streaming_stt": provider is not None,
-        "provider": config.STREAMING_STT_PROVIDER,
+        "provider": resolve_streaming_provider_name(),
     }
 
 
@@ -3052,7 +3061,9 @@ def api_get_settings(user: dict = Depends(_verify_auth)):
             "fhir_export_enabled":   config.fhir_export_enabled,
         }
     return {
-        "streaming_stt_provider": config.STREAMING_STT_PROVIDER or "",
+        "streaming_stt_provider": config.STREAMING_STT_PROVIDER or "auto",
+        "effective_streaming_stt_provider": resolve_streaming_provider_name(),
+        "can_manage_global_settings": _is_admin(user),
         "transcription_base_url": config.TRANSCRIPTION_BASE_URL or "",
         "transcription_model":    config.SELECTED_TRANSCRIPTION_MODEL or "",
         "text_base_url":          config.BASE_URL or "",
@@ -3096,12 +3107,38 @@ def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
     Global settings (model URLs, streaming provider) → settings.ini.
     Style preferences → per-user SQLite row (OAuth mode) or settings.ini (Basic Auth mode).
     """
+    current_provider = (config.STREAMING_STT_PROVIDER or "auto").strip().lower()
+    requested_provider = (
+        req.streaming_stt_provider.strip().lower()
+        if req.streaming_stt_provider is not None
+        else current_provider
+    )
+    if requested_provider not in _STREAMING_STT_PROVIDERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid streaming transcription provider: {requested_provider!r}",
+        )
+
     # Server-wide settings (model IDs, base URLs, streaming provider) mutate
     # process-global config and affect every user, so only admins may change
-    # them. Non-admins silently skip these and still save their style prefs.
+    # them. A non-admin change now fails visibly instead of reporting a false
+    # success and reverting on the next page load.
     _admin = _is_admin(user)
+    global_change_requested = any((
+        requested_provider != current_provider,
+        bool(req.transcription_base_url and req.transcription_base_url != config.TRANSCRIPTION_BASE_URL),
+        bool(req.transcription_model and req.transcription_model != config.SELECTED_TRANSCRIPTION_MODEL),
+        bool(req.text_base_url and req.text_base_url != config.BASE_URL),
+        bool(req.text_model and req.text_model != config.SELECTED_MODEL),
+    ))
+    if global_change_requested and not _admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Only a RadSpeed administrator can change shared AI model settings.",
+        )
+
     if _admin:
-        config.STREAMING_STT_PROVIDER = req.streaming_stt_provider or None
+        config.STREAMING_STT_PROVIDER = requested_provider
         if req.transcription_base_url:
             config.TRANSCRIPTION_BASE_URL = req.transcription_base_url
         if req.transcription_model:
@@ -3147,8 +3184,8 @@ def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
         existing.update(style_update)
         existing["fhir_export_enabled"] = req.fhir_export_enabled
         save_user_style(user["id"], existing)
-        if hl7_touched:
-            # Persist the global HL7 change to settings.ini.
+        if _admin and (global_change_requested or hl7_touched):
+            # Persist global changes in OAuth mode as well as Basic Auth mode.
             save_web_settings()
     else:
         # Basic Auth / global mode: write to config + settings.ini
@@ -3198,7 +3235,7 @@ async def ws_transcribe(websocket: WebSocket, token: str = ""):
             })
             return
 
-        provider_name = (config.STREAMING_STT_PROVIDER or "").lower()
+        provider_name = resolve_streaming_provider_name()
         if provider_name == "deepgram":
             api_key = config.DEEPGRAM_API_KEY or ""
         elif provider_name == "assemblyai":

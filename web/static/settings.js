@@ -22,19 +22,19 @@ function setBadge(elementId, configured) {
 // ---------------------------------------------------------------------------
 // Provider selection UI
 // ---------------------------------------------------------------------------
-let _currentProvider = "";
+let _currentProvider = "auto";
 let _keys = { transcription: false, text: false, deepgram: false, assemblyai: false };
 
 function _updateProviderUI() {
   const val = _currentProvider;
-  ["none", "deepgram", "assemblyai"].forEach((id) => {
+  ["auto", "assemblyai", "deepgram", "groq"].forEach((id) => {
     const opt = $(`opt-${id}`);
-    if (opt) opt.classList.toggle("selected", (id === "none" ? "" : id) === val);
+    if (opt) opt.classList.toggle("selected", id === val);
   });
 
-  // Show Groq fields only when no streaming provider selected
+  // Show Groq fields only when it is selected explicitly.
   const groqFields = $("groq-fields");
-  if (groqFields) groqFields.style.display = val === "" ? "" : "none";
+  if (groqFields) groqFields.style.display = val === "groq" ? "" : "none";
 
   // Show warning if selected provider has no key
   const warn = $("warn-no-key");
@@ -63,7 +63,7 @@ async function loadSettings() {
     const data = await resp.json();
 
     _keys = data.keys;
-    _currentProvider = data.streaming_stt_provider || "";
+    _currentProvider = data.streaming_stt_provider || "auto";
 
     // Set radio
     const radio = document.querySelector(
@@ -77,6 +77,15 @@ async function loadSettings() {
     if ($("text_base_url"))          $("text_base_url").value          = data.text_base_url          || "";
     if ($("text_model"))             $("text_model").value             = data.text_model             || "";
     if ($("fhir_export_enabled"))    $("fhir_export_enabled").checked  = !!data.fhir_export_enabled;
+
+    // Shared provider/model settings are read-only for non-administrators.
+    if (!data.can_manage_global_settings) {
+      document.querySelectorAll("[data-global-setting]").forEach((el) => {
+        el.disabled = true;
+      });
+      const note = $("global-settings-note");
+      if (note) note.style.display = "";
+    }
 
     // Reporting style
     const style = data.style || {};
@@ -120,7 +129,7 @@ async function loadSettings() {
 // ---------------------------------------------------------------------------
 async function saveSettings() {
   const body = {
-    streaming_stt_provider: _currentProvider || null,
+    streaming_stt_provider: _currentProvider || "auto",
     transcription_base_url: ($("transcription_base_url") || {}).value || null,
     transcription_model:    ($("transcription_model")    || {}).value || null,
     text_base_url:          ($("text_base_url")          || {}).value || null,
