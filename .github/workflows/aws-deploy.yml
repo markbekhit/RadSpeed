@@ -99,6 +99,7 @@ jobs:
             "sudo install -m 640 -o root -g docker /tmp/docker-compose.production.yml /opt/radspeed/docker-compose.yml && \
              sudo install -m 640 -o root -g docker /tmp/Caddyfile /opt/radspeed/Caddyfile && \
              cd /opt/radspeed && \
+             sudo docker image prune -af && \
              sudo RADSPEED_IMAGE='$RADSPEED_IMAGE' docker compose pull && \
              sudo RADSPEED_IMAGE='$RADSPEED_IMAGE' docker compose up -d --remove-orphans && \
              sudo docker image prune -f"
