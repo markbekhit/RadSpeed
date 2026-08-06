@@ -63,11 +63,11 @@ These are confirmed in code on `main` as of this update — not aspirations.
   (`stream_format_text`, `format_text(patient_context=...)`).
 - **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N).
-- **Local indication screenshot transcription** — paste an indication screenshot
-  anywhere on the reporting screen (or choose/drop an image), review and edit
-  the browser-transcribed text, then copy it as plain text for PowerScribe.
-  Recognition uses RadSpeed's bundled browser-only OCR and does not upload the
-  screenshot or extracted indication.
+- **Local indication screenshot transcription** — the shared screenshot area
+  accepts pasted, chosen or dropped worksheet and indication images. A separate
+  action beside worksheet report generation transcribes the indication for
+  review, editing and plain-text PowerScribe copy. Recognition uses RadSpeed's
+  bundled browser-only OCR and does not upload the screenshot or extracted text.
 - **Sonographer worksheet screenshots** — paste, choose or drop up to four
   overlapping worksheet snips. A table-aware vision pass binds measurements
   and marks to their row/column/laterality headers, excludes identifiers and

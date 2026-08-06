@@ -79,7 +79,7 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
-def test_indication_screenshot_is_transcribed_locally_and_patient_details_start_hidden(
+def test_shared_screenshot_area_transcribes_indication_locally_and_hides_patient_details(
     page: Page, base_url: str
 ):
     errors = _console_errors(page)
@@ -110,9 +110,13 @@ def test_indication_screenshot_is_transcribed_locally_and_patient_details_start_
 
     page.goto(f"{base_url}/app")
     expect(page.locator("#patient-context-details")).not_to_have_attribute("open", "")
-    expect(page.locator("#indication-paste-zone")).to_contain_text(
-        "Paste a screenshot anywhere on this page"
+    expect(page.locator("#indication-paste-zone")).to_have_count(0)
+    expect(page.locator("#worksheet-drop-zone")).to_contain_text(
+        "Paste a worksheet or indication screenshot here"
     )
+    expect(
+        page.locator("#btn-indication-transcribe + #btn-worksheet-generate")
+    ).to_have_count(1)
     page.evaluate(
         """() => {
           window.__indicationClipboard = "";
@@ -133,6 +137,9 @@ def test_indication_screenshot_is_transcribed_locally_and_patient_details_start_
         }"""
     )
 
+    expect(page.locator(".worksheet-preview")).to_have_count(1)
+    expect(page.locator("#btn-indication-transcribe")).to_be_enabled()
+    page.locator("#btn-indication-transcribe").click()
     expect(page.locator("#indication-text")).to_have_value(
         "Fall onto outstretched hand. Radial-sided wrist pain."
     )
@@ -374,7 +381,7 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     page.on("request", capture_format_request)
     page.goto(f"{base_url}/app")
     expect(page.locator("#worksheet-drop-zone")).to_contain_text(
-        "Paste a worksheet snip here"
+        "Paste a worksheet or indication screenshot here"
     )
 
     page.evaluate(

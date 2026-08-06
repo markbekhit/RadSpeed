@@ -27,39 +27,6 @@
 
 <main>
 
-  <!-- ── Indication screenshot transcription ── -->
-  <div class="card indication-card" id="indication-card">
-    <div
-      id="indication-paste-zone"
-      class="indication-paste-zone"
-      tabindex="0"
-      role="button"
-      aria-label="Paste or choose an indication screenshot to transcribe"
-    >
-      <div>
-        <div class="card-title">Indication screenshot</div>
-        <strong>Paste a screenshot anywhere on this page</strong>
-        <span class="field-note">Ctrl/Cmd+V · text stays on this device</span>
-      </div>
-      <button id="btn-indication-choose" class="btn btn-ghost btn-sm" type="button">Choose image</button>
-    </div>
-    <input
-      id="indication-file-input"
-      type="file"
-      accept="image/png,image/jpeg,image/webp"
-      style="display:none;"
-    />
-    <div id="indication-result" class="indication-result" hidden>
-      <label class="fhir-label" for="indication-text">Transcribed indication</label>
-      <textarea id="indication-text" rows="3" placeholder="Transcribed indication will appear here"></textarea>
-      <div class="indication-actions">
-        <span id="indication-status" class="field-note" role="status" aria-live="polite"></span>
-        <button id="btn-indication-clear" class="btn btn-ghost btn-sm" type="button">Clear</button>
-        <button id="btn-indication-copy" class="btn btn-secondary btn-sm" type="button" disabled>Copy indication</button>
-      </div>
-    </div>
-  </div>
-
   <!-- ── Template + Patient / RIS details ── -->
   <div class="card">
     <div class="card-title">Report Settings</div>
@@ -154,21 +121,21 @@
     </details>
   </div>
 
-  <!-- ── Sonographer worksheet screenshots ── -->
+  <!-- ── Worksheet and indication screenshots ── -->
   <div class="card" id="worksheet-card">
-    <div class="card-title">Sonographer Worksheet</div>
+    <div class="card-title">Screenshot tools</div>
     <div
       id="worksheet-drop-zone"
       class="worksheet-drop-zone"
       tabindex="0"
       role="button"
-      aria-label="Paste, choose or drop sonographer worksheet screenshots"
+      aria-label="Paste, choose or drop worksheet or indication screenshots"
     >
       <div class="worksheet-drop-icon" aria-hidden="true">&#128247;</div>
       <div>
-        <strong>Paste a worksheet snip here</strong>
+        <strong>Paste a worksheet or indication screenshot here</strong>
         <div class="field-note">
-          After using the Windows Snipping Tool, press Ctrl+V. You can add up to four overlapping screenshots for long or complex tables.
+          After using the Windows Snipping Tool, press Ctrl+V. Add up to four overlapping screenshots for long or complex worksheets.
         </div>
       </div>
     </div>
@@ -183,12 +150,23 @@
     <div class="worksheet-actions">
       <button id="btn-worksheet-choose" class="btn btn-ghost btn-sm" type="button">&#8613; Choose screenshots</button>
       <button id="btn-worksheet-clear" class="btn btn-ghost btn-sm" type="button" disabled>Clear</button>
+      <button id="btn-indication-transcribe" class="btn btn-secondary" type="button" disabled>
+        Transcribe indication
+      </button>
       <button id="btn-worksheet-generate" class="btn btn-secondary" type="button" disabled>
         &#10024; Generate report from worksheet
       </button>
     </div>
+    <div id="indication-result" class="indication-result" hidden>
+      <label class="fhir-label" for="indication-text">Transcribed indication</label>
+      <textarea id="indication-text" rows="3" placeholder="Transcribed indication will appear here"></textarea>
+      <div class="indication-actions">
+        <span id="indication-status" class="field-note" role="status" aria-live="polite"></span>
+        <button id="btn-indication-copy" class="btn btn-secondary btn-sm" type="button" disabled>Copy indication</button>
+      </div>
+    </div>
     <p class="field-note worksheet-privacy">
-      Snip only the findings and measurement area where practical. Images are processed once by the configured RadSpeed model and are not stored by RadSpeed.
+      Indication transcription stays in this browser. Worksheet report generation processes the images once with the configured RadSpeed model; RadSpeed does not store them.
     </p>
   </div>
 

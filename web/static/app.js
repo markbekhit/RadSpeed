@@ -1489,10 +1489,9 @@ function _cleanIndicationText(value) {
 
 function _renderIndicationBusy(isBusy) {
   _indicationBusy = isBusy;
-  const zone = $("indication-paste-zone");
-  const choose = $("btn-indication-choose");
+  const zone = $("worksheet-drop-zone");
   if (zone) zone.classList.toggle("is-busy", isBusy);
-  if (choose) choose.disabled = isBusy;
+  _renderWorksheetPreviews();
 }
 
 async function _getIndicationWorker() {
@@ -1514,22 +1513,26 @@ async function _getIndicationWorker() {
   return _indicationWorkerPromise;
 }
 
-async function transcribeIndicationImage(file) {
-  if (_indicationBusy || !file) return;
+async function transcribeIndicationImages(files) {
+  if (_indicationBusy) return;
+  const images = Array.from(files || []);
+  if (!images.length) return;
   const result = $("indication-result");
   const text = $("indication-text");
   const copy = $("btn-indication-copy");
   if (!result || !text || !copy) return;
 
-  if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
-    result.hidden = false;
-    _setIndicationStatus("Use a PNG, JPEG or WebP screenshot.", "error");
-    return;
-  }
-  if (file.size > INDICATION_MAX_IMAGE_BYTES) {
-    result.hidden = false;
-    _setIndicationStatus("The screenshot must be 8 MB or smaller.", "error");
-    return;
+  for (const file of images) {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      result.hidden = false;
+      _setIndicationStatus("Use PNG, JPEG or WebP screenshots.", "error");
+      return;
+    }
+    if (file.size > INDICATION_MAX_IMAGE_BYTES) {
+      result.hidden = false;
+      _setIndicationStatus("Each screenshot must be 8 MB or smaller.", "error");
+      return;
+    }
   }
 
   result.hidden = false;
@@ -1539,10 +1542,19 @@ async function transcribeIndicationImage(file) {
   _setIndicationStatus("Starting local text recognition…");
   try {
     const worker = await _getIndicationWorker();
-    const recognition = await worker.recognize(file);
-    const cleaned = _cleanIndicationText(recognition?.data?.text);
-    if (!cleaned) throw new Error("No text was found. Try a tighter or clearer screenshot.");
-    text.value = cleaned;
+    const extracted = [];
+    for (let index = 0; index < images.length; index++) {
+      if (images.length > 1) {
+        _setIndicationStatus(`Reading screenshot ${index + 1} of ${images.length} locally…`);
+      }
+      const recognition = await worker.recognize(images[index]);
+      const cleaned = _cleanIndicationText(recognition?.data?.text);
+      if (cleaned) extracted.push(cleaned);
+    }
+    if (!extracted.length) {
+      throw new Error("No text was found. Try a tighter or clearer screenshot.");
+    }
+    text.value = extracted.join(" ");
     copy.disabled = false;
     _setIndicationStatus("Ready — check the text, then copy it.", "success");
     text.focus();
@@ -1557,9 +1569,7 @@ async function transcribeIndicationImage(file) {
 function clearIndication() {
   const result = $("indication-result");
   const text = $("indication-text");
-  const input = $("indication-file-input");
   if (text) text.value = "";
-  if (input) input.value = "";
   if ($("btn-indication-copy")) $("btn-indication-copy").disabled = true;
   if (result) result.hidden = true;
   _setIndicationStatus("");
@@ -1632,8 +1642,10 @@ function _renderWorksheetPreviews() {
 
   const hasImages = _worksheetImages.length > 0;
   zone.classList.toggle("has-images", hasImages);
-  $("btn-worksheet-clear").disabled = !hasImages || _worksheetBusy;
-  $("btn-worksheet-generate").disabled = !hasImages || _worksheetBusy;
+  const busy = _worksheetBusy || _indicationBusy;
+  $("btn-worksheet-clear").disabled = !hasImages || busy;
+  $("btn-indication-transcribe").disabled = !hasImages || busy;
+  $("btn-worksheet-generate").disabled = !hasImages || busy;
 }
 
 function clearWorksheetImages() {
@@ -1641,6 +1653,7 @@ function clearWorksheetImages() {
   _worksheetImages = [];
   const input = $("worksheet-file-input");
   if (input) input.value = "";
+  clearIndication();
   _renderWorksheetPreviews();
 }
 
@@ -1663,12 +1676,13 @@ function addWorksheetImages(files) {
     _worksheetImages.push({ file, url: URL.createObjectURL(file) });
     added++;
   }
+  if (added) clearIndication();
   _renderWorksheetPreviews();
   if (rejected) {
     setStatus(rejected, "error");
   } else if (added) {
     setStatus(
-      `${_worksheetImages.length} worksheet screenshot${_worksheetImages.length === 1 ? "" : "s"} ready. Add another or generate the report.`,
+      `${_worksheetImages.length} screenshot${_worksheetImages.length === 1 ? "" : "s"} ready. Choose an action below.`,
       "active"
     );
   }
@@ -3507,52 +3521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-lookup").addEventListener("click", lookupPatient);
   if ($("btn-next-case")) $("btn-next-case").addEventListener("click", () => nextCase());
 
-  // A pasted image defaults to the compact indication tool. The worksheet
-  // remains the destination when its own paste zone has focus.
-  const indicationZone = $("indication-paste-zone");
-  const indicationInput = $("indication-file-input");
-  if (indicationZone && indicationInput) {
-    const chooseIndication = () => {
-      if (!_indicationBusy) indicationInput.click();
-    };
-    indicationZone.addEventListener("click", chooseIndication);
-    indicationZone.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        chooseIndication();
-      }
-    });
-    $("btn-indication-choose").addEventListener("click", (event) => {
-      event.stopPropagation();
-      chooseIndication();
-    });
-    indicationInput.addEventListener("change", () => {
-      transcribeIndicationImage(indicationInput.files?.[0]);
-      indicationInput.value = "";
-    });
-    $("btn-indication-clear").addEventListener("click", clearIndication);
-    $("btn-indication-copy").addEventListener("click", copyIndication);
-    $("indication-text").addEventListener("input", () => {
-      $("btn-indication-copy").disabled = !$("indication-text").value.trim();
-    });
-    for (const eventName of ["dragenter", "dragover"]) {
-      indicationZone.addEventListener(eventName, (event) => {
-        event.preventDefault();
-        indicationZone.classList.add("drag-over");
-      });
-    }
-    for (const eventName of ["dragleave", "drop"]) {
-      indicationZone.addEventListener(eventName, (event) => {
-        event.preventDefault();
-        indicationZone.classList.remove("drag-over");
-      });
-    }
-    indicationZone.addEventListener("drop", (event) => {
-      transcribeIndicationImage(Array.from(event.dataTransfer?.files || [])[0]);
-    });
-  }
-
-  // Worksheet screenshot paste / choose / drag-and-drop.
+  // Shared worksheet / indication screenshot paste, choose and drag-and-drop.
   const worksheetZone = $("worksheet-drop-zone");
   const worksheetInput = $("worksheet-file-input");
   if (worksheetZone && worksheetInput) {
@@ -3569,7 +3538,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     $("btn-worksheet-choose").addEventListener("click", () => worksheetInput.click());
     $("btn-worksheet-clear").addEventListener("click", clearWorksheetImages);
+    $("btn-indication-transcribe").addEventListener(
+      "click",
+      () => transcribeIndicationImages(_worksheetImages.map((item) => item.file)),
+    );
     $("btn-worksheet-generate").addEventListener("click", generateFromWorksheet);
+    $("btn-indication-copy").addEventListener("click", copyIndication);
+    $("indication-text").addEventListener("input", () => {
+      $("btn-indication-copy").disabled = !$("indication-text").value.trim();
+    });
 
     for (const eventName of ["dragenter", "dragover"]) {
       worksheetZone.addEventListener(eventName, (event) => {
@@ -3595,17 +3572,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       .filter(Boolean);
     if (!files.length) return;
     event.preventDefault();
-    const worksheetSelected = worksheetZone && (
-      event.target === worksheetZone || worksheetZone.contains(event.target) ||
-      document.activeElement === worksheetZone
-    );
-    if (worksheetSelected) {
-      addWorksheetImages(files);
-      worksheetZone.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
-    transcribeIndicationImage(files[0]);
-    indicationZone?.scrollIntoView({ behavior: "smooth", block: "center" });
+    addWorksheetImages(files);
+    worksheetZone?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 
   // Keep the active patient visible when the detailed form is collapsed.
