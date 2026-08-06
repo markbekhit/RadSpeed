@@ -56,6 +56,12 @@ class ModelDefaultDurabilityTests(unittest.TestCase):
         self.assertNotIn("secrets set VOXRAD_TEXT_MODEL", workflow)
         self.assertNotIn("gpt-4.1-mini", workflow)
 
+    def test_deployment_reclaims_unused_images_before_pull(self):
+        workflow = (REPO_ROOT / ".github/workflows/aws-deploy.yml").read_text()
+        prune = workflow.index("docker image prune -af")
+        pull = workflow.index("docker compose pull")
+        self.assertLess(prune, pull)
+
 
 class StreamingProviderModelTests(unittest.IsolatedAsyncioTestCase):
     async def test_assemblyai_uses_current_medical_model_and_turn_settings(self):
