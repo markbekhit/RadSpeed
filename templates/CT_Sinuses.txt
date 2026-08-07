@@ -7,7 +7,7 @@
 CT Paranasal Sinuses
 
 ### Technique:
-Axial CT images of the paranasal sinuses were acquired and reformatted into coronal and sagittal planes. Images were reviewed in bone and soft-tissue windows. [If contrast: Scans were acquired following intravenous contrast administration.]
+Non-contrast CT of the paranasal sinuses.
 
 ### Clinical Details
 **Instructions:**

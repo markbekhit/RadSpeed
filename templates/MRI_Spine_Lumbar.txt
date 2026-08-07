@@ -7,7 +7,7 @@
 MRI Lumbar Spine
 
 ### Technique:
-MRI of the lumbar spine was performed using T1-weighted, T2-weighted, and STIR sequences in sagittal and axial planes. [If contrast: Post-gadolinium T1-weighted sequences were also obtained.]
+Multiplanar multisequence non-contrast MRI of the lumbar spine.
 
 ### Clinical Details
 **Instructions:**
@@ -43,6 +43,7 @@ MRI of the lumbar spine was performed using T1-weighted, T2-weighted, and STIR s
 - Create an impression from findings, into a brief description in bullet points.
 - Include only clinically relevant findings. Minor incidental findings that are fully described in the body do not need to be restated here.
 - Translate moderate foraminal stenosis into potential irritation of the relevant exiting nerve root, and marked/severe foraminal stenosis into likely compression of that root, naming the side and root when the level permits. Do not make this inference for mild, canal or subarticular stenosis, or contradict an explicitly dictated nerve-root relationship.
+- Always include Modic type 1 oedematous endplate change in the impression with the relevant level. It can reflect active symptomatic discogenic change and must not be dismissed as minor age-related degeneration. Do not apply this requirement to Modic type 2 or 3 change unless its clinical relevance was explicitly dictated.
 - For a normal/negative study, include a closing statement where appropriate, e.g. 'No cause for the patient's symptoms identified on this examination.'
 - **Sample:**
   - Lumbar spondylosis most significant at [level] with [disc protrusion / canal stenosis] affecting [nerve root].

@@ -7,7 +7,7 @@
 MRI Ankle
 
 ### Technique:
-MRI of the [right/left] ankle was performed using PD-weighted fat-suppressed, T2-weighted, T1-weighted, and STIR sequences in coronal, sagittal, and axial planes.
+Multiplanar multisequence non-contrast MRI of the ankle.
 
 ### Clinical Details
 **Instructions:**

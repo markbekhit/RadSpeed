@@ -7,7 +7,7 @@
 Ultrasound Breast
 
 ### Technique:
-Ultrasound examination of [the right / the left / both] breast(s) was performed using a high-frequency linear transducer. Systematic evaluation of all quadrants and the retroareolar region was performed. [If targeted: Directed ultrasound was performed to correlate with the [clinical / mammographic / MRI] finding.]
+Breast ultrasound.
 
 ### Clinical Details
 **Instructions:**

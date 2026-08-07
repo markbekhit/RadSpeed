@@ -7,7 +7,7 @@
 MRI Hip
 
 ### Technique:
-MRI of the [right/left / bilateral] hip was performed using T1-weighted, T2-weighted fat-suppressed, PD-weighted fat-suppressed, and STIR sequences in coronal, axial, and sagittal planes. [If arthrogram: MR arthrography was performed following intra-articular gadolinium injection.]
+Multiplanar multisequence non-contrast MRI of the hip.
 
 ### Clinical Details
 **Instructions:**

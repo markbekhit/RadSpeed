@@ -7,7 +7,7 @@
 MRI Thoracic Spine
 
 ### Technique:
-MRI of the thoracic spine was performed using T1-weighted, T2-weighted, and STIR sequences in sagittal and axial planes. [If contrast: Post-gadolinium T1-weighted sequences were also obtained.]
+Multiplanar multisequence non-contrast MRI of the thoracic spine.
 
 ### Clinical Details
 **Instructions:**

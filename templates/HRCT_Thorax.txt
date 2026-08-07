@@ -7,7 +7,7 @@
 HRCT Thorax
 
 ### Technique:
-High-resolution CT of the thorax was performed using thin-section axial acquisition from the thoracic inlet to the diaphragm. Coronal and sagittal reformatting were then obtained. Prone images were obtained where applicable.
+Non-contrast high-resolution CT of the chest.
 
 ### Clinical Details
 **Instructions:**

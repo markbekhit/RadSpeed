@@ -7,7 +7,7 @@
 Chest X-Ray (CXR)
 
 ### Technique:
-[PA / AP / Lateral] projection chest radiograph was obtained. [Portable AP if bedside.]
+Chest radiographs.
 
 ### Clinical Details
 **Instructions:**

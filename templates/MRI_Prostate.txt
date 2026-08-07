@@ -7,7 +7,7 @@
 MRI Prostate (mpMRI)
 
 ### Technique:
-Multiparametric MRI of the prostate was performed using a 3T scanner. Sequences included high-resolution T2-weighted in axial, coronal, and sagittal planes; diffusion-weighted imaging (DWI) with ADC mapping; and dynamic contrast-enhanced (DCE) T1-weighted sequences following intravenous gadolinium administration.
+Multiparametric MRI of the prostate.
 
 ### Clinical Details
 **Instructions:**

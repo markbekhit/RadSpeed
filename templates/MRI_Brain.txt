@@ -7,7 +7,7 @@
 MRI Brain
 
 ### Technique:
-MRI of the brain was performed using a standard brain protocol including T1-weighted, T2-weighted, FLAIR, DWI/ADC, and GRE/SWI sequences in axial, coronal, and sagittal planes. [If contrast: Post-gadolinium T1-weighted sequences were also obtained.]
+Multiplanar multisequence non-contrast MRI of the brain.
 
 ### Clinical Details
 **Instructions:**

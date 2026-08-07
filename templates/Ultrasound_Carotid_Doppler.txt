@@ -7,7 +7,7 @@
 Carotid Doppler Ultrasound (Bilateral)
 
 ### Technique:
-Greyscale, colour, and spectral Doppler ultrasound of the bilateral extracranial carotid and vertebral arteries was performed. Peak systolic velocity (PSV) and end-diastolic velocity (EDV) were recorded from the CCA, proximal/mid/distal ICA, and ECA bilaterally. Plaque morphology, residual lumen, and ICA/CCA PSV ratios were assessed. Vertebral artery direction of flow was documented.
+Carotid Doppler ultrasound.
 
 ### Clinical Details
 **Instructions:**

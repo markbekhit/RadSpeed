@@ -7,7 +7,7 @@
 CT KUB (Kidneys, Ureters, Bladder)
 
 ### Technique:
-Non-contrast axial CT was performed from the upper poles of the kidneys to the base of the bladder. Coronal and sagittal reformatting were then obtained.
+Non-contrast CT of the kidneys, ureters and bladder.
 
 ### Clinical Details
 **Instructions:**

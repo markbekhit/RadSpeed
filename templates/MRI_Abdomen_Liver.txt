@@ -7,7 +7,7 @@
 MRI Abdomen — Liver Protocol
 
 ### Technique:
-MRI of the abdomen was performed using T1-weighted in-phase and out-of-phase, T2-weighted, DWI/ADC, and dynamic contrast-enhanced sequences (pre-contrast, arterial, portal venous, and delayed/hepatobiliary phases) following intravenous gadolinium-based contrast administration. [If hepatobiliary agent: A hepatobiliary-specific contrast agent (e.g. Primovist/Eovist) was used with hepatobiliary phase images acquired at 20 minutes.]
+Multiplanar multisequence contrast-enhanced MRI of the liver.
 
 ### Clinical Details
 **Instructions:**

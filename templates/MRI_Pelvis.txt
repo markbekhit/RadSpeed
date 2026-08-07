@@ -7,7 +7,7 @@
 MRI Pelvis
 
 ### Technique:
-MRI of the pelvis was performed using T2-weighted, T1-weighted, DWI/ADC, and dynamic contrast-enhanced sequences in axial, coronal, and sagittal planes. High-resolution T2-weighted sequences were obtained in orthogonal planes relative to the organ of interest.
+Multiplanar multisequence non-contrast MRI of the pelvis.
 
 ### Clinical Details
 **Instructions:**

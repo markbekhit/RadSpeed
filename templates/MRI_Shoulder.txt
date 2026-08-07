@@ -3,7 +3,7 @@
 MRI Shoulder
 
 ### Technique:
-MRI of the [right/left] shoulder was performed using PD-weighted fat-suppressed, T2-weighted, T1-weighted, and STIR sequences in coronal oblique, sagittal oblique, and axial planes. [If arthrogram: MR arthrography was performed following intra-articular gadolinium injection.]
+Multiplanar multisequence non-contrast MRI of the shoulder.
 
 ### Clinical Details
 

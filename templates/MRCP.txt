@@ -7,7 +7,7 @@
 MRCP (Magnetic Resonance Cholangiopancreatography)
 
 ### Technique:
-MRI of the upper abdomen with dedicated MRCP sequences was performed, including axial and coronal T2-weighted, axial T1-weighted in- and out-of-phase, axial fat-suppressed T2-weighted, thin-slab and thick-slab 3D MRCP, and diffusion-weighted imaging. [If contrast: Dynamic post-gadolinium T1-weighted sequences were also obtained.]
+Multiplanar multisequence non-contrast MRI of the upper abdomen, including MRCP sequences.
 
 ### Clinical Details
 **Instructions:**

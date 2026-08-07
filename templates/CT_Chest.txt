@@ -7,7 +7,7 @@
 CT Chest
 
 ### Technique:
-Axial cuts were obtained from the thoracic inlet to the upper abdomen. Coronal and sagittal reformatting were then obtained. [If contrast: Scans were acquired following intravenous contrast administration.]
+Contrast-enhanced CT of the chest in the portal venous phase.
 
 ### Clinical Details
 **Instructions:**

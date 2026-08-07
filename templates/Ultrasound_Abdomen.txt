@@ -7,7 +7,7 @@
 Ultrasound Abdomen
 
 ### Technique:
-Ultrasound examination of the abdomen was performed using a curvilinear transducer. Real-time grayscale and colour Doppler interrogation of the abdominal organs and vasculature were performed.
+Ultrasound of the abdomen.
 
 ### Clinical Details
 **Instructions:**

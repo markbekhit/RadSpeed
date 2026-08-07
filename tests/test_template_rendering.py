@@ -91,6 +91,49 @@ class BundledTemplateTests(unittest.TestCase):
             "MRI_Spine_Thoracic.txt",
         )
 
+    def test_bundled_techniques_are_concise_study_level_defaults(self):
+        technique_lines = {}
+        for name in sorted(os.listdir(fmt._BUNDLED_TEMPLATES_DIR)):
+            if not name.endswith((".txt", ".md")):
+                continue
+            content = fmt._get_template_content(name)
+            if "### Technique:\n" not in content:
+                continue
+            technique_lines[name] = content.split("### Technique:\n", 1)[1].splitlines()[0]
+
+        self.assertEqual(len(technique_lines), 39)
+        self.assertEqual(
+            technique_lines["CT_Spine_Lumbar.txt"],
+            "Non-contrast CT of the lumbar spine.",
+        )
+        self.assertEqual(
+            technique_lines["CT_Abdomen_Pelvis.txt"],
+            "Contrast-enhanced CT of the abdomen and pelvis in the portal venous phase.",
+        )
+        self.assertEqual(
+            technique_lines["MRI_Spine_Lumbar.txt"],
+            "Multiplanar multisequence non-contrast MRI of the lumbar spine.",
+        )
+
+        over_specific_terms = (
+            "T1-weighted", "T2-weighted", "STIR", "DWI/ADC", "gadolinium",
+            "reformat", "reconstruction", "transducer", "MBq", "3T scanner",
+            "blood glucose", "axial cuts", "bolus tracking",
+        )
+        for name, technique in technique_lines.items():
+            with self.subTest(template=name):
+                self.assertLessEqual(len(technique), 100)
+                self.assertNotIn("[", technique)
+                for term in over_specific_terms:
+                    self.assertNotIn(term.lower(), technique.lower())
+
+    def test_lumbar_mri_requires_modic_type_one_in_the_impression(self):
+        content = fmt._get_template_content("MRI_Spine_Lumbar.txt")
+        impression_instructions = content.split("### Impression:", 1)[1]
+        self.assertIn("Always include Modic type 1", impression_instructions)
+        self.assertIn("clinically relevant", impression_instructions)
+        self.assertIn("relevant level", impression_instructions)
+
 
 class StructuredReportRenderingTests(unittest.TestCase):
     def test_top_level_report_headers_are_uppercase_with_colons(self):
@@ -130,6 +173,25 @@ class StructuredReportRenderingTests(unittest.TestCase):
         self.assertIn("exiting right C6 root", prompt)
         self.assertIn("exiting left L4 root", prompt)
         self.assertIn("not canal or subarticular stenosis", prompt)
+
+    def test_report_prompt_uses_simple_default_technique_without_invention(self):
+        prompt = fmt._report_system_message(
+            "### Technique:\nNon-contrast CT of the lumbar spine."
+        )
+        self.assertIn("use the template's short default Technique sentence", prompt)
+        self.assertIn("Do not expand it", prompt)
+        self.assertIn("Never invent scanner strength", prompt)
+        self.assertIn("Do not infer technique", prompt)
+
+    def test_full_report_and_impression_prompts_keep_modic_type_one_clinically_relevant(self):
+        report_prompt = fmt._report_system_message("### Impression:")
+        standalone_prompt = impression_generator._IMPRESSION_SYSTEM_PROMPT
+        for prompt in (report_prompt, standalone_prompt):
+            with self.subTest(prompt=prompt[:30]):
+                self.assertIn("Modic type 1", prompt)
+                self.assertIn("oedematous", prompt)
+                self.assertIn("discogenic pain", prompt)
+                self.assertIn("Modic type 2", prompt)
 
     def test_standalone_impressions_use_the_same_foraminal_rule(self):
         prompt = impression_generator._IMPRESSION_SYSTEM_PROMPT

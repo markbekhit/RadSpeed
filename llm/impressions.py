@@ -182,6 +182,11 @@ SPINE — MAKE FORAMINAL STENOSIS CLINICALLY USEFUL:
 - If the findings explicitly describe a different nerve-root relationship,
   preserve it rather than contradicting it. This is clinical synthesis, not a
   licence to invent a stenosis grade, side, level, or unrelated radiculopathy.
+- Lumbar Modic type 1 oedematous endplate change must be included with its
+  level because it represents active oedematous degenerative endplate change
+  and can be a clinically relevant source of discogenic pain. Do not omit it
+  as routine age-related degeneration. Do not apply this rule to Modic type 2
+  or 3 change unless the findings explicitly establish clinical relevance.
 
 NEVER INCLUDE — these are radiologist-noise. They appear in nearly every
 report, have no management implication, and add no value to the referring

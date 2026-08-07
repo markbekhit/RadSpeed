@@ -7,7 +7,7 @@
 CT Abdomen and Pelvis
 
 ### Technique:
-Axial cuts were obtained from the dome of the diaphragm to the pubic symphysis. Coronal and sagittal reformatting were then obtained. [If contrast: Scans were acquired in the [pre-contrast / arterial / portal venous / delayed] phase following intravenous contrast administration.]
+Contrast-enhanced CT of the abdomen and pelvis in the portal venous phase.
 
 ### Clinical Details
 **Instructions:**

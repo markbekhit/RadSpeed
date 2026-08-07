@@ -3,7 +3,7 @@
 MRI Knee
 
 ### Technique:
-MRI of the [right/left] knee was performed using PD-weighted fat-suppressed, T2-weighted, T1-weighted, and STIR sequences in coronal, sagittal, and axial planes.
+Multiplanar multisequence non-contrast MRI of the knee.
 
 ### Clinical Details
 

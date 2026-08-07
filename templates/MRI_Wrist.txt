@@ -7,7 +7,7 @@
 MRI Wrist
 
 ### Technique:
-MRI of the [right/left] wrist was performed using PD-weighted fat-suppressed, T2-weighted, T1-weighted, and STIR sequences in coronal, sagittal, and axial planes. [If MR arthrogram: Intra-articular gadolinium was administered; fat-suppressed T1-weighted sequences were obtained in three planes.]
+Multiplanar multisequence non-contrast MRI of the wrist.
 
 ### Clinical Details
 **Instructions:**

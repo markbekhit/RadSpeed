@@ -7,7 +7,7 @@
 CT Cervical Spine
 
 ### Technique:
-Axial cuts were obtained from the skull base to the cervicothoracic junction. Sagittal and coronal reformatting were then obtained. Bone and soft tissue window reconstructions were reviewed.
+Non-contrast CT of the cervical spine.
 
 ### Clinical Details
 **Instructions:**

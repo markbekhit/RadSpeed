@@ -7,7 +7,7 @@
 CT Pulmonary Angiogram (CTPA)
 
 ### Technique:
-Axial CT images of the chest were acquired during peak pulmonary arterial enhancement following intravenous contrast administration using a pulmonary embolism protocol. Coronal and sagittal reformats and thin-slice MIPs were reviewed.
+CT pulmonary angiogram.
 
 ### Clinical Details
 **Instructions:**

@@ -7,7 +7,7 @@
 Doppler Ultrasound — Lower Limb Veins (DVT Assessment)
 
 ### Technique:
-Greyscale, colour, and spectral Doppler ultrasound of the [right/left/bilateral] lower limb deep venous system was performed. Compressibility, colour filling, spontaneous and augmented flow, and phasicity with respiration were assessed at each segment.
+Lower limb venous Doppler ultrasound.
 
 ### Clinical Details
 **Instructions:**

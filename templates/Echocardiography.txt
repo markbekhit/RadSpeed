@@ -7,7 +7,7 @@
 Echocardiography (Transthoracic / Transoesophageal)
 
 ### Technique:
-[Transthoracic / Transoesophageal] echocardiography was performed using standard parasternal, apical, subcostal, and suprasternal views. 2D, M-mode, colour Doppler, pulsed-wave Doppler, and continuous-wave Doppler interrogation were performed.
+Transthoracic echocardiography.
 
 ### Clinical Details
 **Instructions:**

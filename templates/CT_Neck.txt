@@ -7,7 +7,7 @@
 CT Neck
 
 ### Technique:
-Axial CT images of the neck were obtained from the skull base to the thoracic inlet. Coronal and sagittal reformats were reviewed. [If contrast: Scans were acquired following intravenous contrast administration.]
+Contrast-enhanced CT of the neck.
 
 ### Clinical Details
 **Instructions:**

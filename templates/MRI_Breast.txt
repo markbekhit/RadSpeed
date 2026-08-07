@@ -7,7 +7,7 @@
 MRI Breast
 
 ### Technique:
-MRI of both breasts was performed in the prone position using bilateral dedicated breast coils. Sequences included T1-weighted, T2-weighted fat-suppressed, and dynamic contrast-enhanced T1-weighted sequences (pre-contrast and multiple post-contrast phases) following intravenous gadolinium administration. Subtraction and MIP reconstructions were reviewed.
+Multiplanar multisequence contrast-enhanced MRI of both breasts.
 
 ### Clinical Details
 **Instructions:**

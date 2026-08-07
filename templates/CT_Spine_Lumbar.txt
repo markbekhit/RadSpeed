@@ -7,7 +7,7 @@
 CT Lumbar Spine
 
 ### Technique:
-Axial cuts were obtained from the T12/L1 junction to the sacrum. Sagittal and coronal reformatting were then obtained. Bone and soft tissue window reconstructions were reviewed.
+Non-contrast CT of the lumbar spine.
 
 ### Clinical Details
 **Instructions:**

@@ -204,7 +204,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **150 Python tests + 22 Chromium E2E workflows** run before deployment and on
+- **154 Python tests + 22 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,

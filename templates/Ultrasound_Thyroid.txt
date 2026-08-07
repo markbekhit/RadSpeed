@@ -7,7 +7,7 @@
 Ultrasound Thyroid
 
 ### Technique:
-Ultrasound examination of the thyroid gland was performed using a high-frequency linear transducer. Real-time grayscale imaging and colour Doppler interrogation were performed. The parathyroid regions and cervical lymph node stations were also surveyed.
+Thyroid ultrasound.
 
 ### Clinical Details
 **Instructions:**

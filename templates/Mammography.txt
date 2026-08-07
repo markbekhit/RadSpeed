@@ -7,7 +7,7 @@
 Mammography [Screening / Diagnostic] — Bilateral
 
 ### Technique:
-Bilateral digital mammography was performed in standard CC (craniocaudal) and MLO (mediolateral oblique) projections. [If tomosynthesis used: Digital breast tomosynthesis (3D) was also acquired.] [If diagnostic: Additional spot compression / magnification / true lateral views of the [right/left] [quadrant] were obtained.] [If US correlation: Targeted ultrasound of the [right/left] breast was performed — see separate report.]
+Mammography.
 
 ### Clinical Details
 **Instructions:**

@@ -7,7 +7,7 @@
 CT Pulmonary Angiography / CT Thoracic Aorta
 
 ### Technique:
-Axial cuts were obtained from the thoracic inlet to the upper abdomen following bolus intravenous contrast administration. Scans were timed to the pulmonary arterial / aortic phase using bolus tracking. Coronal and sagittal reformatting, including maximum intensity projection (MIP) reconstructions, were obtained.
+Contrast-enhanced CT angiography of the thoracic aorta.
 
 ### Clinical Details
 **Instructions:**
