@@ -451,13 +451,55 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     assert clipboard["text/plain"] == (
         "ULTRASOUND KIDNEYS\n\n"
         "FINDINGS:\nLeft kidney measures 10.2 cm.\n\n"
-        "CONCLUSION:\n\n"
+        "CONCLUSION:\n"
         "1. No hydronephrosis.\n2. Simple renal cyst."
     )
     assert "<p" not in clipboard["text/html"].lower()
     assert "<li" not in clipboard["text/html"].lower()
     assert "<br>" in clipboard["text/html"].lower()
     assert errors == []
+
+
+def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          setReport(
+            "**EXAM:**\\n\\nMRI lumbar spine\\n\\n" +
+            "**TECHNIQUE:**\\n\\nRoutine non-contrast protocol.\\n\\n" +
+            "**FINDINGS:**\\n\\nNo acute abnormality.\\n\\n" +
+            "**IMPRESSION:**\\n\\n- No acute abnormality."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "rich";
+          window.__sectionClipboard = {};
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+              write: async (items) => {
+                for (const type of items[0].types) {
+                  window.__sectionClipboard[type] =
+                    await (await items[0].getType(type)).text();
+                }
+              },
+            },
+          });
+        }"""
+    )
+
+    page.locator("#btn-copy").click()
+    page.wait_for_function(
+        "() => Boolean(window.__sectionClipboard['text/plain'])"
+    )
+    clipboard = page.evaluate("window.__sectionClipboard")
+    assert clipboard["text/plain"] == (
+        "EXAM:\nMRI lumbar spine\n\n"
+        "TECHNIQUE:\nRoutine non-contrast protocol.\n\n"
+        "FINDINGS:\nNo acute abnormality.\n\n"
+        "IMPRESSION:\n- No acute abnormality."
+    )
+    assert "<strong>EXAM:</strong><br>MRI lumbar spine<br><br>" in clipboard["text/html"]
+    assert "<strong>TECHNIQUE:</strong><br>Routine non-contrast protocol.<br><br>" in clipboard["text/html"]
 
 
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):

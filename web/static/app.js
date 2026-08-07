@@ -2009,7 +2009,17 @@ function _clipboardPlainText(html, markdown) {
     if (text.trim()) chunks.push(text);
   });
 
-  return (chunks.length ? chunks.join("\n\n") : _cleanClipboardChunk(markdown)).trim();
+  if (!chunks.length) return _cleanClipboardChunk(markdown).trim();
+
+  // Keep a section heading attached to the first line of its section. Markdown
+  // generators sometimes place a blank line after a bold-only heading, making
+  // it a separate <p>; joining every top-level block with two newlines then
+  // creates an unwanted empty line after headings such as EXAM: and TECHNIQUE:.
+  return chunks.reduce((plain, chunk) => {
+    if (!plain) return chunk;
+    const separator = plain.trimEnd().endsWith(":") ? "\n" : "\n\n";
+    return `${plain}${separator}${chunk}`;
+  }, "").trim();
 }
 
 function _escapeClipboardHtml(text) {
