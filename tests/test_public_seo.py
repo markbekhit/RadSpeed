@@ -44,11 +44,12 @@ class PublicSEOTests(unittest.TestCase):
         response = self.client.get("/radiology-reporting-software")
         self.assertEqual(response.status_code, 200)
         self.assertIn('<link rel="canonical" href="https://radspeed.com.au/radiology-reporting-software"', response.text)
-        self.assertIn("Radiology reporting software for the reporting room", response.text)
-        self.assertIn("What to look for in radiology reporting software", response.text)
+        self.assertIn("Finish reports faster. Keep your reporting style", response.text)
+        self.assertIn("Your report should not read like the software wrote it", response.text)
+        self.assertIn("RadSpeed drafts. You decide", response.text)
+        self.assertIn('class="workstation"', response.text)
         self.assertIn('href="/app"', response.text)
         self.assertIn('"@type": "SoftwareApplication"', response.text)
-        self.assertIn("It does not make the clinical decision", response.text)
 
 
 if __name__ == "__main__":
