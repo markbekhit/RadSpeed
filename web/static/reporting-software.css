@@ -30,6 +30,13 @@
 
 .software-hero h1 { max-width: 650px; }
 .software-hero .hero-lede { max-width: 620px; }
+.software-hero .workstation-body { min-height: 456px; }
+.software-hero .report-content { padding: 17px 20px; font-size: 8.5px; line-height: 1.48; }
+.software-hero .report-content p { margin-bottom: 7px; }
+.software-hero .report-content .report-section { margin-top: 12px; }
+.software-hero .report-content .level-line b { color: #dce7f1; }
+.software-hero .highlight-line { padding-left: 17px; }
+.software-hero .case-rail strong { line-height: 1.35; }
 
 .software-workflow { padding-bottom: 84px; }
 .transformation-stage {

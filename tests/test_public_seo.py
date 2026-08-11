@@ -48,6 +48,9 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn("Your report should not read like the software wrote it", response.text)
         self.assertIn("RadSpeed drafts. You decide", response.text)
         self.assertIn('class="workstation"', response.text)
+        self.assertIn("MR Lumbar Spine", response.text)
+        self.assertIn("4 mm right paracentral protrusion", response.text)
+        self.assertIn("De-identified synthetic case", response.text)
         self.assertIn('href="/app"', response.text)
         self.assertIn('"@type": "SoftwareApplication"', response.text)
 
