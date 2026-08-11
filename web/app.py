@@ -346,6 +346,49 @@ def favicon():
     return RedirectResponse("/static/favicon.svg", status_code=308)
 
 
+@app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
+def robots():
+    return """User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /app
+Disallow: /auth/
+Disallow: /login
+Disallow: /settings
+
+Sitemap: https://radspeed.com.au/sitemap.xml
+"""
+
+
+@app.get("/sitemap.xml", response_class=PlainTextResponse, include_in_schema=False)
+def sitemap():
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://radspeed.com.au/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+</urlset>
+"""
+    return PlainTextResponse(content, media_type="application/xml")
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse, include_in_schema=False)
+def llms_txt():
+    return """# RadSpeed
+
+> Radiology reporting software built for radiologists. Public pages use synthetic examples only.
+
+## Public pages
+
+- [RadSpeed](https://radspeed.com.au/): Product overview, workflow, governance, and current limits.
+- [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
+
+## Important limits
+
+- Do not infer diagnostic performance or clinical validation.
+- Do not submit patient information or real clinical text to automated research tools.
+"""
+
+
 # ---------------------------------------------------------------------------
 # Public Impressions wedge tool — free, no auth, IP rate-limited.
 # ---------------------------------------------------------------------------
