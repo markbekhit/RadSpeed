@@ -30,13 +30,16 @@
 
 .software-hero h1 { max-width: 650px; }
 .software-hero .hero-lede { max-width: 620px; }
-.software-hero .workstation-body { min-height: 456px; }
-.software-hero .report-content { padding: 17px 20px; font-size: 8.5px; line-height: 1.48; }
-.software-hero .report-content p { margin-bottom: 7px; }
-.software-hero .report-content .report-section { margin-top: 12px; }
+.software-hero .workstation-body { min-height: 560px; }
+.software-hero .report-content { padding: 13px 18px; font-size: 7.6px; line-height: 1.38; }
+.software-hero .report-content p { margin-bottom: 5px; }
+.software-hero .report-content .report-section { margin-top: 8px; }
 .software-hero .report-content .level-line b { color: #dce7f1; }
 .software-hero .highlight-line { padding-left: 17px; }
 .software-hero .case-rail strong { line-height: 1.35; }
+.software-hero .case-rail .rail-format { margin-bottom: 4px; font-size: 9px; }
+.format-status { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 18px; border-bottom: 1px solid var(--line); background: rgba(0, 229, 160, .025); }
+.format-status span { padding: 3px 6px; border: 1px solid rgba(0, 229, 160, .2); border-radius: 999px; color: #91dfc5; font: 6.5px "SFMono-Regular", Consolas, monospace; letter-spacing: .05em; text-transform: uppercase; }
 
 .software-workflow { padding-bottom: 84px; }
 .transformation-stage {
@@ -66,6 +69,8 @@
 .structured-output p { color: #aebdce; font-size: 11px; line-height: 1.8; }
 .structured-output .output-heading { margin: 24px 0 8px; color: var(--dim); font-size: 8px; font-weight: 800; letter-spacing: .14em; }
 .structured-output .output-accent { padding-left: 14px; border-left: 2px solid var(--mint); color: #e0eaf3; }
+.output-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: -12px 0 24px; }
+.output-tags span { padding: 4px 7px; border: 1px solid rgba(0, 194, 255, .22); border-radius: 999px; color: var(--cyan-soft); font-size: 7px; letter-spacing: .08em; text-transform: uppercase; }
 
 .software-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; border-right: 1px solid var(--line); list-style: none; }
 .software-steps li { padding: 28px; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); }

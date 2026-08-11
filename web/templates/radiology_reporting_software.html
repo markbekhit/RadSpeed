@@ -70,20 +70,31 @@
               <p class="ui-label">Current study</p><strong>MR Lumbar Spine</strong><span>De-identified synthetic case</span>
               <div class="rail-rule"></div>
               <p class="ui-label">Template</p><span class="template-chip">MRI Lumbar Spine</span>
-              <p class="ui-label rail-spaced">Prior</p><span>None selected</span>
+              <p class="ui-label rail-spaced">Format</p><strong class="rail-format">Full structured report</strong><span>Numbered impression</span>
             </div>
             <div class="report-pane">
               <div class="report-toolbar">
                 <div class="record-state"><span class="record-dot"></span><span>2:14</span><span class="waveform" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
                 <span class="preliminary">Preliminary</span>
               </div>
+              <div class="format-status"><span>Template applied</span><span>Sections ordered</span><span>Australian English</span></div>
               <div class="report-content">
-                <p class="ui-label">Findings</p>
+                <p class="ui-label">Exam</p>
+                <p>MRI lumbar spine.</p>
+                <p class="ui-label report-section">Technique</p>
+                <p>Multiplanar multisequence non-contrast MRI of the lumbar spine.</p>
+                <p class="ui-label report-section">Clinical details</p>
+                <p>Right-sided low back pain with L5 radicular symptoms.</p>
+                <p class="ui-label report-section">Comparison</p>
+                <p>No prior imaging available for comparison.</p>
+                <p class="ui-label report-section">Findings</p>
                 <p>Lumbar lordosis is maintained. Vertebral body heights are preserved. Mild Modic type 1 endplate change at L4/5. The conus terminates at L1 and has normal signal.</p>
-                <p class="level-line"><b>L1/2–L2/3:</b> No significant disc bulge, spinal canal or foraminal stenosis.</p>
-                <p class="level-line"><b>L3/4:</b> Broad-based disc bulge with mild bilateral foraminal narrowing.</p>
+                <p class="level-line"><b>L1/2:</b> No significant disc bulge, spinal canal or foraminal stenosis.</p>
+                <p class="level-line"><b>L2/3:</b> Mild disc desiccation with a shallow central protrusion. No spinal canal or foraminal stenosis.</p>
+                <p class="level-line"><b>L3/4:</b> Broad-based disc bulge with mild bilateral foraminal narrowing. No spinal canal stenosis.</p>
                 <p class="level-line"><b>L4/5:</b> Disc desiccation with a 4 mm right paracentral protrusion narrowing the right subarticular recess and contacting the descending right L5 nerve root. Moderate right and mild left foraminal stenosis.</p>
-                <p class="level-line"><b>L5/S1:</b> Mild facet arthropathy. No spinal canal or foraminal stenosis.</p>
+                <p class="level-line"><b>L5/S1:</b> Mild disc desiccation and bilateral facet arthropathy. No spinal canal or foraminal stenosis.</p>
+                <p>Paravertebral musculature is preserved. The partially visualised sacroiliac joints are unremarkable.</p>
                 <p class="ui-label report-section">Impression</p>
                 <p class="highlight-line"><span>1</span> L4/5 right paracentral disc protrusion contacts the descending right L5 nerve root.</p>
                 <p class="highlight-line"><span>2</span> Moderate right L4/5 foraminal stenosis may irritate the exiting right L4 nerve root.</p>
@@ -113,13 +124,23 @@
         <div class="spoken-input">
           <div class="stage-label"><span class="record-dot"></span> Natural dictation · de-identified</div>
           <div class="stage-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-          <p>“At L4/5 there is disc desiccation with a 4 mm right paracentral protrusion narrowing the right subarticular recess and contacting the descending right L5 nerve root. Moderate right and mild left foraminal stenosis. Mild Modic type 1 endplate change.”</p>
+          <p>“At L4/5 there is disc desiccation with a 4 mm right paracentral protrusion contacting the descending right L5 nerve root. Moderate right and mild left foraminal stenosis. L2/3 has a shallow central protrusion without stenosis. Lumbar lordosis and vertebral body heights are maintained. The conus is normal. At L3/4 there is a broad disc bulge with mild foraminal narrowing. L5/S1 has mild disc desiccation and facet arthropathy without stenosis. There is mild Modic type 1 change at L4/5.”</p>
         </div>
         <div class="stage-arrow" aria-hidden="true"><span>structure</span>→</div>
         <div class="structured-output">
           <div class="stage-label">Your MRI lumbar spine template</div>
+          <div class="output-tags"><span>Headings</span><span>Anatomical order</span><span>Numbered impression</span></div>
+          <p class="output-heading">EXAM</p>
+          <p>MRI lumbar spine.</p>
+          <p class="output-heading">TECHNIQUE</p>
+          <p>Multiplanar multisequence non-contrast MRI.</p>
+          <p class="output-heading">CLINICAL DETAILS</p>
+          <p>Right-sided low back pain with L5 radicular symptoms.</p>
+          <p class="output-heading">COMPARISON</p>
+          <p>No prior imaging available.</p>
           <p class="output-heading">FINDINGS</p>
-          <p><b>L4/5:</b> Disc desiccation with a 4 mm right paracentral protrusion narrowing the right subarticular recess and contacting the descending right L5 nerve root. Moderate right and mild left foraminal stenosis. Mild Modic type 1 endplate change.</p>
+          <p>Lumbar lordosis and vertebral body heights are maintained. The conus is normal.</p>
+          <p><b>L1/2:</b> No stenosis.<br /><b>L2/3:</b> Shallow central protrusion without stenosis.<br /><b>L3/4:</b> Broad disc bulge with mild bilateral foraminal narrowing.<br /><b>L4/5:</b> 4 mm right paracentral protrusion contacts the descending right L5 nerve root. Moderate right foraminal stenosis.<br /><b>L5/S1:</b> Mild disc and facet degeneration without stenosis.</p>
           <p class="output-heading">IMPRESSION</p>
           <p class="output-accent">1. L4/5 right paracentral disc protrusion contacts the descending right L5 nerve root.<br />2. Moderate right L4/5 foraminal stenosis may irritate the exiting right L4 nerve root.<br />3. Mild Modic type 1 endplate change at L4/5.</p>
         </div>

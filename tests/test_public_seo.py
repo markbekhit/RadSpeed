@@ -51,6 +51,12 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn("MR Lumbar Spine", response.text)
         self.assertIn("4 mm right paracentral protrusion", response.text)
         self.assertIn("De-identified synthetic case", response.text)
+        self.assertIn("Technique", response.text)
+        self.assertIn("Clinical details", response.text)
+        self.assertIn("Comparison", response.text)
+        self.assertIn("Template applied", response.text)
+        self.assertIn("Sections ordered", response.text)
+        self.assertIn("Anatomical order", response.text)
         self.assertIn('href="/app"', response.text)
         self.assertIn('"@type": "SoftwareApplication"', response.text)
 
