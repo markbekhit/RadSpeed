@@ -24,6 +24,7 @@ class PublicSEOTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.headers["content-type"].startswith("application/xml"))
         self.assertIn("<loc>https://radspeed.com.au/</loc>", response.text)
+        self.assertIn("<loc>https://radspeed.com.au/radiology-reporting-software</loc>", response.text)
         self.assertIn("<loc>https://radspeed.com.au/impressions</loc>", response.text)
         self.assertNotIn("/app</loc>", response.text)
 
@@ -38,6 +39,16 @@ class PublicSEOTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<link rel="canonical" href="https://radspeed.com.au/impressions"', response.text)
         self.assertIn('<meta property="og:url" content="https://radspeed.com.au/impressions"', response.text)
+
+    def test_reporting_software_page_has_search_and_conversion_foundations(self):
+        response = self.client.get("/radiology-reporting-software")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<link rel="canonical" href="https://radspeed.com.au/radiology-reporting-software"', response.text)
+        self.assertIn("Radiology reporting software for the reporting room", response.text)
+        self.assertIn("What to look for in radiology reporting software", response.text)
+        self.assertIn('href="/app"', response.text)
+        self.assertIn('"@type": "SoftwareApplication"', response.text)
+        self.assertIn("It does not make the clinical decision", response.text)
 
 
 if __name__ == "__main__":

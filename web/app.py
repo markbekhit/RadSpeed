@@ -365,6 +365,7 @@ def sitemap():
     content = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://radspeed.com.au/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://radspeed.com.au/radiology-reporting-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
 </urlset>
 """
@@ -380,6 +381,7 @@ def llms_txt():
 ## Public pages
 
 - [RadSpeed](https://radspeed.com.au/): Product overview, workflow, governance, and current limits.
+- [Radiology reporting software](https://radspeed.com.au/radiology-reporting-software): Practical selection guide and RadSpeed workflow for AU/NZ reporting rooms.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
 
 ## Important limits
@@ -740,6 +742,15 @@ def landing_page(request: Request):
             "microsoft_enabled": microsoft_enabled(),
             "static_version": _STATIC_VERSION,
         },
+    )
+
+
+@app.get("/radiology-reporting-software", include_in_schema=False)
+def radiology_reporting_software_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "radiology_reporting_software.html",
+        {"request": request, "static_version": _STATIC_VERSION},
     )
 
 
