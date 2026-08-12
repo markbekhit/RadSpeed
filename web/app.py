@@ -114,6 +114,7 @@ from web.followups import (
     update_followup,
 )
 from web.fracture_workbench import resolve_workbench_image
+from web import report_templates as report_library
 from web.qa import run_qa_checks
 from web.stt_providers.factory import (
     get_streaming_provider,
@@ -367,8 +368,15 @@ def sitemap():
   <url><loc>https://radspeed.com.au/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://radspeed.com.au/radiology-reporting-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-</urlset>
+  <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+{template_urls}</urlset>
 """
+    template_urls = "".join(
+        f'  <url><loc>https://radspeed.com.au/report-templates/{slug}</loc>'
+        f"<changefreq>monthly</changefreq><priority>0.6</priority></url>\n"
+        for slug in report_library.all_slugs()
+    )
+    content = content.format(template_urls=template_urls)
     return PlainTextResponse(content, media_type="application/xml")
 
 
@@ -383,6 +391,7 @@ def llms_txt():
 - [RadSpeed](https://radspeed.com.au/): Product overview, workflow, governance, and current limits.
 - [Radiology reporting software](https://radspeed.com.au/radiology-reporting-software): Practical selection guide and RadSpeed workflow for AU/NZ reporting rooms.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
+- [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
 ## Important limits
 
@@ -751,6 +760,44 @@ def radiology_reporting_software_page(request: Request):
         request,
         "radiology_reporting_software.html",
         {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/report-templates", include_in_schema=False)
+def report_templates_index(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "report_templates_index.html",
+        {
+            "request": request,
+            "static_version": _STATIC_VERSION,
+            "groups": report_library.library_groups(),
+            "template_count": report_library.library_count(),
+        },
+    )
+
+
+@app.get("/report-templates/{slug}", include_in_schema=False)
+def report_template_detail(slug: str, request: Request):
+    entry = report_library.get_entry(slug)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Report template not found")
+    related = [
+        r
+        for g in report_library.library_groups()
+        if g["id"] == entry["group_id"]
+        for r in g["entries"]
+        if r["slug"] != slug
+    ][:6]
+    return _jinja.TemplateResponse(
+        request,
+        "report_template_detail.html",
+        {
+            "request": request,
+            "static_version": _STATIC_VERSION,
+            "t": entry,
+            "related": related,
+        },
     )
 
 

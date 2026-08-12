@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ t.exam }} report template: the structured report sections, technique line, typical indications and a sample impression. Draft a {{ t.exam }} report from your dictation in seconds with RadSpeed." />
+  <meta name="theme-color" content="#050a12" />
+  <link rel="canonical" href="https://radspeed.com.au/report-templates/{{ t.slug }}" />
+  <meta property="og:title" content="{{ t.exam }} report template · RadSpeed" />
+  <meta property="og:description" content="Structured {{ t.exam }} report sections, technique and a sample impression." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://radspeed.com.au/report-templates/{{ t.slug }}" />
+  <meta name="twitter:card" content="summary" />
+  <title>{{ t.exam }} Report Template · Structured Reporting · RadSpeed</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/landing.css?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/report-templates.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Radiology report templates", "item": "https://radspeed.com.au/report-templates" },
+      { "@type": "ListItem", "position": 2, "name": "{{ t.exam }} report template", "item": "https://radspeed.com.au/report-templates/{{ t.slug }}" }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="/" aria-label="RadSpeed home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+        <span>RadSpeed</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/radiology-reporting-software">Reporting software</a>
+        <a href="/report-templates">Templates</a>
+        <a href="/impressions">Impressions</a>
+      </nav>
+      <div class="nav-actions"><a class="text-link" href="/impressions">Try Impressions</a><a class="button button-small button-outline" href="/app">Sign in</a></div>
+    </div>
+  </header>
+
+  <main id="main-content" class="detail-main">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/report-templates">Report templates</a>
+      <span aria-hidden="true">/</span>
+      <span>{{ t.group_label }}</span>
+    </nav>
+
+    <header class="detail-head">
+      <p class="eyebrow"><span></span>{{ t.group_label }} report template</p>
+      <h1>{{ t.exam }} report template</h1>
+      <p class="detail-technique"><strong>Technique:</strong> {{ t.technique }}</p>
+      <p class="detail-indications"><strong>Typical indications:</strong> {{ t.indications }}</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="/impressions">Draft this report free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
+        <a class="button button-secondary" href="/app">Use in RadSpeed</a>
+      </div>
+    </header>
+
+    <div class="detail-grid">
+      <section class="detail-panel">
+        <h2>Report sections</h2>
+        <p class="detail-panel-note">The {{ t.exam }} report structure, section by section.</p>
+        <ol class="section-checklist">
+          {% for s in t.sections %}<li>{{ s }}</li>{% endfor %}
+        </ol>
+      </section>
+
+      <section class="detail-panel detail-panel-impression">
+        <h2>Sample impression</h2>
+        <p class="detail-panel-note">Illustrative and synthetic — not a real case.</p>
+        <ul class="impression-sample">
+          {% for line in t.impression %}<li>{{ line }}</li>{% endfor %}
+        </ul>
+      </section>
+    </div>
+
+    <section class="detail-explainer">
+      <h2>From dictation to finished report</h2>
+      <p>Dictate your findings naturally. RadSpeed maps them onto the {{ t.exam }} structure above, keeps your reporting style, numbers the impression and returns clean text to your existing workflow. You do not fill in a form — you speak, and the structure is applied for you.</p>
+      <ol class="explainer-steps">
+        <li><strong>Dictate</strong> the findings in any order.</li>
+        <li><strong>RadSpeed structures</strong> them into the sections above and drafts the impression.</li>
+        <li><strong>Review and sign off</strong> — the final wording stays yours.</li>
+      </ol>
+    </section>
+
+    {% if related %}
+    <section class="detail-related">
+      <h2>More {{ t.group_label }} templates</h2>
+      <div class="related-chips">
+        {% for r in related %}<a href="/report-templates/{{ r.slug }}">{{ r.exam }}</a>{% endfor %}
+      </div>
+      <p class="related-all"><a href="/report-templates">See all report templates →</a></p>
+    </section>
+    {% endif %}
+
+    <p class="library-disclaimer">This template is a reference scaffold with synthetic sample text. It is not clinical guidance, and the sample impression is illustrative only. RadSpeed is assistive software, not a diagnostic device. Never enter patient-identifiable information into public tools.</p>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="/">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+      <span>RadSpeed</span>
+    </a>
+    <p>Practical radiology reporting software for AU/NZ workflows.</p>
+    <nav aria-label="Footer navigation">
+      <a href="/radiology-reporting-software">Reporting software</a>
+      <a href="/report-templates">Templates</a>
+      <a href="/impressions">Impressions</a>
+      <a href="/app">Sign in</a>
+    </nav>
+  </footer>
+</body>
+</html>

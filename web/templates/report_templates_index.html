@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A free library of {{ template_count }} structured radiology report templates for CT, MRI, ultrasound, X-ray and nuclear medicine. See the report sections, technique and a sample impression for each study, then draft one in seconds with RadSpeed." />
+  <meta name="theme-color" content="#050a12" />
+  <link rel="canonical" href="https://radspeed.com.au/report-templates" />
+  <meta property="og:title" content="Radiology report templates · Free structured reporting library · RadSpeed" />
+  <meta property="og:description" content="Browse {{ template_count }} structured radiology report templates across CT, MRI, ultrasound, X-ray and nuclear medicine." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/report-templates" />
+  <meta name="twitter:card" content="summary" />
+  <title>Radiology Report Templates · Free Structured Reporting Library · RadSpeed</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/landing.css?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/report-templates.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Radiology report templates",
+    "url": "https://radspeed.com.au/report-templates",
+    "description": "A free library of structured radiology report templates for CT, MRI, ultrasound, X-ray and nuclear medicine.",
+    "isPartOf": { "@type": "WebSite", "name": "RadSpeed", "url": "https://radspeed.com.au/" }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="/" aria-label="RadSpeed home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+        <span>RadSpeed</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/radiology-reporting-software">Reporting software</a>
+        <a href="/report-templates">Templates</a>
+        <a href="/impressions">Impressions</a>
+      </nav>
+      <div class="nav-actions"><a class="text-link" href="/impressions">Try Impressions</a><a class="button button-small button-outline" href="/app">Sign in</a></div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="library-hero">
+      <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+      <div class="library-hero-inner">
+        <p class="eyebrow"><span></span>Free reference library</p>
+        <h1>Radiology report templates</h1>
+        <p class="hero-lede">A structured reporting scaffold for {{ template_count }} common studies across CT, MRI, ultrasound, X-ray and nuclear medicine. Each template lists the report sections, the technique line and a sample impression. Open any study, then draft the full report from your dictation in seconds.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/impressions">Draft an impression free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
+          <a class="button button-secondary" href="/radiology-reporting-software">How RadSpeed works</a>
+        </div>
+        <p class="library-jump">
+          Jump to:
+          {% for g in groups %}<a href="#{{ g.id }}">{{ g.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+        </p>
+      </div>
+    </section>
+
+    {% for g in groups %}
+    <section class="library-group" id="{{ g.id }}">
+      <div class="library-group-head">
+        <h2>{{ g.label }} report templates</h2>
+        <p>{{ g.blurb }}</p>
+      </div>
+      <div class="template-grid">
+        {% for t in g.entries %}
+        <a class="template-card" href="/report-templates/{{ t.slug }}">
+          <span class="template-card-modality">{{ t.group_label }}</span>
+          <h3>{{ t.exam }}</h3>
+          <p class="template-card-technique">{{ t.technique }}</p>
+          <span class="template-card-meta">{{ t.sections | length }} report sections<span aria-hidden="true">→</span></span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+
+    <section class="library-cta">
+      <div class="library-cta-inner">
+        <h2>Stop retyping the same scaffold</h2>
+        <p>RadSpeed turns your dictation into a finished, structured report in your own style — with these templates built in. Start with the free Impressions tool, no sign-in needed.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/impressions">Try Impressions <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
+          <a class="button button-secondary" href="/app">Sign in to RadSpeed</a>
+        </div>
+      </div>
+    </section>
+
+    <p class="library-disclaimer">These templates are reference scaffolds with synthetic sample text. They are not clinical guidance, and the sample impressions are illustrative only. RadSpeed is assistive software, not a diagnostic device. Never enter patient-identifiable information into public tools.</p>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="/">
+      <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+      <span>RadSpeed</span>
+    </a>
+    <p>Practical radiology reporting software for AU/NZ workflows.</p>
+    <nav aria-label="Footer navigation">
+      <a href="/radiology-reporting-software">Reporting software</a>
+      <a href="/report-templates">Templates</a>
+      <a href="/impressions">Impressions</a>
+      <a href="/app">Sign in</a>
+    </nav>
+  </footer>
+</body>
+</html>
