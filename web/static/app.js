@@ -1945,6 +1945,26 @@ function _cleanClipboardChunk(text) {
     .replace(/\n{3,}/g, "\n\n");
 }
 
+function _isClipboardBoldOnlyBlock(node) {
+  const children = Array.from(node.childNodes).filter((child) =>
+    child.nodeType !== Node.TEXT_NODE || (child.nodeValue || "").trim()
+  );
+  return children.length === 1 &&
+    children[0].nodeType === Node.ELEMENT_NODE &&
+    (children[0].tagName === "STRONG" || children[0].tagName === "B");
+}
+
+function _clipboardBlockKind(node, text) {
+  const trimmed = text.trim();
+  if (_isClipboardBoldOnlyBlock(node)) {
+    return trimmed.endsWith(":") ? "section" : "group";
+  }
+  if (!trimmed.includes("\n") && trimmed.endsWith(":")) return "section";
+  if (!trimmed.includes("\n") &&
+      /^[A-Z0-9][A-Z0-9 /&()+,.'’\-]{2,}$/.test(trimmed)) return "title";
+  return "content";
+}
+
 function _clipboardListLines(list, depth = 0) {
   const ordered = list.tagName === "OL";
   const start = ordered ? (parseInt(list.getAttribute("start") || "1", 10) || 1) : 1;
@@ -1979,17 +1999,21 @@ function _clipboardPlainText(html, markdown) {
   root.innerHTML = html;
   const chunks = [];
 
+  const addChunk = (text, kind = "content") => {
+    if (text.trim()) chunks.push({ text, kind });
+  };
+
   Array.from(root.childNodes).forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = _cleanClipboardChunk(node.nodeValue);
-      if (text.trim()) chunks.push(text);
+      addChunk(text);
       return;
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
 
     if (node.tagName === "OL" || node.tagName === "UL") {
       const lines = _clipboardListLines(node);
-      if (lines.length) chunks.push(lines.join("\n"));
+      if (lines.length) addChunk(lines.join("\n"));
       return;
     }
     if (node.tagName === "TABLE") {
@@ -1998,7 +2022,7 @@ function _clipboardPlainText(html, markdown) {
           .map((cell) => _cleanClipboardChunk(_clipboardInlineText(cell)))
           .join("\t")
       );
-      if (rows.length) chunks.push(rows.join("\n"));
+      if (rows.length) addChunk(rows.join("\n"));
       return;
     }
     if (node.tagName === "HR") return;
@@ -2006,19 +2030,32 @@ function _clipboardPlainText(html, markdown) {
     const text = _cleanClipboardChunk(
       node.tagName === "PRE" ? node.textContent : _clipboardInlineText(node)
     );
-    if (text.trim()) chunks.push(text);
+    addChunk(text, _clipboardBlockKind(node, text));
   });
 
   if (!chunks.length) return _cleanClipboardChunk(markdown).trim();
 
-  // Keep a section heading attached to the first line of its section. Markdown
-  // generators sometimes place a blank line after a bold-only heading, making
-  // it a separate <p>; joining every top-level block with two newlines then
-  // creates an unwanted empty line after headings such as EXAM: and TECHNIQUE:.
-  return chunks.reduce((plain, chunk) => {
-    if (!plain) return chunk;
-    const separator = plain.trimEnd().endsWith(":") ? "\n" : "\n\n";
-    return `${plain}${separator}${chunk}`;
+  // Keep section and anatomical-group headings attached to their findings.
+  // Within a named anatomical group, consecutive findings stay single-spaced;
+  // a blank line remains between groups and between top-level sections.
+  let inGroup = false;
+  return chunks.reduce((plain, chunk, index) => {
+    if (!plain) {
+      inGroup = chunk.kind === "group";
+      return chunk.text;
+    }
+    const previous = chunks[index - 1];
+    let separator = "\n\n";
+    if (previous.kind === "group") {
+      separator = "\n";
+    } else if (previous.kind === "section" && chunk.kind !== "section") {
+      separator = "\n";
+    } else if (chunk.kind !== "group" && chunk.kind !== "section" && inGroup) {
+      separator = "\n";
+    }
+    if (chunk.kind === "section") inGroup = false;
+    if (chunk.kind === "group") inGroup = true;
+    return `${plain}${separator}${chunk.text}`;
   }, "").trim();
 }
 
@@ -2038,13 +2075,24 @@ function _isClipboardHeading(line) {
     /^[A-Z0-9][A-Z0-9 /&()+,.'’\-]{2,}$/.test(text);
 }
 
-function _clipboardRichHtml(plain) {
+function _clipboardBoldLines(html) {
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  return new Set(Array.from(root.querySelectorAll("strong, b"))
+    .map((node) => _cleanClipboardChunk(node.textContent).trim())
+    .filter((text) => text && !text.includes("\n")));
+}
+
+function _clipboardRichHtml(plain, html) {
   // A line-break fragment pastes consistently into PowerScribe and still gives
-  // Word/Outlook bold report headings. Paragraph/list block tags are avoided
+  // Word/Outlook the original bold text. Paragraph/list block tags are avoided
   // because target editors commonly add their own spacing around those blocks.
+  const boldLines = _clipboardBoldLines(html);
   const lines = plain.split("\n").map((line) => {
     const escaped = _escapeClipboardHtml(line);
-    return _isClipboardHeading(line) ? `<strong>${escaped}</strong>` : escaped;
+    return _isClipboardHeading(line) || boldLines.has(line.trim())
+      ? `<strong>${escaped}</strong>`
+      : escaped;
   });
   return `<span>${lines.join("<br>")}</span>`;
 }
@@ -2115,7 +2163,7 @@ async function copyReport(options = {}) {
   const html = renderMarkdown(markdown);
   $("report-rendered").innerHTML = html;
   const plain = _clipboardPlainText(html, markdown);
-  const richHtml = _clipboardRichHtml(plain);
+  const richHtml = _clipboardRichHtml(plain, html);
 
   // Build the clipboard payload per the user's paste-format preference.
   //   rich     — html + plain-rendered fallback

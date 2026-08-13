@@ -502,6 +502,58 @@ def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: s
     assert "<strong>TECHNIQUE:</strong><br>Routine non-contrast protocol.<br><br>" in clipboard["text/html"]
 
 
+def test_copy_preserves_knee_group_headings_without_gaps_between_findings(
+    page: Page, base_url: str
+):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          setReport(
+            "**FINDINGS:**\\n\\n" +
+            "**Menisci**\\n\\n" +
+            "Medial meniscus: Oblique undersurface tear.\\n\\n" +
+            "Lateral meniscus: Small incomplete radial tear.\\n\\n" +
+            "**Cruciate Ligaments**\\n\\n" +
+            "ACL and PCL: Intact.\\n\\n" +
+            "**IMPRESSION:**\\n\\n" +
+            "1. Medial and lateral meniscal tears.\\n" +
+            "2. Intact cruciate ligaments."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "rich";
+          window.__kneeClipboard = {};
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+              write: async (items) => {
+                for (const type of items[0].types) {
+                  window.__kneeClipboard[type] =
+                    await (await items[0].getType(type)).text();
+                }
+              },
+            },
+          });
+        }"""
+    )
+
+    page.locator("#btn-copy").click()
+    page.wait_for_function("() => Boolean(window.__kneeClipboard['text/plain'])")
+    clipboard = page.evaluate("window.__kneeClipboard")
+    assert clipboard["text/plain"] == (
+        "FINDINGS:\n"
+        "Menisci\n"
+        "Medial meniscus: Oblique undersurface tear.\n"
+        "Lateral meniscus: Small incomplete radial tear.\n\n"
+        "Cruciate Ligaments\n"
+        "ACL and PCL: Intact.\n\n"
+        "IMPRESSION:\n"
+        "1. Medial and lateral meniscal tears.\n"
+        "2. Intact cruciate ligaments."
+    )
+    assert "<strong>Menisci</strong><br>" in clipboard["text/html"]
+    assert "<strong>Cruciate Ligaments</strong><br>" in clipboard["text/html"]
+
+
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):
     errors = _console_errors(page)
     qa_requests: list[str] = []
