@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-copy-report-rtf"
+description = "Allows the trusted RadSpeed web app to copy one report as Windows RTF."
+commands.allow = ["cmd_copy_report_rtf"]

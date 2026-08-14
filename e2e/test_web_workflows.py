@@ -554,6 +554,58 @@ def test_copy_preserves_knee_group_headings_without_gaps_between_findings(
     assert "<strong>Cruciate Ligaments</strong><br>" in clipboard["text/html"]
 
 
+def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
+    page: Page, base_url: str
+):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          setReport(
+            "FINDINGS:\\n\\n" +
+            "**Menisci**\\n\\n" +
+            "Medial meniscus: Oblique undersurface tear.\\n\\n" +
+            "**IMPRESSION:**\\n\\n" +
+            "1. Medial meniscal tear."
+          );
+          setUI("done");
+          document.body.dataset.pasteFormat = "rich";
+          window.__nativeCopy = null;
+          window.__TAURI__ = {
+            core: {
+              invoke: async (command, args) => {
+                window.__nativeCopy = { command, args };
+              },
+            },
+          };
+          Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+              write: async () => { throw new Error("browser clipboard must not run"); },
+            },
+          });
+        }"""
+    )
+
+    page.locator("#btn-copy").click()
+    page.wait_for_function("() => Boolean(window.__nativeCopy)")
+    native_copy = page.evaluate("window.__nativeCopy")
+
+    assert native_copy["command"] == "cmd_copy_report_rtf"
+    assert native_copy["args"]["body"]["text"] == (
+        "FINDINGS:\n"
+        "Menisci\n"
+        "Medial meniscus: Oblique undersurface tear.\n\n"
+        "IMPRESSION:\n"
+        "1. Medial meniscal tear."
+    )
+    assert native_copy["args"]["body"]["boldLines"] == [
+        "FINDINGS:",
+        "Menisci",
+        "IMPRESSION:",
+    ]
+    expect(page.locator("#status")).to_contain_text("PowerScribe RTF")
+
+
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):
     errors = _console_errors(page)
     qa_requests: list[str] = []

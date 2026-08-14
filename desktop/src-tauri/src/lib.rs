@@ -30,6 +30,33 @@ struct SaveBody {
     settings: Settings,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CopyReportRtfBody {
+    text: String,
+    bold_lines: Vec<String>,
+}
+
+#[tauri::command]
+fn cmd_copy_report_rtf(body: CopyReportRtfBody) -> Result<(), String> {
+    const MAX_REPORT_CHARS: usize = 200_000;
+    const MAX_BOLD_LINES: usize = 500;
+    const MAX_BOLD_LINE_CHARS: usize = 500;
+
+    if body.text.chars().count() > MAX_REPORT_CHARS {
+        return Err("Report is too long to copy".to_string());
+    }
+    if body.bold_lines.len() > MAX_BOLD_LINES
+        || body
+            .bold_lines
+            .iter()
+            .any(|line| line.chars().count() > MAX_BOLD_LINE_CHARS)
+    {
+        return Err("Report has too many formatted headings".to_string());
+    }
+    keyboard::set_report_clipboard_rtf(&body.text, &body.bold_lines)
+}
+
 #[tauri::command]
 fn cmd_save_settings(app: AppHandle, body: SaveBody) -> Result<(), String> {
     settings::save(&app, &body.settings)?;
@@ -115,6 +142,7 @@ pub fn run() {
             cmd_trigger_now,
             cmd_show_app,
             cmd_get_version,
+            cmd_copy_report_rtf,
         ])
         .setup(|app| {
             tray::build(app)?;

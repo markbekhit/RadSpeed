@@ -299,9 +299,9 @@ practice rather than a tinkerer.
 
 - **Shipped:** native Tauri 2 tray companion, global hotkey, clipboard capture,
   PowerScribe jump-key paste modes, embedded RadSpeed web view, local settings,
-  signed updater artifacts and automatic updates. Version 0.2.26 points new
-  installs at `https://radspeed.com.au` and adds a focus-free status HUD for
-  immediate hotkey acknowledgement, generation progress, success and errors.
+  signed updater artifacts and automatic updates. Version 0.2.27 adds native
+  Windows RTF copying, so bold report headings survive paste into PowerScribe.
+  It also includes the focus-free status HUD and production web app.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

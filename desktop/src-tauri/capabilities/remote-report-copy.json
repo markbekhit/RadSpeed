@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "remote-report-copy",
+  "description": "Native PowerScribe clipboard access for the production RadSpeed app",
+  "windows": ["app"],
+  "remote": {
+    "urls": ["https://radspeed.com.au/*"]
+  },
+  "platforms": ["windows"],
+  "permissions": ["allow-copy-report-rtf"]
+}

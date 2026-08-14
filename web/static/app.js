@@ -2083,6 +2083,19 @@ function _clipboardBoldLines(html) {
     .filter((text) => text && !text.includes("\n")));
 }
 
+function _clipboardRtfBoldLines(plain, html) {
+  const explicitBold = _clipboardBoldLines(html);
+  const seen = new Set();
+  return plain.split("\n")
+    .map((line) => line.trim())
+    .filter((text) => {
+      const keep = text && !seen.has(text) &&
+        (_isClipboardHeading(text) || explicitBold.has(text));
+      if (keep) seen.add(text);
+      return keep;
+    });
+}
+
 function _clipboardRichHtml(plain, html) {
   // A line-break fragment pastes consistently into PowerScribe and still gives
   // Word/Outlook the original bold text. Paragraph/list block tags are avoided
@@ -2180,7 +2193,15 @@ async function copyReport(options = {}) {
   const scopeSuffix = options.fromComparison ? ` from ${selection.startsAt}` : "";
 
   try {
-    if (payload.html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+    const nativeInvoke = window.__TAURI__?.core?.invoke;
+    if (fmt === "rich" && nativeInvoke) {
+      await nativeInvoke("cmd_copy_report_rtf", {
+        body: {
+          text: payload.plain,
+          boldLines: _clipboardRtfBoldLines(plain, html),
+        },
+      });
+    } else if (payload.html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
       const item = new ClipboardItem({
         "text/html":  new Blob([payload.html],  { type: "text/html" }),
         "text/plain": new Blob([payload.plain], { type: "text/plain" }),
@@ -2192,7 +2213,8 @@ async function copyReport(options = {}) {
       throw new Error("Clipboard API unavailable");
     }
     state.reportCopied = true;
-    setStatus(`Report copied${scopeSuffix} to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+    const nativeSuffix = fmt === "rich" && nativeInvoke ? " (PowerScribe RTF)" : labelSuffix;
+    setStatus(`Report copied${scopeSuffix} to clipboard${nativeSuffix}. Press Alt+N for next case.`, "success");
     _trackReportEdit(fullMarkdown);
     return;
   } catch {
