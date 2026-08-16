@@ -347,6 +347,12 @@ def favicon():
     return RedirectResponse("/static/favicon.svg", status_code=308)
 
 
+@app.get("/googleb219a940c12a9cd3.html", response_class=PlainTextResponse, include_in_schema=False)
+def google_site_verification():
+    """Keep Search Console ownership verifiable from the public site root."""
+    return "google-site-verification: googleb219a940c12a9cd3.html"
+
+
 @app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
 def robots():
     return """User-agent: *

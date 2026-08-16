@@ -39,6 +39,38 @@ class PublicSEOTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('<link rel="canonical" href="https://radspeed.com.au/impressions"', response.text)
         self.assertIn('<meta property="og:url" content="https://radspeed.com.au/impressions"', response.text)
+        self.assertIn('<meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png"', response.text)
+        self.assertIn('<meta name="twitter:card" content="summary_large_image"', response.text)
+
+    def test_public_pages_have_large_social_preview_metadata(self):
+        for path in ("/", "/impressions", "/radiology-reporting-software", "/report-templates"):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+            self.assertIn("https://radspeed.com.au/static/radspeed-share.png", response.text, path)
+            self.assertIn('content="summary_large_image"', response.text, path)
+
+        image = self.client.get("/static/radspeed-share.png")
+        self.assertEqual(image.status_code, 200)
+        self.assertEqual(image.headers["content-type"], "image/png")
+        self.assertTrue(image.content.startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_search_console_verification_file_is_available_at_site_root(self):
+        response = self.client.get("/googleb219a940c12a9cd3.html")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.text,
+            "google-site-verification: googleb219a940c12a9cd3.html",
+        )
+
+    def test_public_page_titles_keep_the_specific_query_first(self):
+        self.assertIn(
+            "<title>Radiology Reporting Software · RadSpeed</title>",
+            self.client.get("/radiology-reporting-software").text,
+        )
+        self.assertIn(
+            "<title>Radiology Report Templates · RadSpeed</title>",
+            self.client.get("/report-templates").text,
+        )
 
     def test_reporting_software_page_has_search_and_conversion_foundations(self):
         response = self.client.get("/radiology-reporting-software")

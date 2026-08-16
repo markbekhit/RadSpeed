@@ -72,6 +72,12 @@ class ReportTemplateLibraryTests(unittest.TestCase):
             self.assertIn('"@type": "BreadcrumbList"', body)
             self.assertIn("report template", body)
             self.assertIn('href="/impressions"', body)
+            self.assertNotIn("Structured Reporting · RadSpeed</title>", body)
+            self.assertIn(
+                f"<title>{rt.get_entry(slug)['seo_title']} Report Template · RadSpeed</title>",
+                body,
+            )
+            self.assertIn("https://radspeed.com.au/static/radspeed-share.png", body)
             for forbidden in FORBIDDEN:
                 self.assertNotIn(forbidden, body, f"{forbidden!r} leaked on {slug}")
 

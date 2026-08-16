@@ -76,6 +76,20 @@ GROUPS: list[dict] = [
     },
 ]
 
+# The source template exam line remains visible on the page. These shorter,
+# query-specific names keep unusually long source labels readable in search.
+SEO_TITLES = {
+    "Bone_Scan": "Whole-Body Bone Scan",
+    "CT_Angiography_Thoracic": "CT Thoracic Angiography",
+    "CT_KUB": "CT KUB",
+    "Echocardiography": "Echocardiography",
+    "Mammography": "Mammography",
+    "MRCP": "MRCP",
+    "PET_CT": "PET-CT",
+    "Ultrasound_Carotid_Doppler": "Carotid Doppler Ultrasound",
+    "Ultrasound_Doppler_Venous": "Lower Limb Venous Doppler",
+}
+
 # Curated, publishable reference layer. Keyed by template file stem.
 # `indications`: one plain line of typical clinical indications.
 # `sections`: the report checklist a radiologist works through — anatomy only.
@@ -762,6 +776,7 @@ def _entries() -> dict[str, dict]:
             "stem": stem,
             "slug": _slug_from_stem(stem),
             "exam": exam,
+            "seo_title": SEO_TITLES.get(stem, exam),
             "technique": p.get("technique", ""),
             "group_id": g["id"] if g else "other",
             "group_label": g["label"] if g else "Other",
