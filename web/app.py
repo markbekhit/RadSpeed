@@ -373,6 +373,7 @@ def sitemap():
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://radspeed.com.au/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://radspeed.com.au/radiology-reporting-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://radspeed.com.au/powerscribe-companion</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 {template_urls}</urlset>
@@ -396,6 +397,7 @@ def llms_txt():
 
 - [RadSpeed](https://radspeed.com.au/): Product overview, workflow, governance, and current limits.
 - [Radiology reporting software](https://radspeed.com.au/radiology-reporting-software): Practical selection guide and RadSpeed workflow for AU/NZ reporting rooms.
+- [PowerScribe companion](https://radspeed.com.au/powerscribe-companion): Windows companion workflow for drafting and pasting an impression beside an existing reporting system.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
@@ -765,6 +767,15 @@ def radiology_reporting_software_page(request: Request):
     return _jinja.TemplateResponse(
         request,
         "radiology_reporting_software.html",
+        {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/powerscribe-companion", include_in_schema=False)
+def powerscribe_companion_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "powerscribe_companion.html",
         {"request": request, "static_version": _STATIC_VERSION},
     )
 

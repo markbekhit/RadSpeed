@@ -56,6 +56,23 @@ def test_public_landing_page_keeps_impressions_and_sign_in_visible(page: Page, b
     assert errors == []
 
 
+def test_public_powerscribe_companion_page_is_useful_and_responsive(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.goto(f"{base_url}/powerscribe-companion")
+    expect(
+        page.get_by_role("heading", name="Keep PowerScribe open. Add a faster impression step.")
+    ).to_be_visible()
+    expect(page.get_by_role("link", name="Try the workflow", exact=True)).to_have_attribute(
+        "href", "/impressions"
+    )
+    expect(page.get_by_text("Windows may show an “Unknown publisher” warning")).to_be_visible()
+
+    page.set_viewport_size({"width": 390, "height": 844})
+    assert page.evaluate("document.documentElement.scrollWidth") <= 390
+    expect(page.get_by_role("heading", name="Three steps. No new reporting screen.")).to_be_visible()
+    assert errors == []
+
+
 def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")

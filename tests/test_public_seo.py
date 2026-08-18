@@ -25,6 +25,7 @@ class PublicSEOTests(unittest.TestCase):
         self.assertTrue(response.headers["content-type"].startswith("application/xml"))
         self.assertIn("<loc>https://radspeed.com.au/</loc>", response.text)
         self.assertIn("<loc>https://radspeed.com.au/radiology-reporting-software</loc>", response.text)
+        self.assertIn("<loc>https://radspeed.com.au/powerscribe-companion</loc>", response.text)
         self.assertIn("<loc>https://radspeed.com.au/impressions</loc>", response.text)
         self.assertNotIn("/app</loc>", response.text)
 
@@ -43,7 +44,13 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn('<meta name="twitter:card" content="summary_large_image"', response.text)
 
     def test_public_pages_have_large_social_preview_metadata(self):
-        for path in ("/", "/impressions", "/radiology-reporting-software", "/report-templates"):
+        for path in (
+            "/",
+            "/impressions",
+            "/radiology-reporting-software",
+            "/powerscribe-companion",
+            "/report-templates",
+        ):
             response = self.client.get(path)
             self.assertEqual(response.status_code, 200, path)
             self.assertIn("https://radspeed.com.au/static/radspeed-share.png", response.text, path)
@@ -71,6 +78,10 @@ class PublicSEOTests(unittest.TestCase):
             "<title>Radiology Report Templates · RadSpeed</title>",
             self.client.get("/report-templates").text,
         )
+        self.assertIn(
+            "<title>PowerScribe Companion for Windows · RadSpeed</title>",
+            self.client.get("/powerscribe-companion").text,
+        )
 
     def test_reporting_software_page_has_search_and_conversion_foundations(self):
         response = self.client.get("/radiology-reporting-software")
@@ -89,6 +100,22 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn("Template applied", response.text)
         self.assertIn("Sections ordered", response.text)
         self.assertIn("Anatomical order", response.text)
+        self.assertIn('href="/app"', response.text)
+        self.assertIn('"@type": "SoftwareApplication"', response.text)
+
+    def test_powerscribe_companion_page_has_product_and_conversion_foundations(self):
+        response = self.client.get("/powerscribe-companion")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            '<link rel="canonical" href="https://radspeed.com.au/powerscribe-companion"',
+            response.text,
+        )
+        self.assertIn("Keep PowerScribe open. Add a faster impression step", response.text)
+        self.assertIn("Select findings", response.text)
+        self.assertIn("Press Ctrl+I", response.text)
+        self.assertIn("Unknown publisher", response.text)
+        self.assertIn("RadSpeed is not affiliated with Microsoft", response.text)
+        self.assertIn('href="/impressions"', response.text)
         self.assertIn('href="/app"', response.text)
         self.assertIn('"@type": "SoftwareApplication"', response.text)
 

@@ -715,7 +715,8 @@ h1 {
   justify-content: flex-end;
 }
 
-.capability-tags span {
+.capability-tags span,
+.capability-tags a {
   padding: 6px 9px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -724,7 +725,10 @@ h1 {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.025em;
+  text-decoration: none;
 }
+
+.capability-tags a:hover { border-color: rgba(0, 194, 255, 0.35); color: var(--cyan-soft); }
 
 .impressions-section {
   display: grid;
