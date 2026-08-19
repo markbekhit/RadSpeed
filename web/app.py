@@ -115,6 +115,7 @@ from web.followups import (
 )
 from web.fracture_workbench import resolve_workbench_image
 from web import report_templates as report_library
+from web import tirads
 from web.qa import run_qa_checks
 from web.stt_providers.factory import (
     get_streaming_provider,
@@ -375,6 +376,7 @@ def sitemap():
   <url><loc>https://radspeed.com.au/radiology-reporting-software</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/powerscribe-companion</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://radspeed.com.au/ti-rads-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 {template_urls}</urlset>
 """
@@ -399,6 +401,7 @@ def llms_txt():
 - [Radiology reporting software](https://radspeed.com.au/radiology-reporting-software): Practical selection guide and RadSpeed workflow for AU/NZ reporting rooms.
 - [PowerScribe companion](https://radspeed.com.au/powerscribe-companion): Windows companion workflow for drafting and pasting an impression beside an existing reporting system.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
+- [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds and a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
 ## Important limits
@@ -589,6 +592,44 @@ def api_impressions_text(req: ImpressionsRequest, request: Request):
 
 
 # ---------------------------------------------------------------------------
+# Public ACR TI-RADS calculator — free, no auth, deterministic (no model call,
+# no patient data stored). Scoring lives in web/tirads.py.
+# ---------------------------------------------------------------------------
+
+class TiradsRequest(BaseModel):
+    composition: str
+    echogenicity: str
+    shape: str
+    margin: str
+    foci: list[str] = []
+    size_mm: Optional[float] = None
+    location: Optional[str] = None
+
+
+@app.post("/api/tirads/score")
+def api_tirads_score(req: TiradsRequest):
+    """Return the ACR TI-RADS points, level and a paste-ready report line.
+
+    Pure arithmetic on ultrasound feature selections — no external model call
+    and nothing is persisted, so no rate limiting is needed. A free-text
+    location is echoed only into the report line the caller already sees.
+    """
+    location = (req.location or "").strip()[:80] or None
+    try:
+        return tirads.score(
+            composition=req.composition,
+            echogenicity=req.echogenicity,
+            shape=req.shape,
+            margin=req.margin,
+            foci=req.foci,
+            size_mm=req.size_mm,
+            location=location,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
 # WebSocket auth helpers
 # ---------------------------------------------------------------------------
 
@@ -776,6 +817,15 @@ def powerscribe_companion_page(request: Request):
     return _jinja.TemplateResponse(
         request,
         "powerscribe_companion.html",
+        {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/ti-rads-calculator", include_in_schema=False)
+def tirads_calculator_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "tirads_calculator.html",
         {"request": request, "static_version": _STATIC_VERSION},
     )
 

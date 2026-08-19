@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TI-RADS Calculator · RadSpeed</title>
+  <meta name="description" content="Free ACR TI-RADS 2017 thyroid nodule calculator. Score composition, echogenicity, shape, margin and echogenic foci, get the TR level with FNA and follow-up thresholds, and copy a ready-to-paste report line." />
+  <link rel="canonical" href="https://radspeed.com.au/ti-rads-calculator" />
+  <meta property="og:title" content="ACR TI-RADS Calculator · RadSpeed" />
+  <meta property="og:description" content="Score a thyroid nodule with ACR TI-RADS 2017, see the FNA and follow-up thresholds, and copy a paste-ready report line. Free, no sign-up." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/ti-rads-calculator" />
+  <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "MedicalWebPage",
+        "name": "ACR TI-RADS Calculator",
+        "url": "https://radspeed.com.au/ti-rads-calculator",
+        "description": "Free ACR TI-RADS 2017 thyroid nodule risk calculator with FNA and follow-up thresholds and a paste-ready structured report line.",
+        "medicalAudience": "https://schema.org/Clinician",
+        "about": { "@type": "MedicalCondition", "name": "Thyroid nodule" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is the ACR TI-RADS score calculated?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "ACR TI-RADS 2017 adds points across five ultrasound features: composition (0–2), echogenicity (0–3), shape (0 or 3), margin (0–3) and echogenic foci (additive, 0–3). The total maps to a level: 0 points TR1, 1–2 TR2, 3 TR3, 4–6 TR4 and 7 or more TR5."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are the ACR TI-RADS FNA and follow-up thresholds?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "TR3: FNA at 2.5 cm or larger, follow-up ultrasound at 1.5 cm or larger. TR4: FNA at 1.5 cm, follow-up at 1.0 cm. TR5: FNA at 1.0 cm, follow-up at 0.5 cm. TR1 and TR2 need no FNA or follow-up."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the TI-RADS calculator a diagnostic device?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It is decision-support software that reproduces the published ACR TI-RADS rules. It does not store patient data. Always confirm the result and apply clinical judgement before reporting."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .tirads-hero { text-align: center; padding: 24px 16px 8px; }
+    .tirads-hero h2 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 8px;
+      background: linear-gradient(90deg, var(--accent), var(--mint));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .tirads-hero p {
+      color: var(--muted); font-size: 14px; margin: 0 auto; max-width: 640px; line-height: 1.5;
+    }
+    .tirads-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; }
+    @media (max-width: 860px) { .tirads-grid { grid-template-columns: 1fr; } }
+    .tirads-field { margin-bottom: 14px; }
+    .tirads-field > label {
+      display: block; font-size: 11px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px;
+    }
+    .tirads-field select, .tirads-field input[type="text"], .tirads-field input[type="number"] {
+      width: 100%; font-size: 14px;
+    }
+    .tirads-foci { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+    @media (max-width: 480px) { .tirads-foci { grid-template-columns: 1fr; } }
+    .tirads-check {
+      display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text);
+      cursor: pointer; user-select: none;
+    }
+    .tirads-check input { accent-color: var(--accent); }
+    .tirads-inline { display: flex; gap: 12px; }
+    .tirads-inline .tirads-field { flex: 1; }
+    .tirads-result-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px;
+    }
+    .tirads-level {
+      font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1;
+    }
+    .tirads-points { font-size: 13px; color: var(--muted); }
+    .tirads-badge {
+      display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--border); color: var(--text);
+    }
+    .tr-1, .tr-2 { color: var(--mint); }
+    .tr-3 { color: #e0b64c; }
+    .tr-4 { color: #e08a4c; }
+    .tr-5 { color: var(--red); }
+    .tirads-meta { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 10px 0; }
+    .tirads-meta strong { color: var(--text); font-weight: 600; }
+    .tirads-management {
+      font-size: 14px; color: var(--text); line-height: 1.5; padding: 10px 12px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 12px;
+    }
+    .tirads-report-title {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;
+    }
+    .tirads-report-title h3 {
+      font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin: 0;
+    }
+    #report-line {
+      white-space: pre-wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
+    }
+    .tirads-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
+    .tirads-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .tirads-cta a:hover { text-decoration: underline; }
+    .tirads-explainer h3 { font-size: 15px; margin: 0 0 8px; }
+    .tirads-explainer p, .tirads-explainer li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .tirads-explainer table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    .tirads-explainer th, .tirads-explainer td {
+      text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text);
+    }
+    .tirads-explainer th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>RadSpeed</h1>
+    <div class="subtitle">Free ACR TI-RADS Calculator</div>
+  </div>
+  <div class="ml-auto" style="display:flex;align-items:center;gap:10px;">
+    <a href="/impressions" class="btn btn-ghost btn-sm" title="Free impression generator">Impressions</a>
+    <a href="/app" class="btn btn-ghost btn-sm" title="Full dictation app">Sign in &rarr;</a>
+  </div>
+</header>
+
+<main>
+  <div class="tirads-hero">
+    <h2>ACR TI-RADS thyroid nodule calculator</h2>
+    <p>
+      Score a thyroid nodule with the ACR TI-RADS 2017 system. Choose the ultrasound features,
+      add the size, and get the TR level, the FNA and follow-up thresholds, and a report line you
+      can paste straight into your findings.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="tirads-grid">
+      <div>
+        <div class="tirads-field">
+          <label for="composition">Composition</label>
+          <select id="composition">
+            <option value="cystic">Cystic or almost completely cystic (0)</option>
+            <option value="spongiform">Spongiform (0)</option>
+            <option value="mixed">Mixed cystic and solid (1)</option>
+            <option value="solid" selected>Solid or almost completely solid (2)</option>
+          </select>
+        </div>
+        <div class="tirads-field">
+          <label for="echogenicity">Echogenicity</label>
+          <select id="echogenicity">
+            <option value="anechoic">Anechoic (0)</option>
+            <option value="iso_hyper">Hyperechoic or isoechoic (1)</option>
+            <option value="hypo" selected>Hypoechoic (2)</option>
+            <option value="very_hypo">Very hypoechoic (3)</option>
+          </select>
+        </div>
+        <div class="tirads-field">
+          <label for="shape">Shape</label>
+          <select id="shape">
+            <option value="wider" selected>Wider-than-tall (0)</option>
+            <option value="taller">Taller-than-wide (3)</option>
+          </select>
+        </div>
+        <div class="tirads-field">
+          <label for="margin">Margin</label>
+          <select id="margin">
+            <option value="smooth" selected>Smooth (0)</option>
+            <option value="ill_defined">Ill-defined (0)</option>
+            <option value="lobulated">Lobulated or irregular (2)</option>
+            <option value="ete">Extra-thyroidal extension (3)</option>
+          </select>
+        </div>
+        <div class="tirads-field">
+          <label>Echogenic foci (select all that apply)</label>
+          <div class="tirads-foci">
+            <label class="tirads-check"><input type="checkbox" class="foci" value="macro" /> Macrocalcifications (1)</label>
+            <label class="tirads-check"><input type="checkbox" class="foci" value="rim" /> Peripheral / rim calcification (2)</label>
+            <label class="tirads-check"><input type="checkbox" class="foci" value="punctate" /> Punctate echogenic foci (3)</label>
+            <label class="tirads-check" style="color:var(--muted);">None or large comet-tail = 0 points</label>
+          </div>
+        </div>
+        <div class="tirads-inline">
+          <div class="tirads-field">
+            <label for="size_mm">Maximum diameter (mm, optional)</label>
+            <input type="number" id="size_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 18" />
+          </div>
+          <div class="tirads-field">
+            <label for="location">Location (optional, for the report line)</label>
+            <input type="text" id="location" autocomplete="off" placeholder="e.g. Right mid pole" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="tirads-result-head">
+          <span class="tirads-level" id="level">TR4</span>
+          <span class="tirads-badge" id="risk-badge">Est. malignancy 9.1%</span>
+        </div>
+        <div class="tirads-points" id="points">4 points · Moderately suspicious</div>
+
+        <div class="tirads-meta" id="thresholds"></div>
+
+        <div class="tirads-management" id="management"></div>
+
+        <div class="tirads-report-title">
+          <h3>Report line</h3>
+          <button id="btn-copy" class="btn btn-ghost btn-sm" type="button">&#128203; Copy</button>
+        </div>
+        <div id="report-line"></div>
+        <div id="status" class="impressions-status" style="font-size:12px;color:var(--muted);min-height:16px;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card tirads-explainer">
+    <h3>How ACR TI-RADS 2017 works</h3>
+    <p>
+      TI-RADS adds points across five ultrasound features. The total decides the risk level and
+      whether fine-needle aspiration (FNA) or follow-up ultrasound is advised, based on the nodule's
+      largest diameter.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Level</th><th>Points</th><th>Est. malignancy</th><th>FNA</th><th>Follow-up US</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>TR1</td><td>0</td><td>0.3%</td><td>None</td><td>None</td></tr>
+        <tr><td>TR2</td><td>1–2</td><td>1.5%</td><td>None</td><td>None</td></tr>
+        <tr><td>TR3</td><td>3</td><td>4.8%</td><td>&ge;2.5 cm</td><td>&ge;1.5 cm (1, 3, 5 yr)</td></tr>
+        <tr><td>TR4</td><td>4–6</td><td>9.1%</td><td>&ge;1.5 cm</td><td>&ge;1.0 cm (1, 2, 3, 5 yr)</td></tr>
+        <tr><td>TR5</td><td>&ge;7</td><td>&ge;35%</td><td>&ge;1.0 cm</td><td>&ge;0.5 cm (annually to 5 yr)</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Source: Tessler FN et al., ACR Thyroid Imaging, Reporting and Data System (TI-RADS): White
+      Paper of the ACR TI-RADS Committee, <em>J Am Coll Radiol</em> 2017.
+    </p>
+  </div>
+
+  <div class="tirads-cta">
+    Want this report line dictated straight into your worklist, in your own style?
+    <a href="/radiology-reporting-software">See the RadSpeed reporting workflow &rarr;</a>
+    &middot; <a href="/report-templates">Structured report templates</a>
+  </div>
+</main>
+
+<footer>
+  RadSpeed TI-RADS calculator &middot; Decision support, not a medical device &middot;
+  Reproduces the published ACR TI-RADS 2017 rules. Always apply clinical judgement and confirm the
+  result before reporting. No patient data is stored.
+</footer>
+
+<script src="/static/tirads.js?v={{ static_version }}"></script>
+</body>
+</html>
