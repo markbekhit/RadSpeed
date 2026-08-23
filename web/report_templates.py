@@ -810,5 +810,56 @@ def get_entry(slug: str) -> Optional[dict]:
     return _entries().get(slug)
 
 
+_RELATED_OVERRIDES: dict[str, list[str]] = {
+    # Search Console shows demand for these pages. Put the closest clinical
+    # companion first instead of giving every page the first six templates in
+    # its modality group.
+    "mrcp": ["mri-abdomen-liver", "ct-abdomen-pelvis"],
+    "mri-abdomen-liver": ["mrcp", "ct-abdomen-pelvis"],
+    "mri-breast": ["ultrasound-breast", "mammography"],
+    "ultrasound-breast": ["mri-breast", "mammography"],
+    "mammography": ["mri-breast", "ultrasound-breast"],
+    "mri-spine-cervical": [
+        "ct-spine-cervical",
+        "mri-spine-thoracic",
+        "mri-spine-lumbar",
+    ],
+    "ct-spine-cervical": [
+        "mri-spine-cervical",
+        "ct-spine-thoracic",
+        "ct-spine-lumbar",
+    ],
+}
+
+
+def related_entries(slug: str, limit: int = 6) -> list[dict]:
+    """Return useful related templates, with curated clinical links first."""
+    entry = get_entry(slug)
+    if not entry:
+        return []
+
+    candidates = list(_RELATED_OVERRIDES.get(slug, []))
+    candidates.extend(
+        item["slug"]
+        for group in library_groups()
+        if group["id"] == entry["group_id"]
+        for item in group["entries"]
+        if item["slug"] != slug
+    )
+
+    related: list[dict] = []
+    seen = {slug}
+    for candidate_slug in candidates:
+        if candidate_slug in seen:
+            continue
+        seen.add(candidate_slug)
+        candidate = get_entry(candidate_slug)
+        if candidate:
+            related.append(candidate)
+        if len(related) == limit:
+            break
+    return related
+
+
 def library_count() -> int:
     return len(_entries())

@@ -100,6 +100,20 @@ class ReportTemplateLibraryTests(unittest.TestCase):
             "https://radspeed.com.au/report-templates", self.client.get("/llms.txt").text
         )
 
+    def test_related_templates_prioritise_clinically_useful_links(self):
+        expected_pairs = {
+            "mrcp": "mri-abdomen-liver",
+            "mri-abdomen-liver": "mrcp",
+            "mri-breast": "ultrasound-breast",
+            "ultrasound-breast": "mri-breast",
+            "mammography": "mri-breast",
+            "mri-spine-cervical": "ct-spine-cervical",
+            "ct-spine-cervical": "mri-spine-cervical",
+        }
+        for source, target in expected_pairs.items():
+            body = self.client.get(f"/report-templates/{source}").text
+            self.assertIn(f'href="/report-templates/{target}"', body, source)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -156,6 +156,8 @@ class TiradsPageTests(unittest.TestCase):
         self.assertIn('"@type": "FAQPage"', resp.text)
         self.assertIn("Decision support, not a medical device", resp.text)
         self.assertIn('href="/radiology-reporting-software"', resp.text)
+        self.assertIn("<h1>ACR TI-RADS thyroid nodule calculator</h1>", resp.text)
+        self.assertIn('href="/report-templates/ultrasound-thyroid"', resp.text)
 
     def test_sitemap_lists_the_calculator(self):
         resp = self.client.get("/sitemap.xml")
@@ -164,6 +166,10 @@ class TiradsPageTests(unittest.TestCase):
     def test_llms_file_lists_the_calculator(self):
         resp = self.client.get("/llms.txt")
         self.assertIn("https://radspeed.com.au/ti-rads-calculator", resp.text)
+
+    def test_thyroid_template_links_back_to_calculator(self):
+        resp = self.client.get("/report-templates/ultrasound-thyroid")
+        self.assertIn('href="/ti-rads-calculator"', resp.text)
 
 
 if __name__ == "__main__":

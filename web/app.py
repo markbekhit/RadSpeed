@@ -849,13 +849,7 @@ def report_template_detail(slug: str, request: Request):
     entry = report_library.get_entry(slug)
     if not entry:
         raise HTTPException(status_code=404, detail="Report template not found")
-    related = [
-        r
-        for g in report_library.library_groups()
-        if g["id"] == entry["group_id"]
-        for r in g["entries"]
-        if r["slug"] != slug
-    ][:6]
+    related = report_library.related_entries(slug)
     return _jinja.TemplateResponse(
         request,
         "report_template_detail.html",

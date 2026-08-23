@@ -41,7 +41,8 @@ header {
   flex-wrap: wrap;
 }
 header .ml-auto { flex-wrap: wrap; justify-content: flex-end; }
-header h1 {
+header h1,
+header .product-brand {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.3px;
