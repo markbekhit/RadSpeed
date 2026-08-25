@@ -38,11 +38,15 @@ class PublicSEOTests(unittest.TestCase):
     def test_impressions_has_canonical_and_social_metadata(self):
         response = self.client.get("/impressions")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("<h1>Findings in. Impression out.</h1>", response.text)
+        self.assertIn("<h1>Radiology impression generator</h1>", response.text)
         self.assertIn('<link rel="canonical" href="https://radspeed.com.au/impressions"', response.text)
         self.assertIn('<meta property="og:url" content="https://radspeed.com.au/impressions"', response.text)
         self.assertIn('<meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png"', response.text)
         self.assertIn('<meta name="twitter:card" content="summary_large_image"', response.text)
+        self.assertIn('"@type": "WebApplication"', response.text)
+        self.assertIn('data-example="ct-chest"', response.text)
+        self.assertIn("Paste de-identified findings", response.text)
+        self.assertNotIn("under two seconds", response.text)
 
     def test_public_pages_have_large_social_preview_metadata(self):
         for path in (

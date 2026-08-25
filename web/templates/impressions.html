@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RadSpeed Impressions &middot; Free AI radiology impression generator</title>
-  <meta name="description" content="Paste your findings, get a clinically useful radiology impression in under two seconds. Free. No sign-up required." />
+  <title>Radiology Impression Generator &middot; Free &middot; RadSpeed</title>
+  <meta name="description" content="Free radiology impression generator for de-identified findings. Draft a concise impression, adjust the style and copy it for review. No sign-up." />
   <link rel="canonical" href="https://radspeed.com.au/impressions" />
-  <meta property="og:title" content="RadSpeed Impressions · Free radiology impression drafting tool" />
-  <meta property="og:description" content="Turn radiology findings into a concise draft impression. Free to try, with no account required." />
+  <meta property="og:title" content="Free radiology impression generator · RadSpeed" />
+  <meta property="og:description" content="Paste de-identified findings, generate a concise draft impression and copy it for review. No account required." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://radspeed.com.au/impressions" />
   <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
@@ -16,6 +16,30 @@
   <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "RadSpeed Impressions",
+    "url": "https://radspeed.com.au/impressions",
+    "description": "A free browser-based radiology impression generator for drafting a concise impression from de-identified findings.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript and a modern web browser.",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "AUD"
+    },
+    "featureList": [
+      "Draft a radiology impression from supplied findings",
+      "Optional guideline-aware recommendations",
+      "Browser-saved writing preferences",
+      "Copy the draft for review"
+    ]
+  }
+  </script>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
   <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
   <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
@@ -43,6 +67,14 @@
       margin-right: auto;
       line-height: 1.5;
     }
+    .impressions-hero .hero-kicker {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
     .impressions-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -65,6 +97,32 @@
       letter-spacing: 1px;
       color: var(--muted);
       margin: 0;
+    }
+    .example-bar {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 10px;
+    }
+    .example-bar > span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .example-chip {
+      background: rgba(0, 194, 255, 0.07);
+      border: 1px solid rgba(0, 194, 255, 0.28);
+      border-radius: 999px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 5px 9px;
+    }
+    .example-chip:hover,
+    .example-chip:focus-visible {
+      background: rgba(0, 194, 255, 0.14);
+      border-color: var(--accent);
+      outline: none;
     }
     #findings {
       width: 100%;
@@ -155,6 +213,52 @@
       width: 100%;
       font-size: 13px;
     }
+    .impressions-guide {
+      margin: 20px 0 0;
+    }
+    .impressions-guide h2 {
+      font-size: 18px;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    .impressions-guide > p {
+      color: var(--muted);
+      margin: 0 auto 12px;
+      max-width: 680px;
+      text-align: center;
+    }
+    .guide-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .guide-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .guide-step strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+    .guide-step p {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0;
+    }
+    .guide-limit {
+      border-left: 2px solid var(--accent);
+      color: var(--muted);
+      font-size: 12px;
+      margin: 12px auto 0;
+      max-width: 760px;
+      padding: 2px 0 2px 10px;
+    }
+    @media (max-width: 700px) {
+      .guide-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -171,10 +275,11 @@
 
 <main>
   <div class="impressions-hero">
-    <h1>Findings in. Impression out.</h1>
+    <p class="hero-kicker">Free · no sign-up</p>
+    <h1>Radiology impression generator</h1>
     <p>
-      Paste any radiology findings and get a concise, guideline-aware impression in under two seconds.
-      No sign-up. Your text is sent to the LLM only for generation and is not stored.
+      Findings in. Impression out. Paste de-identified findings and get a concise draft to review.
+      Your text is sent to the configured language model for generation and is not stored by RadSpeed.
     </p>
   </div>
 
@@ -184,6 +289,12 @@
         <div class="impressions-card-title">
           <h3>Findings</h3>
           <span style="font-size:11px;color:var(--muted);" id="findings-count">0 chars</span>
+        </div>
+        <div class="example-bar" aria-label="Synthetic example findings">
+          <span>Try synthetic findings:</span>
+          <button class="example-chip" type="button" data-example="ct-chest">CT chest</button>
+          <button class="example-chip" type="button" data-example="mri-knee">MRI knee</button>
+          <button class="example-chip" type="button" data-example="us-abdomen">Ultrasound abdomen</button>
         </div>
         <textarea id="findings" placeholder="Paste your findings here. e.g.&#10;&#10;CT chest with contrast. There is a 14 mm spiculated nodule in the right upper lobe with adjacent pleural tethering. No mediastinal lymphadenopathy. Clear pleural spaces."></textarea>
       </div>
@@ -267,6 +378,26 @@
       </div>
     </details>
   </div>
+
+  <section class="impressions-guide" aria-labelledby="impressions-guide-title">
+    <h2 id="impressions-guide-title">How the radiology impression generator works</h2>
+    <p>Use it for the narrow drafting step between completed findings and your final impression.</p>
+    <div class="guide-grid">
+      <div class="guide-step">
+        <strong>1. Paste de-identified findings</strong>
+        <p>Add the completed findings and optional study name. Do not include names, record numbers or other patient identifiers.</p>
+      </div>
+      <div class="guide-step">
+        <strong>2. Generate a draft</strong>
+        <p>Choose whether to include guideline-aware recommendations. Your browser-saved style settings control wording and format.</p>
+      </div>
+      <div class="guide-step">
+        <strong>3. Review, edit and copy</strong>
+        <p>Check every statement, recommendation and measurement before you move the draft into the clinical report.</p>
+      </div>
+    </div>
+    <p class="guide-limit"><strong>Current limit:</strong> RadSpeed works only from the text you provide. It does not interpret images or replace radiologist review.</p>
+  </section>
 
   <div class="impressions-cta">
     Want full voice dictation, structured templates, and report generation?

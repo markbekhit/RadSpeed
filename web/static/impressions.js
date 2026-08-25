@@ -14,6 +14,20 @@
     "style_negation_phrasing",
   ];
   const STORAGE_PREFIX = "radspeed_impressions:";
+  const SYNTHETIC_EXAMPLES = {
+    "ct-chest": {
+      modality: "CT chest with contrast",
+      findings: "There is a 14 mm spiculated nodule in the right upper lobe with adjacent pleural tethering. No mediastinal lymphadenopathy. No pleural effusion.",
+    },
+    "mri-knee": {
+      modality: "MRI knee",
+      findings: "Horizontal tear of the posterior horn of the medial meniscus reaching the inferior articular surface. Cruciate and collateral ligaments are intact. Small joint effusion.",
+    },
+    "us-abdomen": {
+      modality: "Ultrasound abdomen",
+      findings: "The liver is normal in size and echogenicity with no focal lesion. The gallbladder is thin-walled with no calculus. The common bile duct is not dilated. No hydronephrosis.",
+    },
+  };
 
   function loadStyle() {
     for (const k of STYLE_KEYS) {
@@ -47,6 +61,16 @@
     const out = $("impression-output");
     out.textContent = text;
     out.classList.toggle("empty", !!isPlaceholder);
+  }
+
+  function loadSyntheticExample(key) {
+    const example = SYNTHETIC_EXAMPLES[key];
+    if (!example) return;
+    $("findings").value = example.findings;
+    $("modality").value = example.modality;
+    $("findings-count").textContent = `${example.findings.length} chars`;
+    setStatus("Synthetic example loaded. Edit it or generate the draft.");
+    $("findings").focus();
   }
 
   async function generate() {
@@ -195,6 +219,10 @@
     });
     $("findings").addEventListener("input", () => {
       $("findings-count").textContent = `${$("findings").value.length} chars`;
+    });
+
+    document.querySelectorAll(".example-chip").forEach((button) => {
+      button.addEventListener("click", () => loadSyntheticExample(button.dataset.example));
     });
 
     for (const k of STYLE_KEYS) {

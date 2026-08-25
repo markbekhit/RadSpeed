@@ -19,10 +19,17 @@ def _console_errors(page: Page) -> list[str]:
 def test_public_impressions_generation_and_validation(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/impressions")
-    expect(page.get_by_role("heading", name="Findings in. Impression out.")).to_be_visible()
+    expect(
+        page.get_by_role("heading", name="Radiology impression generator", exact=True)
+    ).to_be_visible()
 
     page.locator("#btn-generate").click()
     expect(page.locator("#status")).to_have_text("Paste some findings first.")
+
+    page.get_by_role("button", name="CT chest", exact=True).click()
+    expect(page.locator("#findings")).to_have_value(re.compile("14 mm spiculated nodule"))
+    expect(page.locator("#modality")).to_have_value("CT chest with contrast")
+    expect(page.locator("#status")).to_contain_text("Synthetic example loaded")
 
     findings = (
         "CT chest with contrast. There is a 14 mm spiculated right upper lobe "
