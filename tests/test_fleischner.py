@@ -5,7 +5,14 @@ import unittest
 from fastapi.testclient import TestClient
 
 from web import fleischner
-from web.app import app
+
+# NOTE: `web.app` is imported lazily inside setUpClass, never at module import
+# time. tests/test_format.py replaces sys.modules["config.config"] with a stub
+# at import and never restores it, so any module that first imports the real
+# config singleton *before* that stub is installed ends up out of step with
+# tests collected afterwards. Importing web.app (which pulls in llm.format) at
+# module scope here — this file sorts before test_format — would trip that
+# latent ordering hazard, so we defer it.
 
 
 class FleischnerRuleTests(unittest.TestCase):
@@ -124,6 +131,8 @@ class FleischnerRuleTests(unittest.TestCase):
 class FleischnerApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from web.app import app
+
         cls.client = TestClient(app)
 
     def test_api_recommends(self):
@@ -169,6 +178,8 @@ class FleischnerApiTests(unittest.TestCase):
 class FleischnerPageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from web.app import app
+
         cls.client = TestClient(app)
 
     def test_page_renders_with_canonical_and_social(self):
