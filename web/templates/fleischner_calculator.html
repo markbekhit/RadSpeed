@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fleischner Calculator · RadSpeed</title>
+  <meta name="description" content="Free Fleischner Society 2017 pulmonary nodule follow-up calculator. Choose nodule type, size, number and risk to get the recommended CT follow-up for incidental lung nodules, plus a ready-to-paste report line." />
+  <link rel="canonical" href="https://radspeed.com.au/fleischner-calculator" />
+  <meta property="og:title" content="Fleischner 2017 Pulmonary Nodule Calculator · RadSpeed" />
+  <meta property="og:description" content="Get the Fleischner Society 2017 follow-up recommendation for an incidental lung nodule and copy a paste-ready report line. Free, no sign-up." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/fleischner-calculator" />
+  <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "MedicalWebPage",
+        "name": "Fleischner 2017 Pulmonary Nodule Calculator",
+        "url": "https://radspeed.com.au/fleischner-calculator",
+        "description": "Free Fleischner Society 2017 incidental pulmonary nodule follow-up calculator with a paste-ready structured report line.",
+        "medicalAudience": "https://schema.org/Clinician",
+        "about": { "@type": "MedicalCondition", "name": "Pulmonary nodule" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do the Fleischner 2017 guidelines size a pulmonary nodule?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Fleischner 2017 uses the mean nodule diameter — the average of the long- and short-axis measurements — rounded to the nearest whole millimetre. The size bands are under 6 mm, 6–8 mm and over 8 mm for solid nodules, and under 6 mm versus 6 mm or larger for subsolid nodules."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "When do the Fleischner guidelines apply?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "They apply to incidental pulmonary nodules in patients aged 35 or older. They do not apply to lung-cancer screening, immunocompromised patients, or patients with known or suspected primary cancer."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the Fleischner calculator a diagnostic device?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It is decision-support software that reproduces the published Fleischner Society 2017 recommendations. It does not store patient data. Always confirm the result and apply clinical judgement before reporting."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .fx-hero { text-align: center; padding: 24px 16px 8px; }
+    .fx-hero h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 8px;
+      background: linear-gradient(90deg, var(--accent), var(--mint));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .fx-hero p {
+      color: var(--muted); font-size: 14px; margin: 0 auto; max-width: 640px; line-height: 1.5;
+    }
+    .fx-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; }
+    @media (max-width: 860px) { .fx-grid { grid-template-columns: 1fr; } }
+    .fx-field { margin-bottom: 14px; }
+    .fx-field > label {
+      display: block; font-size: 11px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px;
+    }
+    .fx-field select, .fx-field input[type="text"], .fx-field input[type="number"] {
+      width: 100%; font-size: 14px;
+    }
+    .fx-check {
+      display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text);
+      cursor: pointer; user-select: none; margin-top: 6px;
+    }
+    .fx-check input { accent-color: var(--accent); }
+    .fx-inline { display: flex; gap: 12px; }
+    .fx-inline .fx-field { flex: 1; }
+    .fx-result-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px;
+    }
+    .fx-band { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; color: var(--accent); }
+    .fx-summary { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .fx-recommendation {
+      font-size: 15px; color: var(--text); line-height: 1.55; padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 12px;
+    }
+    .fx-report-title {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;
+    }
+    .fx-report-title h3 {
+      font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin: 0;
+    }
+    #report-line {
+      white-space: pre-wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
+    }
+    .fx-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+    .fx-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
+    .fx-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .fx-cta a:hover { text-decoration: underline; }
+    .fx-explainer h3 { font-size: 15px; margin: 0 0 8px; }
+    .fx-explainer p, .fx-explainer li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .fx-explainer table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    .fx-explainer th, .fx-explainer td {
+      text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top;
+    }
+    .fx-explainer th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="product-brand">RadSpeed</div>
+    <div class="subtitle">Free Fleischner 2017 Calculator</div>
+  </div>
+  <div class="ml-auto" style="display:flex;align-items:center;gap:10px;">
+    <a href="/ti-rads-calculator" class="btn btn-ghost btn-sm" title="ACR TI-RADS calculator">TI-RADS</a>
+    <a href="/impressions" class="btn btn-ghost btn-sm" title="Free impression generator">Impressions</a>
+    <a href="/app" class="btn btn-ghost btn-sm" title="Full dictation app">Sign in &rarr;</a>
+  </div>
+</header>
+
+<main>
+  <div class="fx-hero">
+    <h1>Fleischner 2017 pulmonary nodule calculator</h1>
+    <p>
+      Get the Fleischner Society 2017 follow-up recommendation for an incidental lung nodule.
+      Choose the nodule type, mean diameter, number and patient risk, then copy a report line
+      you can paste straight into your CT chest report.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="fx-grid">
+      <div>
+        <div class="fx-field">
+          <label for="nodule_type">Nodule type</label>
+          <select id="nodule_type">
+            <option value="solid" selected>Solid</option>
+            <option value="ground_glass">Pure ground-glass</option>
+            <option value="part_solid">Part-solid</option>
+          </select>
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="size_mm">Mean diameter (mm)</label>
+            <input type="number" id="size_mm" min="0" step="0.1" inputmode="decimal" value="7" placeholder="e.g. 7" />
+          </div>
+          <div class="fx-field" id="risk-field">
+            <label for="risk">Patient risk</label>
+            <select id="risk">
+              <option value="low" selected>Low risk</option>
+              <option value="high">High risk</option>
+            </select>
+          </div>
+        </div>
+        <p class="fx-note" id="risk-note" style="display:none;margin-top:-6px;">
+          The Fleischner subsolid recommendations are the same for low- and high-risk patients.
+        </p>
+        <label class="fx-check"><input type="checkbox" id="multiple" /> Multiple nodules</label>
+        <div class="fx-field" id="solid-component-field" style="display:none;margin-top:14px;">
+          <label for="solid_component_mm">Solid component (mm, optional)</label>
+          <input type="number" id="solid_component_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 4" />
+        </div>
+        <div class="fx-field" style="margin-top:14px;">
+          <label for="location">Location (optional, for the report line)</label>
+          <input type="text" id="location" autocomplete="off" placeholder="e.g. right upper lobe" />
+        </div>
+        <p class="fx-note">
+          Use the mean of the long- and short-axis diameters, rounded to the nearest millimetre.
+        </p>
+      </div>
+
+      <div>
+        <div class="fx-result-head">
+          <span class="fx-band" id="size-band">6–8 mm</span>
+        </div>
+        <div class="fx-summary" id="nodule-summary"></div>
+
+        <div class="fx-recommendation" id="recommendation"></div>
+
+        <div class="fx-report-title">
+          <h3>Report line</h3>
+          <button id="btn-copy" class="btn btn-ghost btn-sm" type="button">&#128203; Copy</button>
+        </div>
+        <div id="report-line"></div>
+        <div id="status" class="impressions-status" style="font-size:12px;color:var(--muted);min-height:16px;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fx-explainer">
+    <h3>Fleischner Society 2017 follow-up recommendations</h3>
+    <p>
+      The guideline splits nodules by texture and size, and — for solid nodules — by whether the
+      patient is low or high risk. Size is the mean diameter (average of the long and short axes).
+      Approximate volume equivalents: &lt;6 mm ≈ &lt;100 mm³, 6–8 mm ≈ 100–250 mm³, &gt;8 mm ≈ &gt;250 mm³.
+    </p>
+    <h3 style="margin-top:14px;">Solid nodules</h3>
+    <table>
+      <thead>
+        <tr><th>Size</th><th>Single, low risk</th><th>Single, high risk</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>&lt;6 mm</td><td>No routine follow-up</td><td>Optional CT at 12 months</td></tr>
+        <tr><td>6–8 mm</td><td>CT at 6–12 months, then consider CT at 18–24 months</td><td>CT at 6–12 months, then CT at 18–24 months</td></tr>
+        <tr><td>&gt;8 mm</td><td>Consider CT at 3 months, PET-CT, or sampling</td><td>Consider CT at 3 months, PET-CT, or sampling</td></tr>
+      </tbody>
+    </table>
+    <p>
+      For multiple solid nodules the first follow-up moves earlier to 3–6 months, and management is
+      based on the most suspicious nodule.
+    </p>
+    <h3 style="margin-top:14px;">Subsolid nodules (single)</h3>
+    <table>
+      <thead>
+        <tr><th>Size</th><th>Pure ground-glass</th><th>Part-solid</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>&lt;6 mm</td><td>No routine follow-up (consider 2 &amp; 4 yr if suspicious)</td><td>No routine follow-up</td></tr>
+        <tr><td>&ge;6 mm</td><td>CT at 6–12 months to confirm persistence, then CT every 2 years to 5 years</td><td>CT at 3–6 months; if unchanged and solid component &lt;6 mm, annual CT for 5 years</td></tr>
+      </tbody>
+    </table>
+    <p>
+      A persistent part-solid nodule with a solid component of 6 mm or larger is highly suspicious.
+      Multiple subsolid nodules are followed at 3–6 months, then by the most suspicious nodule.
+    </p>
+    <p>
+      Source: MacMahon H, Naidich DP, Goo JM, et al. Guidelines for Management of Incidental
+      Pulmonary Nodules Detected on CT Images: From the Fleischner Society 2017.
+      <em>Radiology</em> 2017;284(1):228–243.
+    </p>
+  </div>
+
+  <div class="fx-cta">
+    Want this recommendation dictated straight into your worklist, in your own style?
+    <a href="/radiology-reporting-software">See the RadSpeed reporting workflow &rarr;</a>
+    &middot; <a href="/report-templates/ct-chest">CT chest report template</a>
+    &middot; <a href="/ti-rads-calculator">TI-RADS calculator</a>
+  </div>
+</main>
+
+<footer>
+  RadSpeed Fleischner calculator &middot; Decision support, not a medical device &middot;
+  Reproduces the published Fleischner Society 2017 recommendations. Applies to incidental nodules in
+  patients aged 35 or older; not for lung-cancer screening, immunocompromised patients, or known
+  cancer. Always apply clinical judgement and confirm the result before reporting. No patient data is
+  stored.
+</footer>
+
+<script src="/static/fleischner.js?v={{ static_version }}"></script>
+</body>
+</html>

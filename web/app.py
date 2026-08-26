@@ -114,6 +114,7 @@ from web.followups import (
     update_followup,
 )
 from web.fracture_workbench import resolve_workbench_image
+from web import fleischner
 from web import report_templates as report_library
 from web import tirads
 from web.qa import run_qa_checks
@@ -377,6 +378,7 @@ def sitemap():
   <url><loc>https://radspeed.com.au/powerscribe-companion</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/ti-rads-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radspeed.com.au/fleischner-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 {template_urls}</urlset>
 """
@@ -402,6 +404,7 @@ def llms_txt():
 - [PowerScribe companion](https://radspeed.com.au/powerscribe-companion): Windows companion workflow for drafting and pasting an impression beside an existing reporting system.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
 - [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds and a paste-ready report line. Decision support, not a diagnostic device.
+- [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules, with a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
 ## Important limits
@@ -630,6 +633,43 @@ def api_tirads_score(req: TiradsRequest):
 
 
 # ---------------------------------------------------------------------------
+# Public Fleischner 2017 pulmonary nodule calculator — free, no auth,
+# deterministic (no model call, no patient data stored). Rules live in
+# web/fleischner.py.
+# ---------------------------------------------------------------------------
+
+class FleischnerRequest(BaseModel):
+    nodule_type: str
+    size_mm: float
+    multiple: bool = False
+    risk: str = "low"
+    solid_component_mm: Optional[float] = None
+    location: Optional[str] = None
+
+
+@app.post("/api/fleischner/recommend")
+def api_fleischner_recommend(req: FleischnerRequest):
+    """Return the Fleischner 2017 follow-up recommendation and a report line.
+
+    Pure logic on the nodule descriptors — no external model call and nothing is
+    persisted, so no rate limiting is needed. A free-text location is echoed only
+    into the report line the caller already sees.
+    """
+    location = (req.location or "").strip()[:80] or None
+    try:
+        return fleischner.assess(
+            nodule_type=req.nodule_type,
+            size_mm=req.size_mm,
+            multiple=req.multiple,
+            risk=req.risk,
+            solid_component_mm=req.solid_component_mm,
+            location=location,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
 # WebSocket auth helpers
 # ---------------------------------------------------------------------------
 
@@ -826,6 +866,15 @@ def tirads_calculator_page(request: Request):
     return _jinja.TemplateResponse(
         request,
         "tirads_calculator.html",
+        {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/fleischner-calculator", include_in_schema=False)
+def fleischner_calculator_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "fleischner_calculator.html",
         {"request": request, "static_version": _STATIC_VERSION},
     )
 

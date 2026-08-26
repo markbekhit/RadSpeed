@@ -67,6 +67,7 @@
         <a class="button button-primary" href="/impressions">Draft this report free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
         <a class="button button-secondary" href="/app">Use in RadSpeed</a>
         {% if t.slug == "ultrasound-thyroid" %}<a class="button button-secondary" href="/ti-rads-calculator">Calculate ACR TI-RADS</a>{% endif %}
+        {% if t.slug in ["ct-chest", "hrct-thorax", "ct-pulmonary-angiogram"] %}<a class="button button-secondary" href="/fleischner-calculator">Fleischner nodule follow-up</a>{% endif %}
       </div>
     </header>
 
