@@ -29,6 +29,28 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn("<loc>https://radspeed.com.au/impressions</loc>", response.text)
         self.assertNotIn("/app</loc>", response.text)
 
+    def test_head_requests_match_public_get_routes_without_a_body(self):
+        for path in (
+            "/",
+            "/impressions",
+            "/radiology-reporting-software",
+            "/powerscribe-companion",
+            "/ti-rads-calculator",
+            "/fleischner-calculator",
+            "/report-templates",
+        ):
+            get_response = self.client.get(path)
+            head_response = self.client.head(path)
+            self.assertEqual(head_response.status_code, get_response.status_code, path)
+            self.assertEqual(head_response.content, b"", path)
+            self.assertEqual(
+                head_response.headers["content-type"],
+                get_response.headers["content-type"],
+                path,
+            )
+        self.assertEqual(self.client.head("/api/impressions/text").status_code, 405)
+        self.assertEqual(self.client.head("/not-a-public-page").status_code, 404)
+
     def test_llms_file_states_public_pages_and_limits(self):
         response = self.client.get("/llms.txt")
         self.assertEqual(response.status_code, 200)
@@ -46,7 +68,18 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn('"@type": "WebApplication"', response.text)
         self.assertIn('data-example="ct-chest"', response.text)
         self.assertIn("Paste de-identified findings", response.text)
+        self.assertIn('href="/report-templates"', response.text)
+        self.assertIn('href="/fleischner-calculator"', response.text)
         self.assertNotIn("under two seconds", response.text)
+
+    def test_homepage_exposes_free_reporting_tools(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Use the narrow tool that matches the task", response.text)
+        self.assertIn('href="/impressions"', response.text)
+        self.assertIn('href="/ti-rads-calculator"', response.text)
+        self.assertIn('href="/fleischner-calculator"', response.text)
+        self.assertIn('href="/report-templates"', response.text)
 
     def test_public_pages_have_large_social_preview_metadata(self):
         for path in (

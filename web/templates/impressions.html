@@ -184,18 +184,48 @@
     }
     .impressions-status.error { color: var(--red); }
     .impressions-status.success { color: var(--mint); }
-    .impressions-cta {
+    .impressions-resources {
+      margin: 26px 0 8px;
+    }
+    .impressions-resources h2 {
+      font-size: 18px;
+      margin-bottom: 5px;
       text-align: center;
-      padding: 24px 16px;
+    }
+    .impressions-resources > p {
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
+      margin: 0 auto 12px;
+      text-align: center;
     }
-    .impressions-cta a {
-      color: var(--accent);
+    .resource-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .resource-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 14px;
       text-decoration: none;
-      font-weight: 600;
     }
-    .impressions-cta a:hover { text-decoration: underline; }
+    .resource-card:hover,
+    .resource-card:focus-visible {
+      border-color: var(--accent);
+      outline: none;
+    }
+    .resource-card strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+    .resource-card span {
+      color: var(--muted);
+      display: block;
+      font-size: 11px;
+    }
     .style-grid-mini {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -258,6 +288,7 @@
     }
     @media (max-width: 700px) {
       .guide-grid { grid-template-columns: 1fr; }
+      .resource-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -399,13 +430,16 @@
     <p class="guide-limit"><strong>Current limit:</strong> RadSpeed works only from the text you provide. It does not interpret images or replace radiologist review.</p>
   </section>
 
-  <div class="impressions-cta">
-    Want full voice dictation, structured templates, and report generation?
-    <a href="/radiology-reporting-software">See the reporting workflow &rarr;</a>
-    <br />
-    Reporting a thyroid nodule? Try the free
-    <a href="/ti-rads-calculator">ACR TI-RADS calculator</a>.
-  </div>
+  <section class="impressions-resources" aria-labelledby="impressions-resources-title">
+    <h2 id="impressions-resources-title">Continue the reporting task</h2>
+    <p>Use the next narrow tool, or move into the full reporting workflow.</p>
+    <div class="resource-grid">
+      <a class="resource-card" href="/radiology-reporting-software"><strong>Full reporting workflow →</strong><span>Voice dictation, structured reports, personal style and review.</span></a>
+      <a class="resource-card" href="/report-templates"><strong>Report template library →</strong><span>Forty structured starting points across common studies.</span></a>
+      <a class="resource-card" href="/ti-rads-calculator"><strong>ACR TI-RADS calculator →</strong><span>Score a thyroid nodule and copy a report line.</span></a>
+      <a class="resource-card" href="/fleischner-calculator"><strong>Fleischner calculator →</strong><span>Check the 2017 incidental pulmonary nodule pathway.</span></a>
+    </div>
+  </section>
 </main>
 
 <footer>

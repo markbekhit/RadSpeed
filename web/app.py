@@ -125,12 +125,51 @@ from web.stt_providers.factory import (
 
 logger = logging.getLogger(__name__)
 
+_PUBLIC_HEAD_PATHS = {
+    "/",
+    "/impressions",
+    "/radiology-reporting-software",
+    "/powerscribe-companion",
+    "/ti-rads-calculator",
+    "/fleischner-calculator",
+    "/report-templates",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/llms.txt",
+    "/googleb219a940c12a9cd3.html",
+}
+
+
+class HeadRequestMiddleware:
+    """Serve HEAD for public discovery pages without widening API methods."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        path = scope.get("path", "")
+        is_public_page = path in _PUBLIC_HEAD_PATHS or path.startswith("/report-templates/")
+        if scope["type"] != "http" or scope.get("method") != "HEAD" or not is_public_page:
+            await self.app(scope, receive, send)
+            return
+
+        get_scope = dict(scope)
+        get_scope["method"] = "GET"
+
+        async def send_headers_only(message):
+            if message["type"] == "http.response.body":
+                message = {**message, "body": b""}
+            await send(message)
+
+        await self.app(get_scope, receive, send_headers_only)
+
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=2592000)  # 30 days
+app.add_middleware(HeadRequestMiddleware)
 # auto_error=False so we can return a redirect (not a 401) when OAuth is active
 security = HTTPBasic(auto_error=False)
 

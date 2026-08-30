@@ -60,6 +60,12 @@ def test_public_landing_page_keeps_impressions_and_sign_in_visible(page: Page, b
     expect(page.get_by_role("link", name="Sign in", exact=True).first).to_have_attribute(
         "href", "/app"
     )
+    expect(
+        page.get_by_role("heading", name="Use the narrow tool that matches the task.")
+    ).to_be_visible()
+    expect(page.get_by_role("link", name=re.compile("Fleischner calculator"))).to_have_attribute(
+        "href", "/fleischner-calculator"
+    )
     assert errors == []
 
 

@@ -803,6 +803,136 @@ h1 {
   box-shadow: 0 0 9px rgba(0, 229, 160, 0.6);
 }
 
+.tools-section .section-intro {
+  margin-bottom: 38px;
+}
+
+.tool-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.tool-card {
+  position: relative;
+  min-height: 290px;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  background: linear-gradient(145deg, rgba(14, 25, 39, 0.92), rgba(8, 15, 25, 0.82));
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.tool-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 194, 255, 0.42);
+}
+
+.tool-preview {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 22px;
+  padding: 14px;
+  border: 1px solid rgba(111, 143, 173, 0.18);
+  border-radius: 7px;
+  color: #aebed0;
+  background: rgba(2, 8, 15, 0.7);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.tool-preview-flow {
+  justify-content: space-between;
+}
+
+.tool-preview-flow i {
+  color: var(--cyan);
+  font-size: 18px;
+  font-style: normal;
+}
+
+.tool-preview-score {
+  gap: 12px;
+}
+
+.tool-preview-score b {
+  margin-right: auto;
+}
+
+.tool-preview-score i,
+.tool-preview-score strong {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(0, 194, 255, 0.38);
+  border-radius: 50%;
+  color: var(--cyan-soft);
+  font-style: normal;
+}
+
+.tool-preview-score strong {
+  border: 0;
+  color: var(--mint);
+}
+
+.tool-preview-template {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  align-content: center;
+}
+
+.tool-preview-template i {
+  width: 72%;
+  height: 2px;
+  background: #28394d;
+}
+
+.tool-preview-template i:nth-child(2) { width: 88%; }
+.tool-preview-template i:nth-child(3) { width: 58%; }
+.tool-preview-template b { color: var(--cyan-soft); }
+
+.tool-kind {
+  color: var(--cyan);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tool-card h3 {
+  margin: 8px 0;
+  font-size: 20px;
+  letter-spacing: -0.025em;
+}
+
+.tool-card p {
+  max-width: 470px;
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tool-link {
+  color: var(--cyan-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tools-note {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: var(--dim);
+  font-size: 10px;
+}
+
 .governance-section {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(520px, 1.15fr);
@@ -1094,6 +1224,15 @@ h1 {
 
   .impressions-section {
     gap: 50px;
+  }
+
+  .tool-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-card {
+    min-height: 0;
+    padding: 20px;
   }
 
   .impressions-demo {
