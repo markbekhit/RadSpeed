@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="{{ t.exam }} report template: the structured report sections, technique line, typical indications and a sample impression. Draft a {{ t.exam }} report from your dictation in seconds with RadSpeed." />
+  <meta name="description" content="{% if t.meta_description %}{{ t.meta_description }}{% else %}{{ t.exam }} report template: the structured report sections, technique line, typical indications and a sample impression. Draft a {{ t.exam }} report from your dictation with RadSpeed.{% endif %}" />
   <meta name="theme-color" content="#050a12" />
   <link rel="canonical" href="https://radspeed.com.au/report-templates/{{ t.slug }}" />
-  <meta property="og:title" content="{{ t.exam }} report template · RadSpeed" />
+  <meta property="og:title" content="{{ t.page_title }} report template · RadSpeed" />
   <meta property="og:description" content="Structured {{ t.exam }} report sections, technique and a sample impression." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://radspeed.com.au/report-templates/{{ t.slug }}" />
@@ -16,7 +16,7 @@
   <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
-  <title>{{ t.seo_title }} Report Template · RadSpeed</title>
+  <title>{{ t.page_title }} Report Template · RadSpeed</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -60,9 +60,11 @@
 
     <header class="detail-head">
       <p class="eyebrow"><span></span>{{ t.group_label }} report template</p>
-      <h1>{{ t.exam }} report template</h1>
+      <h1>{{ t.page_title }} report template</h1>
+      {% if t.lead %}<p class="detail-lead">{{ t.lead }}</p>{% endif %}
       <p class="detail-technique"><strong>Technique:</strong> {{ t.technique }}</p>
       <p class="detail-indications"><strong>Typical indications:</strong> {{ t.indications }}</p>
+      {% if t.scope_note %}<p class="detail-scope"><strong>Scope:</strong> {{ t.scope_note }}</p>{% endif %}
       <div class="hero-actions">
         <a class="button button-primary" href="/impressions">Draft this report free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
         <a class="button button-secondary" href="/app">Use in RadSpeed</a>
@@ -88,6 +90,17 @@
         </ul>
       </section>
     </div>
+
+    {% if t.report_format %}
+    <section class="detail-format" aria-labelledby="report-format-heading">
+      <div class="detail-format-copy">
+        <p class="eyebrow"><span></span>Plain-text scaffold</p>
+        <h2 id="report-format-heading">Copyable lower limb venous Doppler report format</h2>
+        <p>Copy this scaffold into your reporting system. Replace each bracketed prompt and remove any line you did not assess.</p>
+      </div>
+      <pre><code>{{ t.report_format | join('\n') }}</code></pre>
+    </section>
+    {% endif %}
 
     <section class="detail-explainer">
       <h2>From dictation to finished report</h2>

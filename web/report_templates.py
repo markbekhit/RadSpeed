@@ -605,6 +605,20 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "Ultrasound_Doppler_Venous": {
+        "page_title": "Lower Limb Venous Doppler Ultrasound",
+        "meta_description": (
+            "Lower limb venous Doppler ultrasound report template for suspected DVT: "
+            "copyable report format, required sections and synthetic sample impression."
+        ),
+        "lead": (
+            "Use this DVT ultrasound scaffold to review the examination scope, document "
+            "venous compressibility and flow, and produce a clear impression. RadSpeed can "
+            "structure the same headings from natural dictation."
+        ),
+        "scope_note": (
+            "This page covers lower limb venous Doppler for suspected DVT. It does not cover "
+            "lower limb arterial Doppler."
+        ),
         "indications": "Suspected deep vein thrombosis of the lower limb.",
         "sections": [
             "Common femoral vein compressibility and flow",
@@ -617,6 +631,22 @@ LIBRARY: dict[str, dict] = {
             "No evidence of deep vein thrombosis in the imaged left lower limb.",
             "Normal compressibility and phasic flow.",
             "Patent superficial veins.",
+        ],
+        "report_format": [
+            "EXAM: LOWER LIMB VENOUS DOPPLER ULTRASOUND",
+            "CLINICAL DETAILS: [Indication and side]",
+            "TECHNIQUE: [Veins assessed and examination limitations]",
+            "",
+            "FINDINGS:",
+            "Common femoral vein: [Compressibility and flow]",
+            "Femoral vein: [Compressibility and flow]",
+            "Popliteal vein: [Compressibility and flow]",
+            "Calf veins: [Veins assessed and patency]",
+            "Superficial veins: [If assessed]",
+            "Other findings: [If present]",
+            "",
+            "IMPRESSION:",
+            "[Presence or absence of DVT, side, site and extent]",
         ],
     },
     # ---- X-ray & mammography ------------------------------------------------
@@ -777,6 +807,11 @@ def _entries() -> dict[str, dict]:
             "slug": _slug_from_stem(stem),
             "exam": exam,
             "seo_title": SEO_TITLES.get(stem, exam),
+            "page_title": curated.get("page_title", SEO_TITLES.get(stem, exam)),
+            "meta_description": curated.get("meta_description"),
+            "lead": curated.get("lead"),
+            "scope_note": curated.get("scope_note"),
+            "report_format": curated.get("report_format"),
             "technique": p.get("technique", ""),
             "group_id": g["id"] if g else "other",
             "group_label": g["label"] if g else "Other",

@@ -74,7 +74,7 @@ class ReportTemplateLibraryTests(unittest.TestCase):
             self.assertIn('href="/impressions"', body)
             self.assertNotIn("Structured Reporting · RadSpeed</title>", body)
             self.assertIn(
-                f"<title>{rt.get_entry(slug)['seo_title']} Report Template · RadSpeed</title>",
+                f"<title>{rt.get_entry(slug)['page_title']} Report Template · RadSpeed</title>",
                 body,
             )
             self.assertIn("https://radspeed.com.au/static/radspeed-share.png", body)
@@ -113,6 +113,21 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         for source, target in expected_pairs.items():
             body = self.client.get(f"/report-templates/{source}").text
             self.assertIn(f'href="/report-templates/{target}"', body, source)
+
+    def test_venous_doppler_page_answers_the_specific_search_job(self):
+        response = self.client.get(
+            "/report-templates/ultrasound-doppler-venous"
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.text
+        self.assertIn(
+            "<title>Lower Limb Venous Doppler Ultrasound Report Template · RadSpeed</title>",
+            body,
+        )
+        self.assertIn("report template for suspected DVT", body)
+        self.assertIn("Copyable lower limb venous Doppler report format", body)
+        self.assertIn("Common femoral vein: [Compressibility and flow]", body)
+        self.assertIn("It does not cover lower limb arterial Doppler", body)
 
 
 if __name__ == "__main__":
