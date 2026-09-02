@@ -114,6 +114,7 @@ from web.followups import (
     update_followup,
 )
 from web.fracture_workbench import resolve_workbench_image
+from web import adrenal
 from web import fleischner
 from web import report_templates as report_library
 from web import tirads
@@ -132,6 +133,7 @@ _PUBLIC_HEAD_PATHS = {
     "/powerscribe-companion",
     "/ti-rads-calculator",
     "/fleischner-calculator",
+    "/adrenal-washout-calculator",
     "/report-templates",
     "/robots.txt",
     "/sitemap.xml",
@@ -418,6 +420,7 @@ def sitemap():
   <url><loc>https://radspeed.com.au/impressions</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://radspeed.com.au/ti-rads-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/fleischner-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radspeed.com.au/adrenal-washout-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 {template_urls}</urlset>
 """
@@ -444,6 +447,7 @@ def llms_txt():
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
 - [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds and a paste-ready report line. Decision support, not a diagnostic device.
 - [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules, with a paste-ready report line. Decision support, not a diagnostic device.
+- [Adrenal washout calculator](https://radspeed.com.au/adrenal-washout-calculator): Free adrenal CT washout calculator for an incidental adrenal nodule — computes absolute and relative percentage washout from the unenhanced, portal-venous and delayed attenuation, with a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
 ## Important limits
@@ -709,6 +713,40 @@ def api_fleischner_recommend(req: FleischnerRequest):
 
 
 # ---------------------------------------------------------------------------
+# Public adrenal CT washout calculator — free, no auth, deterministic (no model
+# call, no patient data stored). Arithmetic lives in web/adrenal.py.
+# ---------------------------------------------------------------------------
+
+class AdrenalRequest(BaseModel):
+    enhanced_hu: float
+    delayed_hu: float
+    unenhanced_hu: Optional[float] = None
+    size_mm: Optional[float] = None
+    location: Optional[str] = None
+
+
+@app.post("/api/adrenal/washout")
+def api_adrenal_washout(req: AdrenalRequest):
+    """Return the adrenal CT washout metrics, category and a report line.
+
+    Pure arithmetic on the region-of-interest attenuation values — no external
+    model call and nothing is persisted, so no rate limiting is needed. A
+    free-text location is echoed only into the report line the caller sees.
+    """
+    location = (req.location or "").strip()[:80] or None
+    try:
+        return adrenal.assess(
+            enhanced_hu=req.enhanced_hu,
+            delayed_hu=req.delayed_hu,
+            unenhanced_hu=req.unenhanced_hu,
+            size_mm=req.size_mm,
+            location=location,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
 # WebSocket auth helpers
 # ---------------------------------------------------------------------------
 
@@ -914,6 +952,15 @@ def fleischner_calculator_page(request: Request):
     return _jinja.TemplateResponse(
         request,
         "fleischner_calculator.html",
+        {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/adrenal-washout-calculator", include_in_schema=False)
+def adrenal_washout_calculator_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "adrenal_washout_calculator.html",
         {"request": request, "static_version": _STATIC_VERSION},
     )
 

@@ -70,6 +70,7 @@
         <a class="button button-secondary" href="/app">Use in RadSpeed</a>
         {% if t.slug == "ultrasound-thyroid" %}<a class="button button-secondary" href="/ti-rads-calculator">Calculate ACR TI-RADS</a>{% endif %}
         {% if t.slug in ["ct-chest", "hrct-thorax", "ct-pulmonary-angiogram"] %}<a class="button button-secondary" href="/fleischner-calculator">Fleischner nodule follow-up</a>{% endif %}
+        {% if t.slug in ["ct-abdomen-pelvis", "ct-kub", "mri-abdomen-liver"] %}<a class="button button-secondary" href="/adrenal-washout-calculator">Adrenal washout calculator</a>{% endif %}
       </div>
     </header>
 

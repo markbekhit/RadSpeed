@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adrenal Washout Calculator · RadSpeed</title>
+  <meta name="description" content="Free adrenal CT washout calculator. Enter the unenhanced, portal-venous and 15-minute delayed attenuation to get the absolute and relative percentage washout, the lipid-rich and lipid-poor adenoma thresholds, and a ready-to-paste report line." />
+  <link rel="canonical" href="https://radspeed.com.au/adrenal-washout-calculator" />
+  <meta property="og:title" content="Adrenal CT Washout Calculator · RadSpeed" />
+  <meta property="og:description" content="Compute absolute and relative adrenal washout for an incidental adrenal nodule and copy a paste-ready report line. Free, no sign-up." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/adrenal-washout-calculator" />
+  <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "MedicalWebPage",
+        "name": "Adrenal CT Washout Calculator",
+        "url": "https://radspeed.com.au/adrenal-washout-calculator",
+        "description": "Free adrenal CT washout calculator that computes absolute and relative percentage washout and applies the adenoma thresholds, with a paste-ready structured report line.",
+        "medicalAudience": "https://schema.org/Clinician",
+        "about": { "@type": "MedicalCondition", "name": "Adrenal adenoma" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is adrenal CT washout calculated?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Absolute percentage washout (APW) equals the enhanced attenuation minus the delayed attenuation, divided by the enhanced attenuation minus the unenhanced attenuation, times 100. Relative percentage washout (RPW) equals the enhanced attenuation minus the delayed attenuation, divided by the enhanced attenuation, times 100. Enhanced is the portal-venous phase (60–75 seconds) and delayed is at 15 minutes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What washout values indicate a benign adrenal adenoma?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An unenhanced attenuation of 10 HU or less is diagnostic of a lipid-rich adenoma and no washout is needed. Otherwise an absolute washout of 60% or more, or — when no unenhanced phase is available — a relative washout of 40% or more, is consistent with a benign lipid-poor adenoma."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the adrenal washout calculator a diagnostic device?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It is decision-support software that reproduces the published washout formulas and thresholds. It does not store patient data. Some non-adenomas such as pheochromocytoma can also show washout, so always apply clinical judgement and confirm the result before reporting."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .fx-hero { text-align: center; padding: 24px 16px 8px; }
+    .fx-hero h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 8px;
+      background: linear-gradient(90deg, var(--accent), var(--mint));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .fx-hero p {
+      color: var(--muted); font-size: 14px; margin: 0 auto; max-width: 640px; line-height: 1.5;
+    }
+    .fx-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; }
+    @media (max-width: 860px) { .fx-grid { grid-template-columns: 1fr; } }
+    .fx-field { margin-bottom: 14px; }
+    .fx-field > label {
+      display: block; font-size: 11px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px;
+    }
+    .fx-field select, .fx-field input[type="text"], .fx-field input[type="number"] {
+      width: 100%; font-size: 14px;
+    }
+    .fx-inline { display: flex; gap: 12px; }
+    .fx-inline .fx-field { flex: 1; }
+    .fx-result-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px;
+    }
+    .fx-band { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: var(--accent); }
+    .fx-summary { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .fx-metrics { display: flex; gap: 10px; margin-bottom: 12px; }
+    .fx-metric {
+      flex: 1; text-align: center; padding: 10px 8px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--bg);
+    }
+    .fx-metric .fx-metric-val { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+    .fx-metric .fx-metric-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .fx-metric .fx-metric-note { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .fx-metric.pass .fx-metric-val { color: var(--mint); }
+    .fx-recommendation {
+      font-size: 15px; color: var(--text); line-height: 1.55; padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 12px;
+    }
+    .fx-report-title {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;
+    }
+    .fx-report-title h3 {
+      font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin: 0;
+    }
+    #report-line {
+      white-space: pre-wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
+    }
+    .fx-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+    .fx-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
+    .fx-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .fx-cta a:hover { text-decoration: underline; }
+    .fx-explainer h3 { font-size: 15px; margin: 0 0 8px; }
+    .fx-explainer p, .fx-explainer li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .fx-explainer table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    .fx-explainer th, .fx-explainer td {
+      text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top;
+    }
+    .fx-explainer th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fx-formula { font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 8px 0; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="product-brand">RadSpeed</div>
+    <div class="subtitle">Free Adrenal Washout Calculator</div>
+  </div>
+  <div class="ml-auto" style="display:flex;align-items:center;gap:10px;">
+    <a href="/ti-rads-calculator" class="btn btn-ghost btn-sm" title="ACR TI-RADS calculator">TI-RADS</a>
+    <a href="/fleischner-calculator" class="btn btn-ghost btn-sm" title="Fleischner 2017 calculator">Fleischner</a>
+    <a href="/app" class="btn btn-ghost btn-sm" title="Full dictation app">Sign in &rarr;</a>
+  </div>
+</header>
+
+<main>
+  <div class="fx-hero">
+    <h1>Adrenal CT washout calculator</h1>
+    <p>
+      Characterise an incidental adrenal nodule from its CT attenuation. Enter the unenhanced,
+      portal-venous and 15-minute delayed Hounsfield units to get the absolute and relative
+      percentage washout, the adenoma thresholds, and a report line you can paste straight into your
+      CT report.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="fx-grid">
+      <div>
+        <div class="fx-field">
+          <label for="unenhanced_hu">Unenhanced (HU, optional)</label>
+          <input type="number" id="unenhanced_hu" step="0.1" inputmode="decimal" value="18" placeholder="e.g. 18" />
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="enhanced_hu">Portal venous (HU)</label>
+            <input type="number" id="enhanced_hu" step="0.1" inputmode="decimal" value="78" placeholder="e.g. 78" />
+          </div>
+          <div class="fx-field">
+            <label for="delayed_hu">15-minute delayed (HU)</label>
+            <input type="number" id="delayed_hu" step="0.1" inputmode="decimal" value="42" placeholder="e.g. 42" />
+          </div>
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="size_mm">Size (mm, optional)</label>
+            <input type="number" id="size_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 22" />
+          </div>
+          <div class="fx-field">
+            <label for="location">Side (optional)</label>
+            <input type="text" id="location" autocomplete="off" placeholder="e.g. right" />
+          </div>
+        </div>
+        <p class="fx-note">
+          Use a region of interest over most of the nodule on each phase. Without an unenhanced
+          phase the tool reports the relative washout only. An unenhanced value of 10 HU or less is
+          already a lipid-rich adenoma.
+        </p>
+      </div>
+
+      <div>
+        <div class="fx-result-head">
+          <span class="fx-band" id="category">Lipid-poor adenoma</span>
+        </div>
+        <div class="fx-summary" id="summary"></div>
+
+        <div class="fx-metrics">
+          <div class="fx-metric" id="apw-metric">
+            <div class="fx-metric-val" id="apw-val">—</div>
+            <div class="fx-metric-lbl">Absolute washout</div>
+            <div class="fx-metric-note" id="apw-note">threshold ≥60%</div>
+          </div>
+          <div class="fx-metric" id="rpw-metric">
+            <div class="fx-metric-val" id="rpw-val">—</div>
+            <div class="fx-metric-lbl">Relative washout</div>
+            <div class="fx-metric-note" id="rpw-note">threshold ≥40%</div>
+          </div>
+        </div>
+
+        <div class="fx-recommendation" id="recommendation"></div>
+
+        <div class="fx-report-title">
+          <h3>Report line</h3>
+          <button id="btn-copy" class="btn btn-ghost btn-sm" type="button">&#128203; Copy</button>
+        </div>
+        <div id="report-line"></div>
+        <div id="status" class="impressions-status" style="font-size:12px;color:var(--muted);min-height:16px;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fx-explainer">
+    <h3>How adrenal CT washout works</h3>
+    <p>
+      An adrenal protocol acquires an unenhanced phase, a portal-venous phase (about 60–75 seconds)
+      and a delayed phase at 15 minutes. Adenomas enhance and then wash out contrast faster than most
+      non-adenomas, so the percentage washout separates a benign adenoma from an indeterminate nodule.
+    </p>
+    <div class="fx-formula">
+      Absolute washout (APW) = (enhanced − delayed) ÷ (enhanced − unenhanced) × 100<br />
+      Relative washout (RPW) = (enhanced − delayed) ÷ enhanced × 100
+    </div>
+    <h3 style="margin-top:14px;">Thresholds</h3>
+    <table>
+      <thead>
+        <tr><th>Finding</th><th>Interpretation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Unenhanced ≤ 10 HU</td><td>Lipid-rich adenoma (benign); washout not required</td></tr>
+        <tr><td>Absolute washout ≥ 60%</td><td>Lipid-poor adenoma (benign)</td></tr>
+        <tr><td>Relative washout ≥ 40%</td><td>Lipid-poor adenoma (benign), when no unenhanced phase</td></tr>
+        <tr><td>Below the thresholds</td><td>Indeterminate — further work-up may be needed</td></tr>
+      </tbody>
+    </table>
+    <p>
+      The washout criteria assume a homogeneous, non-calcified nodule without macroscopic fat. Some
+      non-adenomas — including pheochromocytoma and occasional metastases — can also show washout, so
+      read the numbers with the morphology and the clinical context.
+    </p>
+    <p>
+      Sources: Caoili EM, Korobkin M, Francis IR, et al. Adrenal masses: characterization with
+      combined unenhanced and delayed enhanced CT. <em>Radiology</em> 2002;222(3):629–633.
+      Boland GW, Blake MA, Hahn PF, Mayo-Smith WW. Incidental adrenal lesions: principles,
+      techniques, and algorithms for imaging characterization. <em>Radiology</em>
+      2008;249(3):756–775.
+    </p>
+  </div>
+
+  <div class="fx-cta">
+    Want this recommendation dictated straight into your worklist, in your own style?
+    <a href="/radiology-reporting-software">See the RadSpeed reporting workflow &rarr;</a>
+    &middot; <a href="/report-templates/ct-abdomen-pelvis">CT abdomen/pelvis template</a>
+    &middot; <a href="/fleischner-calculator">Fleischner calculator</a>
+  </div>
+</main>
+
+<footer>
+  RadSpeed adrenal washout calculator &middot; Decision support, not a medical device &middot;
+  Reproduces the published adrenal CT washout formulas and thresholds. Applies to a homogeneous,
+  non-calcified adrenal nodule without macroscopic fat. Some non-adenomas can also show washout.
+  Always apply clinical judgement and confirm the result before reporting. No patient data is stored.
+</footer>
+
+<script src="/static/adrenal.js?v={{ static_version }}"></script>
+</body>
+</html>
