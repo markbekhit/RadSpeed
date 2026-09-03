@@ -88,7 +88,7 @@ _GUIDELINE_REGISTRY: List[tuple[str, str, re.Pattern]] = [
         "ACR TI-RADS (thyroid nodules on US)",
         "TIRADS.md",
         re.compile(
-            r"\b(TI-?RADS|thyroid\s+(?:nodule|lesion))\b",
+            r"\b(TI-?RADS|thyroid\s+(?:nodules?|lesions?))\b",
             re.IGNORECASE,
         ),
     ),
@@ -96,6 +96,87 @@ _GUIDELINE_REGISTRY: List[tuple[str, str, re.Pattern]] = [
 
 
 _MAX_GUIDELINE_BYTES = 16000  # cap per request to control prompt size
+
+
+_REPORT_SECTION_NAMES = frozenset({
+    "exam",
+    "examination",
+    "procedure",
+    "technique",
+    "history",
+    "clinical history",
+    "clinical details",
+    "clinical information",
+    "clinical indication",
+    "clinical question",
+    "indication",
+    "comparison",
+    "comparisons",
+    "prior",
+    "priors",
+    "findings",
+    "impression",
+    "conclusion",
+    "opinion",
+    "recommendation",
+    "recommendations",
+})
+_IMPRESSION_SECTION_NAMES = frozenset({"impression", "conclusion", "opinion"})
+
+
+def _section_name(line: str) -> Optional[str]:
+    """Return a recognised report section name for a heading-only line."""
+    value = line.strip()
+    value = re.sub(r"^#{1,6}\s*", "", value)
+    value = value.replace("**", "").replace("__", "").strip()
+    value = value.rstrip(":").strip()
+    value = re.sub(r"\s+", " ", value).casefold()
+    return value if value in _REPORT_SECTION_NAMES else None
+
+
+def extract_findings(report: str) -> str:
+    """Extract the FINDINGS body from a complete structured report."""
+    lines = report.splitlines()
+    start: Optional[int] = None
+    for index, line in enumerate(lines):
+        if _section_name(line) == "findings":
+            start = index + 1
+            break
+    if start is None:
+        return ""
+
+    end = len(lines)
+    for index in range(start, len(lines)):
+        if _section_name(lines[index]):
+            end = index
+            break
+    return "\n".join(lines[start:end]).strip()
+
+
+def replace_impression(report: str, impression: str) -> str:
+    """Replace only the impression body, preserving every other section."""
+    impression = impression.strip()
+    lines = report.rstrip().splitlines()
+    heading_index: Optional[int] = None
+    for index, line in enumerate(lines):
+        if _section_name(line) in _IMPRESSION_SECTION_NAMES:
+            heading_index = index
+            break
+
+    if heading_index is None:
+        return f"{report.rstrip()}\n\n**IMPRESSION:**\n\n{impression}".strip()
+
+    end = len(lines)
+    for index in range(heading_index + 1, len(lines)):
+        if _section_name(lines[index]):
+            end = index
+            break
+
+    replacement = [lines[heading_index], "", *impression.splitlines()]
+    suffix = lines[end:]
+    if suffix:
+        replacement.extend(["", *suffix])
+    return "\n".join([*lines[:heading_index], *replacement]).strip()
 
 
 def _load_guideline_file(basename: str) -> Optional[str]:

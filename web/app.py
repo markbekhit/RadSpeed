@@ -68,7 +68,7 @@ from llm.fracture_locator import (
     locate_wrist_fracture_candidates,
 )
 from llm.strong_fracture_model import score_strong_fracture_images
-from llm.impressions import stream_impression
+from llm.impressions import extract_findings, replace_impression, stream_impression
 from llm.model_compat import completion_options
 from llm.worksheet import (
     MAX_WORKSHEET_IMAGE_BYTES,
@@ -524,6 +524,12 @@ class ImpressionsRequest(BaseModel):
     style: Optional[dict] = None
 
 
+class ReportImpressionRequest(BaseModel):
+    report: str
+    modality: Optional[str] = None
+    with_guidelines: bool = True
+
+
 @app.post("/api/impressions/stream")
 def api_impressions_stream(req: ImpressionsRequest, request: Request):
     """Stream a guideline-aware radiology impression from the supplied findings.
@@ -635,6 +641,57 @@ def api_impressions_text(req: ImpressionsRequest, request: Request):
         text,
         headers={"X-RadSpeed-Remaining": str(remaining)},
     )
+
+
+@app.post("/api/report/impression")
+def api_report_impression(
+    req: ReportImpressionRequest,
+    user: dict = Depends(_verify_auth),
+):
+    """Regenerate only the impression in an existing unsigned report."""
+    report = (req.report or "").strip()
+    if not report:
+        raise HTTPException(status_code=400, detail="Report is required.")
+    if len(report) > 30000:
+        raise HTTPException(status_code=413, detail="Report is too long.")
+
+    findings = extract_findings(report)
+    if not findings:
+        raise HTTPException(
+            status_code=400,
+            detail="The report does not contain a FINDINGS section.",
+        )
+
+    if _MOCK_MODE:
+        impression = "- Mock guideline-aware impression."
+    else:
+        if not config.TEXT_API_KEY:
+            raise HTTPException(
+                status_code=503,
+                detail="Text model is not configured on this server.",
+            )
+        try:
+            impression = "".join(stream_impression(
+                findings=findings,
+                modality=req.modality,
+                style=_user_style(user),
+                with_guidelines=bool(req.with_guidelines),
+            )).strip()
+        except Exception as exc:
+            logger.error("Report impression generation error: %s", exc, exc_info=True)
+            raise HTTPException(status_code=502, detail="Impression generation failed.")
+
+    if not impression:
+        raise HTTPException(status_code=502, detail="No impression was generated.")
+
+    impression = number_long_impression_body(impression)
+    updated_report = replace_impression(report, impression)
+    log_event(
+        user_id=user.get("id"),
+        event_type="impression_refresh",
+        metadata={"guidelines": bool(req.with_guidelines)},
+    )
+    return {"report": updated_report, "impression": impression}
 
 
 # ---------------------------------------------------------------------------

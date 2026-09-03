@@ -64,6 +64,9 @@ These are confirmed in code on `main` as of this update — not aspirations.
   LIRADS, Fleischner) — see `templates/` and `guidelines/`.
 - **Streaming report generation** with patient context block
   (`stream_format_text`, `format_text(patient_context=...)`).
+- **Impression-only refresh** in the signed-in report screen. It replaces only
+  the current Impression from the existing Findings and applies matching
+  Fleischner, BI-RADS, LI-RADS, PI-RADS or TI-RADS guidance by default.
 - **Smart paste** — rich / plain / markdown clipboard payloads for
   different RIS text fields, plus one-keystroke "Next Case" reset (Alt+N).
 - **Local indication screenshot transcription** — the shared screenshot area

@@ -221,6 +221,8 @@ function setUI(mode) {
   $("btn-refine").disabled      = mode !== "done" || fbState.isRecording;
   // Phase 1 / 2 buttons — gated on having a report to act on.
   const hasReport = mode === "done" && !!($("report-raw")?.value || "").trim();
+  const btnImpression = $("btn-impression");
+  if (btnImpression) btnImpression.disabled = !hasReport || _signedReportId !== null;
   const btnQa = $("btn-qa");        if (btnQa) btnQa.disabled = !hasReport;
   const btnSign = $("btn-sign-off"); if (btnSign) btnSign.disabled = !hasReport || _signedReportId !== null;
   const btnAudit = $("btn-audit");  if (btnAudit) btnAudit.disabled = !($("accession")?.value || "").trim();
@@ -1873,6 +1875,53 @@ async function formatReport() {
     setStatus(`Format error: ${err.message}`, "error");
   } finally {
     if (state.formatAbort === ac) state.formatAbort = null;
+  }
+}
+
+async function generateImpressionOnly() {
+  const report = ($("report-raw")?.value || "").trim();
+  if (!report) {
+    setStatus("Generate a report before refreshing its impression.", "error");
+    return;
+  }
+  if (_signedReportId !== null) {
+    setStatus("Amend the signed report before changing its impression.", "error");
+    return;
+  }
+
+  const button = $("btn-impression");
+  button.disabled = true;
+  const originalLabel = button.innerHTML;
+  button.textContent = "Generating…";
+  setStatus("Generating the impression only with matching guidelines…", "active");
+
+  try {
+    const response = await fetch("/api/report/impression", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        report,
+        modality: $("modality")?.value.trim() || null,
+        with_guidelines: true,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(error.detail || response.statusText);
+    }
+    const data = await response.json();
+    setReport(data.report);
+    state.reportLlmOutput = data.report;
+    _qaCheckedReport = "";
+    _setReportStatus("preliminary");
+    runQaCheck({ quiet: true });
+    refreshFollowupSuggestions(data.report);
+    setStatus("Impression updated. Findings and other sections were unchanged.", "success");
+  } catch (error) {
+    setStatus(`Impression error: ${error.message}`, "error");
+  } finally {
+    button.innerHTML = originalLabel;
+    button.disabled = false;
   }
 }
 
@@ -3590,6 +3639,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-record").addEventListener("click", onRecordClick);
   $("btn-stop").addEventListener("click", stopRecording);
   $("btn-format").addEventListener("click", formatReport);
+  if ($("btn-impression")) $("btn-impression").addEventListener("click", generateImpressionOnly);
   $("btn-copy").addEventListener("click", copyReport);
   if ($("btn-copy-from-comparison")) {
     $("btn-copy-from-comparison").addEventListener(

@@ -22,6 +22,7 @@ def test_public_impressions_generation_and_validation(page: Page, base_url: str)
     expect(
         page.get_by_role("heading", name="Radiology impression generator", exact=True)
     ).to_be_visible()
+    expect(page.locator("#with-guidelines")).to_be_checked()
 
     page.locator("#btn-generate").click()
     expect(page.locator("#status")).to_have_text("Paste some findings first.")
@@ -106,6 +107,33 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     )
     expect(page.locator("#status")).to_contain_text("Report ready")
     expect(page.locator("#report-status-badge")).to_have_text("Preliminary")
+    assert errors == []
+
+
+def test_authenticated_impression_action_preserves_the_report(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.goto(f"{base_url}/app")
+    original = (
+        "**EXAM:**\nSynthetic thyroid ultrasound.\n\n"
+        "**FINDINGS:**\nSynthetic right thyroid nodule, 16 mm, ACR TI-RADS TR4.\n\n"
+        "**IMPRESSION:**\n- Original impression."
+    )
+    page.evaluate(
+        """(report) => {
+          setReport(report);
+          setUI("done");
+        }""",
+        original,
+    )
+
+    page.locator("#btn-impression").click()
+    expect(page.locator("#status")).to_contain_text(
+        "Findings and other sections were unchanged", timeout=10_000
+    )
+    expect(page.locator("#report-raw")).to_have_value(
+        re.compile(r"Synthetic thyroid ultrasound[\s\S]*Synthetic right thyroid nodule[\s\S]*Mock guideline-aware impression")
+    )
+    expect(page.locator("#report-raw")).not_to_have_value(re.compile("Original impression"))
     assert errors == []
 
 
