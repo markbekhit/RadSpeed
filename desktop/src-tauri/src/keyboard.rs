@@ -102,43 +102,204 @@ pub fn set_clipboard(text: &str) -> Result<(), String> {
         .map_err(|e| format!("clipboard set: {e}"))
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ReportListKind {
+    Ordered,
+    Bullet,
+}
+
+#[derive(Debug)]
+struct ReportListRun {
+    kind: ReportListKind,
+    start: u32,
+}
+
+#[derive(Debug)]
+struct ReportRtfLine {
+    original: String,
+    content: String,
+    list: Option<(usize, ReportListKind, u32)>,
+}
+
+fn ordered_list_item(line: &str) -> Option<(u32, &str)> {
+    let trimmed = line.trim_start();
+    let digit_count = trimmed.chars().take_while(|ch| ch.is_ascii_digit()).count();
+    if digit_count == 0 {
+        return None;
+    }
+    let (digits, suffix) = trimmed.split_at(digit_count);
+    let suffix = suffix
+        .strip_prefix('.')
+        .or_else(|| suffix.strip_prefix(')'))?;
+    if !suffix.starts_with(char::is_whitespace) {
+        return None;
+    }
+    let content = suffix.trim_start();
+    if content.is_empty() {
+        return None;
+    }
+    Some((digits.parse().ok()?, content))
+}
+
+fn bullet_list_item(line: &str) -> Option<&str> {
+    let trimmed = line.trim_start();
+    for marker in ["-", "*", "\u{2022}"] {
+        if let Some(suffix) = trimmed.strip_prefix(marker) {
+            if suffix.starts_with(char::is_whitespace) {
+                let content = suffix.trim_start();
+                if !content.is_empty() {
+                    return Some(content);
+                }
+            }
+        }
+    }
+    None
+}
+
+fn parse_rtf_lines(text: &str) -> (Vec<ReportRtfLine>, Vec<ReportListRun>) {
+    let normalised = text.replace("\r\n", "\n").replace('\r', "\n");
+    let mut lines = Vec::new();
+    let mut runs = Vec::new();
+    let mut active_run: Option<(usize, ReportListKind)> = None;
+
+    for line in normalised.split('\n') {
+        let parsed = if let Some((number, content)) = ordered_list_item(line) {
+            Some((ReportListKind::Ordered, number, content))
+        } else {
+            bullet_list_item(line).map(|content| (ReportListKind::Bullet, 1, content))
+        };
+
+        if let Some((kind, number, content)) = parsed {
+            let run_index = match active_run {
+                Some((run_index, active_kind)) if active_kind == kind => run_index,
+                _ => {
+                    let run_index = runs.len();
+                    runs.push(ReportListRun {
+                        kind,
+                        start: number,
+                    });
+                    active_run = Some((run_index, kind));
+                    run_index
+                }
+            };
+            lines.push(ReportRtfLine {
+                original: line.to_string(),
+                content: content.to_string(),
+                list: Some((run_index, kind, number)),
+            });
+        } else {
+            active_run = None;
+            lines.push(ReportRtfLine {
+                original: line.to_string(),
+                content: line.to_string(),
+                list: None,
+            });
+        }
+    }
+    (lines, runs)
+}
+
+fn push_rtf_text(rtf: &mut String, text: &str) {
+    for ch in text.chars() {
+        match ch {
+            '\\' => rtf.push_str(r"\\"),
+            '{' => rtf.push_str(r"\{"),
+            '}' => rtf.push_str(r"\}"),
+            '\t' => rtf.push_str(r"\tab "),
+            ch if ch.is_ascii() => rtf.push(ch),
+            ch => {
+                let mut utf16 = [0; 2];
+                for unit in ch.encode_utf16(&mut utf16) {
+                    let signed = *unit as i16;
+                    let _ = write!(rtf, r"\u{signed}?");
+                }
+            }
+        }
+    }
+}
+
+fn push_rtf_list_tables(rtf: &mut String, runs: &[ReportListRun]) {
+    if runs.is_empty() {
+        return;
+    }
+
+    rtf.push_str(r"{\*\listtable");
+    for (index, run) in runs.iter().enumerate() {
+        let list_id = 1000 + index;
+        let template_id = 2000 + index;
+        let _ = write!(
+            rtf,
+            r"{{\list\listtemplateid{template_id}\listhybrid{{\listlevel"
+        );
+        match run.kind {
+            ReportListKind::Ordered => {
+                let _ = write!(
+                    rtf,
+                    r"\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat{}\levelspace0\levelindent0{{\leveltext\leveltemplateid{template_id}\'02\'00.;}}{{\levelnumbers\'01;}}\fi-360\li720\lin720\tx720",
+                    run.start
+                );
+            }
+            ReportListKind::Bullet => {
+                rtf.push_str(
+                    r"\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace0\levelindent0{\leveltext\leveltemplateid",
+                );
+                let _ = write!(
+                    rtf,
+                    r"{template_id}\'01\u8226 ?;}}{{\levelnumbers;}}\fi-360\li720\lin720\tx720"
+                );
+            }
+        }
+        let _ = write!(rtf, r"}}{{\listname ;}}\listid{list_id}}}");
+    }
+    rtf.push('}');
+
+    rtf.push_str(r"{\*\listoverridetable");
+    for (index, _) in runs.iter().enumerate() {
+        let list_id = 1000 + index;
+        let list_number = index + 1;
+        let _ = write!(
+            rtf,
+            r"{{\listoverride\listid{list_id}\listoverridecount0\ls{list_number}}}"
+        );
+    }
+    rtf.push('}');
+}
+
 /// Build a compact RTF document for native Windows clipboard consumers.
 /// PowerScribe reads this format but ignores Chromium's text/html clipboard
-/// flavour. Lines identified by the web report renderer remain bold.
+/// flavour. Markdown-style list lines become native Rich Edit list paragraphs,
+/// so adding or removing an item keeps PowerScribe's numbering correct.
 fn report_rtf(text: &str, bold_lines: &[String]) -> Vec<u8> {
     let bold: HashSet<&str> = bold_lines.iter().map(|line| line.trim()).collect();
-    let mut rtf = String::from(r#"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}\viewkind4\uc1\f0\fs20 "#);
+    let (lines, list_runs) = parse_rtf_lines(text);
+    let mut rtf = String::from(r#"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}\viewkind4\uc1"#);
+    push_rtf_list_tables(&mut rtf, &list_runs);
 
-    for (index, line) in text
-        .replace("\r\n", "\n")
-        .replace('\r', "\n")
-        .split('\n')
-        .enumerate()
-    {
+    for (index, line) in lines.iter().enumerate() {
         if index > 0 {
-            rtf.push_str(r"\line ");
+            rtf.push_str(r"\par ");
         }
-        let trimmed = line.trim();
+        rtf.push_str(r"\pard\plain\sa0\sb0\f0\fs20 ");
+        if let Some((run_index, kind, number)) = line.list {
+            let list_number = run_index + 1;
+            let _ = write!(
+                rtf,
+                r"\ls{list_number}\ilvl0\fi-360\li720\lin720\tx720{{\listtext\pard\plain\f0\fs20 "
+            );
+            match kind {
+                ReportListKind::Ordered => {
+                    let _ = write!(rtf, "{number}.\\tab");
+                }
+                ReportListKind::Bullet => rtf.push_str(r"\u8226?\tab"),
+            }
+            rtf.push_str("} ");
+        }
+        let trimmed = line.original.trim();
         let is_bold = !trimmed.is_empty() && bold.contains(trimmed);
         if is_bold {
             rtf.push_str(r"\b ");
         }
-        for ch in line.chars() {
-            match ch {
-                '\\' => rtf.push_str(r"\\"),
-                '{' => rtf.push_str(r"\{"),
-                '}' => rtf.push_str(r"\}"),
-                '\t' => rtf.push_str(r"\tab "),
-                ch if ch.is_ascii() => rtf.push(ch),
-                ch => {
-                    let mut utf16 = [0; 2];
-                    for unit in ch.encode_utf16(&mut utf16) {
-                        let signed = *unit as i16;
-                        let _ = write!(rtf, r"\u{signed}?");
-                    }
-                }
-            }
-        }
+        push_rtf_text(&mut rtf, &line.content);
         if is_bold {
             rtf.push_str(r"\b0 ");
         }
@@ -211,6 +372,7 @@ pub fn send_keys(spec: &str) -> Result<(), String> {
 /// Place `payload` on the clipboard and trigger Shift+Insert to paste.
 /// The previous clipboard is NOT restored automatically — call sites that
 /// want preservation should snapshot beforehand.
+#[cfg(target_os = "windows")]
 pub fn paste_block(payload: &str) -> Result<(), String> {
     let mut clipboard = Clipboard::new().map_err(|e| format!("clipboard init: {e}"))?;
     clipboard
@@ -233,6 +395,11 @@ pub fn paste_block(payload: &str) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(not(target_os = "windows"))]
+pub fn paste_block(_payload: &str) -> Result<(), String> {
+    Err("PowerScribe paste is available on Windows only".to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::report_rtf;
@@ -245,8 +412,9 @@ mod tests {
         );
         let value = String::from_utf8(rtf).unwrap();
 
-        assert!(value.contains(r"\b FINDINGS:\b0 \line \b Menisci\b0 \line Medial meniscus: Tear."));
-        assert!(value.contains(r"\line \line \b IMPRESSION:\b0 \line 1. Tear."));
+        assert!(value.contains(r"\b FINDINGS:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \b Menisci\b0 \par \pard\plain\sa0\sb0\f0\fs20 Medial meniscus: Tear."));
+        assert!(value.contains(r"\par \pard\plain\sa0\sb0\f0\fs20 \par \pard\plain\sa0\sb0\f0\fs20 \b IMPRESSION:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \ls1\ilvl0"));
+        assert!(value.contains(r"{\listtext\pard\plain\f0\fs20 1.\tab} Tear."));
         assert!(!value.contains(r"\b Medial meniscus"));
         assert!(value.ends_with("}\0"));
     }
@@ -256,5 +424,41 @@ mod tests {
         let value = String::from_utf8(report_rtf("A \\ {test} café", &[])).unwrap();
 
         assert!(value.contains(r"A \\ \{test\} caf\u233?"));
+    }
+
+    #[test]
+    fn report_rtf_emits_native_numbered_and_bulleted_lists() {
+        let value = String::from_utf8(report_rtf(
+            "IMPRESSION:\n1. First finding.\n2. Second finding.\n\nNOTES:\n- First note.\n- Second note.",
+            &["IMPRESSION:".into(), "NOTES:".into()],
+        ))
+        .unwrap();
+
+        assert!(value.contains(r"{\*\listtable"));
+        assert!(value.contains(r"\levelnfc0\levelnfcn0"));
+        assert!(value.contains(r"\leveltext\leveltemplateid2000\'02\'00.;"));
+        assert!(value.contains(r"\levelnfc23\levelnfcn23"));
+        assert!(value.contains(r"\leveltext\leveltemplateid2001\'01\u8226 ?;"));
+        assert!(value.contains(r"{\listoverride\listid1000\listoverridecount0\ls1}"));
+        assert!(value.contains(r"{\listoverride\listid1001\listoverridecount0\ls2}"));
+        assert!(value.contains(r"\ls1\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 1.\tab} First finding."));
+        assert!(value.contains(r"\ls1\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 2.\tab} Second finding."));
+        assert!(value.contains(r"\ls2\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 \u8226?\tab} First note."));
+        assert!(!value.contains("1. First finding."));
+        assert!(!value.contains("- First note."));
+    }
+
+    #[test]
+    fn report_rtf_restarts_separate_numbered_lists() {
+        let value = String::from_utf8(report_rtf(
+            "1. First.\n2. Second.\n\n1. New first.\n2. New second.",
+            &[],
+        ))
+        .unwrap();
+
+        assert!(value.contains(r"\listid1000"));
+        assert!(value.contains(r"\listid1001"));
+        assert!(value.contains(r"\ls1\ilvl0"));
+        assert!(value.contains(r"\ls2\ilvl0"));
     }
 }
