@@ -2,3 +2,16 @@
 identifier = "allow-copy-report-rtf"
 description = "Allows the trusted RadSpeed web app to copy one report as Windows RTF."
 commands.allow = ["cmd_copy_report_rtf"]
+
+[[permission]]
+identifier = "allow-settings-commands"
+description = "Allows the local RadSpeed settings window to read and save desktop settings."
+commands.allow = [
+  "cmd_get_settings",
+  "cmd_save_settings",
+  "cmd_test_api",
+  "cmd_hide_settings",
+  "cmd_trigger_now",
+  "cmd_show_app",
+  "cmd_get_version",
+]

@@ -94,6 +94,20 @@ pub(crate) fn show_app_window(app: &AppHandle) {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum InitialWindow {
+    App,
+    Settings,
+}
+
+fn initial_window(is_first_run: bool) -> InitialWindow {
+    if is_first_run {
+        InitialWindow::Settings
+    } else {
+        InitialWindow::App
+    }
+}
+
 #[tauri::command]
 fn cmd_trigger_now(app: AppHandle) {
     hotkey::run_impressions_flow(app);
@@ -187,14 +201,6 @@ pub fn run() {
                 }
             });
 
-            // Always show the main app window on launch — gives users a
-            // visible entry point so the Start Menu / desktop shortcut acts
-            // as a real "open RadSpeed" button instead of silently going to
-            // the (often hidden) tray. Single-instance plugin handles
-            // subsequent launches by bringing this same window forward.
-            let _ = app_window.show();
-            let _ = app_window.set_focus();
-
             // Register the configured hotkey at boot.
             let cfg = settings::load(app.handle());
             if let Err(e) = rebind_hotkey(app.handle(), &cfg.hotkey) {
@@ -207,11 +213,19 @@ pub fn run() {
                 );
             }
 
-            // First-run UX: open the settings window if no config file exists yet.
-            if first_run(app.handle()) {
-                if let Some(window) = app.get_webview_window("settings") {
-                    let _ = window.show();
-                    let _ = window.set_focus();
+            // Show exactly one window at launch. A new install needs settings;
+            // later launches open the web app. The settings window can open the
+            // app after Save, without two windows competing for focus.
+            match initial_window(first_run(app.handle())) {
+                InitialWindow::App => {
+                    let _ = app_window.show();
+                    let _ = app_window.set_focus();
+                }
+                InitialWindow::Settings => {
+                    if let Some(window) = app.get_webview_window("settings") {
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
                 }
             }
 
@@ -235,4 +249,40 @@ fn first_run(app: &AppHandle) -> bool {
         Err(_) => return true,
     };
     !dir.join("config.json").exists()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn first_run_opens_only_settings() {
+        assert_eq!(initial_window(true), InitialWindow::Settings);
+    }
+
+    #[test]
+    fn configured_launch_opens_only_app() {
+        assert_eq!(initial_window(false), InitialWindow::App);
+    }
+
+    #[test]
+    fn local_settings_commands_are_allowed_by_acl() {
+        let capability = include_str!("../capabilities/default.json");
+        let permissions = include_str!("../permissions/report-copy.toml");
+        assert!(capability.contains("allow-settings-commands"));
+        for command in [
+            "cmd_get_settings",
+            "cmd_save_settings",
+            "cmd_test_api",
+            "cmd_hide_settings",
+            "cmd_trigger_now",
+            "cmd_show_app",
+            "cmd_get_version",
+        ] {
+            assert!(
+                permissions.contains(command),
+                "missing ACL permission for {command}"
+            );
+        }
+    }
 }

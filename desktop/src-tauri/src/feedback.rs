@@ -10,6 +10,7 @@ use std::time::Duration;
 use tauri::{App, AppHandle, Manager, PhysicalPosition, Position, WebviewUrl};
 
 const WINDOW_LABEL: &str = "feedback";
+const SUCCESS_VISIBLE_SECS: u64 = 12;
 static MESSAGE_GENERATION: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Debug, Clone, Copy, Serialize)]
@@ -35,7 +36,7 @@ pub fn build(app: &mut App) -> Result<(), tauri::Error> {
         WebviewUrl::App("feedback.html".into()),
     )
     .title("RadSpeed status")
-    .inner_size(470.0, 88.0)
+    .inner_size(620.0, 118.0)
     .resizable(false)
     .maximizable(false)
     .minimizable(false)
@@ -64,12 +65,13 @@ pub fn working(app: &AppHandle, title: &str, message: &str) {
 }
 
 pub fn success(app: &AppHandle, title: &str, message: &str) {
+    let title = format!("DONE — {title}");
     show(
         app,
         Tone::Success,
-        title,
+        &title,
         message,
-        Some(Duration::from_secs(6)),
+        Some(Duration::from_secs(SUCCESS_VISIBLE_SECS)),
     );
 }
 
@@ -119,6 +121,12 @@ fn show(app: &AppHandle, tone: Tone, title: &str, message: &str, hide_after: Opt
     if let Err(error) = window.show() {
         log::warn!("feedback show failed: {error}");
     }
+    // A hidden topmost WebView can lose its topmost z-order on Windows.
+    // Re-apply it after every show without taking focus from PowerScribe.
+    let _ = window.set_always_on_top(false);
+    if let Err(error) = window.set_always_on_top(true) {
+        log::warn!("feedback topmost failed: {error}");
+    }
 
     if let Some(delay) = hide_after {
         let app = app.clone();
@@ -145,9 +153,9 @@ fn position_on_active_monitor(window: &tauri::WebviewWindow) {
     };
     let monitor_size = monitor.size();
     let monitor_origin = monitor.position();
-    let window_width = window.outer_size().map(|size| size.width).unwrap_or(470);
+    let window_width = window.outer_size().map(|size| size.width).unwrap_or(620);
     let x = monitor_origin.x + (monitor_size.width.saturating_sub(window_width) / 2) as i32;
-    let y = monitor_origin.y + (24.0 * monitor.scale_factor()) as i32;
+    let y = monitor_origin.y + (64.0 * monitor.scale_factor()) as i32;
     let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
 }
 
@@ -196,5 +204,9 @@ mod tests {
             friendly_error("secret provider detail"),
             "The hotkey action could not be completed. Try again or open RadSpeed."
         );
+    }
+    #[test]
+    fn success_banner_stays_visible_long_enough_to_read() {
+        assert!(SUCCESS_VISIBLE_SECS >= 10);
     }
 }
