@@ -12,8 +12,9 @@ radiologists. Protect clinical privacy and verify behaviour with synthetic data.
   `guidelines/`, `web/`, and `docs/`.
 - This is a solo project. Work directly on `main`; do not create branches,
   worktrees, or pull requests unless the owner explicitly asks.
-- Pull `origin/main` before planning. Read `docs/ROADMAP.md` and verify the code
-  before proposing work because many integrations are already shipped.
+- Fetch before changing shared code and incorporate compatible remote changes safely.
+  Preserve uncommitted work; read-only tasks do not require a pull. Read `docs/ROADMAP.md`
+  when planning roadmap work and verify the affected code before proposing integrations.
 - Update `docs/ROADMAP.md` when a shipped phase or product strategy changes.
 
 ## Safety and working rules
@@ -27,7 +28,8 @@ radiologists. Protect clinical privacy and verify behaviour with synthetic data.
   commands.
 - Prefer a purpose-built connector. Use Chrome only when signed-in state is
   required, and an isolated browser for public or repeatable QA.
-- Every bug fix needs a regression test.
+- Add regression coverage when it can detect the changed behaviour. Run checks relevant
+  to the change. Broaden passed checks only for a new change, failure or unresolved concern.
 
 ## Read before release or infrastructure work
 
