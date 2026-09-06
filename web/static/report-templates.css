@@ -1,5 +1,10 @@
 /* Report template library — index + detail. Layers on landing.css tokens. */
 
+.site-footer nav {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .library-hero {
   position: relative;
   width: min(calc(100% - 40px), var(--page));
