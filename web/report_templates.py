@@ -846,6 +846,13 @@ def get_entry(slug: str) -> Optional[dict]:
 
 
 _RELATED_OVERRIDES: dict[str, list[str]] = {
+    # Body and pelvic studies otherwise fall outside the first-six default.
+    "mri-pelvis": ["mri-prostate", "ultrasound-pelvis", "ct-abdomen-pelvis"],
+    "mri-prostate": ["mri-pelvis"],
+    "ultrasound-pelvis": ["mri-pelvis", "ct-abdomen-pelvis"],
+    "ct-kub": ["ct-abdomen-pelvis", "ultrasound-abdomen"],
+    "ct-abdomen-pelvis": ["ct-kub", "ultrasound-abdomen", "mri-abdomen-liver", "mri-pelvis"],
+    "ultrasound-abdomen": ["ct-abdomen-pelvis", "ct-kub", "mri-abdomen-liver"],
     # Search Console shows demand for these pages. Put the closest clinical
     # companion first instead of giving every page the first six templates in
     # its modality group.
