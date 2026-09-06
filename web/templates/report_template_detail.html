@@ -66,8 +66,8 @@
       <p class="detail-indications"><strong>Typical indications:</strong> {{ t.indications }}</p>
       {% if t.scope_note %}<p class="detail-scope"><strong>Scope:</strong> {{ t.scope_note }}</p>{% endif %}
       <div class="hero-actions">
-        <a class="button button-primary" href="/impressions">Draft this report free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
-        <a class="button button-secondary" href="/app">Use in RadSpeed</a>
+        <a class="button button-primary" href="/impressions">Draft an impression free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
+        <a class="button button-secondary" href="/app">Sign in for full reporting</a>
         {% if t.slug == "ultrasound-thyroid" %}<a class="button button-secondary" href="/ti-rads-calculator">Calculate ACR TI-RADS</a>{% endif %}
         {% if t.slug in ["ct-chest", "hrct-thorax", "ct-pulmonary-angiogram"] %}<a class="button button-secondary" href="/fleischner-calculator">Fleischner nodule follow-up</a>{% endif %}
         {% if t.slug in ["ct-abdomen-pelvis", "ct-kub", "mri-abdomen-liver"] %}<a class="button button-secondary" href="/adrenal-washout-calculator">Adrenal washout calculator</a>{% endif %}
