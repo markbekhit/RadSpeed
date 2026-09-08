@@ -323,6 +323,37 @@ LIBRARY: dict[str, dict] = {
     },
     # ---- CT -----------------------------------------------------------------
     "CT_Head_Brain": {
+        "meta_description": (
+            "CT head and brain report template for non-contrast studies. Copy a blank "
+            "report scaffold, review the sections and adapt the synthetic sample impression."
+        ),
+        "lead": (
+            "Copy a blank CT head report scaffold into your reporting system, then replace "
+            "the prompts with your findings. The same structure is available for dictated "
+            "reports in RadSpeed."
+        ),
+        "scope_note": (
+            "This template covers non-contrast CT head and brain reporting. "
+            "It is not a CT perfusion or CT angiography report template."
+        ),
+        "report_format_heading": "Copyable CT head and brain report format",
+        "report_format": [
+            "EXAM: CT HEAD / BRAIN",
+            "CLINICAL DETAILS: [Indication]",
+            "COMPARISON: [Prior study and date, or no comparison available]",
+            "TECHNIQUE: [Confirm the non-contrast technique and any limitations]",
+            "",
+            "FINDINGS:",
+            "Extra-axial spaces: [Findings]",
+            "Brain parenchyma and grey-white differentiation: [Findings]",
+            "Ventricles and basal cisterns: [Findings]",
+            "Midline and mass effect: [Findings]",
+            "Skull and skull base: [Findings]",
+            "Paranasal sinuses and mastoids: [Findings]",
+            "",
+            "IMPRESSION:",
+            "[Summarise the findings relevant to the clinical question]",
+        ],
         "indications": "Trauma, acute headache, suspected haemorrhage, stroke or raised pressure.",
         "sections": [
             "Extra-axial spaces for haemorrhage or collection",
@@ -605,6 +636,7 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "Ultrasound_Doppler_Venous": {
+        "report_format_heading": "Copyable lower limb venous Doppler report format",
         "page_title": "Lower Limb Venous Doppler Ultrasound",
         "meta_description": (
             "Lower limb venous Doppler ultrasound report template for suspected DVT: "
@@ -812,6 +844,7 @@ def _entries() -> dict[str, dict]:
             "lead": curated.get("lead"),
             "scope_note": curated.get("scope_note"),
             "report_format": curated.get("report_format"),
+            "report_format_heading": curated.get("report_format_heading"),
             "technique": p.get("technique", ""),
             "group_id": g["id"] if g else "other",
             "group_label": g["label"] if g else "Other",

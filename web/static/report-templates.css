@@ -314,9 +314,24 @@
 }
 
 .detail-format h2 {
+  scroll-margin-top: 100px;
   margin: 10px 0 14px;
   font-size: clamp(1.5rem, 3vw, 2rem);
   letter-spacing: -0.04em;
+}
+
+#copy-report-format {
+  margin-top: 16px;
+}
+
+#copy-report-format[hidden] {
+  display: none;
+}
+
+#copy-report-status {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .detail-format-copy > p:last-child {
