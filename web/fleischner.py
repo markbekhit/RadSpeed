@@ -10,6 +10,18 @@ Incidental Pulmonary Nodules Detected on CT Images: From the Fleischner Society
 2017." Radiology 2017;284(1):228-243. Size bands, risk split and follow-up
 intervals follow that consensus statement.
 
+Measurement rules follow the companion Fleischner Society statement: Bankier AA,
+MacMahon H, Goo JM, et al. "Recommendations for Measuring Pulmonary Nodules at
+CT: A Statement from the Fleischner Society." Radiology 2017;285(2):584-600.
+Manual caliper size is the average of the long- and short-axis diameters,
+rounded to the nearest whole millimetre.
+
+Interval comparison uses the thresholds applied alongside those statements: an
+increase of 2 mm or more in mean diameter, or a volume increase of more than
+25% where volumetry is available. Smaller changes fall inside manual
+measurement variability. This module reports the change only; it does not
+recommend management for a growing nodule.
+
 Scope of the guideline (reproduced here as a boundary, not clinical advice):
 solitary or multiple incidental nodules in patients aged 35 years or older. It
 does not apply to lung-cancer screening, immunocompromised patients, or patients
@@ -18,6 +30,7 @@ with known or suspected primary malignancy.
 
 from __future__ import annotations
 
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional
 
 NODULE_TYPES: dict[str, str] = {
@@ -30,6 +43,18 @@ RISK_LABELS: dict[str, str] = {
     "low": "low-risk",
     "high": "high-risk",
 }
+
+# Interval-change thresholds. A manual caliper change below GROWTH_DIAMETER_MM
+# sits inside measurement variability, so it is reported as stable rather than
+# as growth. GROWTH_VOLUME_PERCENT applies only when CT volumetry is supplied.
+GROWTH_DIAMETER_MM = 2.0
+GROWTH_VOLUME_PERCENT = 25.0
+
+_GROWTH_NOTE = (
+    "Growth of a previously known nodule is not covered by the Fleischner "
+    "interval table, which assumes a newly detected incidental nodule. "
+    "Reassess management rather than continuing the routine interval."
+)
 
 _APPLICABILITY = (
     "Applies to incidental nodules in patients aged 35 or older. Not for "
@@ -99,6 +124,132 @@ def _solid_band(size_mm: float) -> str:
 
 def _subsolid_band(size_mm: float) -> str:
     return "lt6" if size_mm < 6 else "ge6"
+
+
+def mean_diameter(long_axis_mm, short_axis_mm) -> dict:
+    """Return the Fleischner manual-caliper size for one nodule.
+
+    Size is the average of the long- and short-axis diameters, rounded to the
+    nearest whole millimetre (Bankier 2017). A half-millimetre average rounds
+    up, so 8 x 5 mm gives 6.5 mm and reports as 7 mm. Raises ValueError when
+    either axis is missing or not greater than zero.
+    """
+    long_mm = _validate_size(long_axis_mm)
+    short_mm = _validate_size(short_axis_mm)
+    if short_mm > long_mm:
+        long_mm, short_mm = short_mm, long_mm
+    average = (long_mm + short_mm) / 2
+    rounded = int(
+        Decimal(str(average)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    )
+    return {
+        "long_axis_mm": long_mm,
+        "short_axis_mm": short_mm,
+        "average_mm": average,
+        "mean_diameter_mm": rounded,
+        "measurement_note": (
+            f"{_fmt_mm(long_mm)} x {_fmt_mm(short_mm)} averages "
+            f"{_fmt_mm(average)} and reports as {rounded} mm."
+        ),
+    }
+
+
+def _percent_change(current: float, prior: float) -> float:
+    return (current - prior) / prior * 100
+
+
+def compare_prior(
+    size_mm,
+    prior_size_mm,
+    interval_months=None,
+    volume_mm3=None,
+    prior_volume_mm3=None,
+) -> dict:
+    """Compare a nodule with its prior study and classify the interval change.
+
+    Diameter growth is an increase of GROWTH_DIAMETER_MM or more; a decrease of
+    the same size is shrinkage. Anything between the two is reported as stable
+    within manual measurement variability. When both volumes are supplied, a
+    change of more than GROWTH_VOLUME_PERCENT is classified the same way. The
+    nodule counts as grown if either measure shows growth.
+    """
+    current = _validate_size(size_mm)
+    prior = _validate_size(prior_size_mm)
+
+    months = None
+    if interval_months is not None:
+        try:
+            months = float(interval_months)
+        except (TypeError, ValueError):
+            raise ValueError("interval_months must be a number")
+        if months <= 0:
+            months = None
+
+    diameter_change = current - prior
+    if diameter_change >= GROWTH_DIAMETER_MM:
+        diameter_status = "growth"
+    elif diameter_change <= -GROWTH_DIAMETER_MM:
+        diameter_status = "smaller"
+    else:
+        diameter_status = "stable"
+
+    volume_change_percent = None
+    volume_status = None
+    if volume_mm3 is not None and prior_volume_mm3 is not None:
+        current_volume = _validate_size(volume_mm3)
+        prior_volume = _validate_size(prior_volume_mm3)
+        volume_change_percent = _percent_change(current_volume, prior_volume)
+        if volume_change_percent > GROWTH_VOLUME_PERCENT:
+            volume_status = "growth"
+        elif volume_change_percent < -GROWTH_VOLUME_PERCENT:
+            volume_status = "smaller"
+        else:
+            volume_status = "stable"
+
+    grew = diameter_status == "growth" or volume_status == "growth"
+    if grew:
+        status = "growth"
+    elif diameter_status == "smaller" or volume_status == "smaller":
+        status = "smaller"
+    else:
+        status = "stable"
+
+    interval = f" over {months:g} months" if months else ""
+    summary = (
+        f"Mean diameter {_fmt_mm(prior)} to {_fmt_mm(current)} "
+        f"({diameter_change:+.1f} mm{interval})."
+    )
+    if volume_change_percent is not None:
+        summary += f" Volume change {volume_change_percent:+.0f}%."
+    if status == "growth":
+        summary += (
+            f" This meets the growth threshold of {GROWTH_DIAMETER_MM:g} mm"
+            f" or {GROWTH_VOLUME_PERCENT:g}% by volume."
+        )
+    elif status == "smaller":
+        summary += " The nodule is smaller than on the prior study."
+    else:
+        summary += (
+            f" The change stays inside the {GROWTH_DIAMETER_MM:g} mm"
+            " manual measurement variability, so it reads as stable."
+        )
+
+    return {
+        "prior_size_mm": prior,
+        "interval_months": months,
+        "diameter_change_mm": round(diameter_change, 1),
+        "diameter_status": diameter_status,
+        "volume_mm3": float(volume_mm3) if volume_status else None,
+        "prior_volume_mm3": float(prior_volume_mm3) if volume_status else None,
+        "volume_change_percent": (
+            round(volume_change_percent, 1) if volume_change_percent is not None else None
+        ),
+        "volume_status": volume_status,
+        "status": status,
+        "grew": grew,
+        "summary": summary,
+        "growth_note": _GROWTH_NOTE if grew else None,
+    }
 
 
 def _validate_size(size_mm) -> float:
@@ -193,20 +344,37 @@ def _report_line(
 
 def assess(
     nodule_type: str,
-    size_mm: float,
+    size_mm: Optional[float] = None,
     multiple: bool = False,
     risk: str = "low",
     solid_component_mm: Optional[float] = None,
     location: Optional[str] = None,
+    long_axis_mm: Optional[float] = None,
+    short_axis_mm: Optional[float] = None,
+    prior_size_mm: Optional[float] = None,
+    interval_months: Optional[float] = None,
+    volume_mm3: Optional[float] = None,
+    prior_volume_mm3: Optional[float] = None,
 ) -> dict:
     """Return the Fleischner 2017 follow-up recommendation for one nodule.
 
     `nodule_type` is one of solid, ground_glass, part_solid. `size_mm` is the
-    mean of the long- and short-axis diameters. `risk` (low/high) only changes
-    the recommendation for solid nodules; the subsolid table is risk-agnostic.
-    `solid_component_mm` refines a single part-solid nodule of 6 mm or larger.
-    Raises ValueError on an unknown option or a non-positive size.
+    mean of the long- and short-axis diameters. Supply `long_axis_mm` and
+    `short_axis_mm` instead to have that mean computed and rounded here, which
+    keeps one source of truth for the measurement rule. `risk` (low/high) only
+    changes the recommendation for solid nodules; the subsolid table is
+    risk-agnostic. `solid_component_mm` refines a single part-solid nodule of
+    6 mm or larger. `prior_size_mm` adds an interval comparison, optionally with
+    `interval_months` and a CT volumetry pair. Raises ValueError on an unknown
+    option, a missing size, or a non-positive size.
     """
+    measurement = None
+    if long_axis_mm is not None and short_axis_mm is not None:
+        measurement = mean_diameter(long_axis_mm, short_axis_mm)
+        size_mm = measurement["mean_diameter_mm"]
+    elif size_mm is None:
+        raise ValueError("Supply size_mm, or both long_axis_mm and short_axis_mm")
+
     if nodule_type not in NODULE_TYPES:
         valid = ", ".join(sorted(NODULE_TYPES))
         raise ValueError(f"Unknown nodule_type {nodule_type!r}. Expected one of: {valid}")
@@ -238,6 +406,16 @@ def assess(
             nodule_type, multiple, band, solid_component_mm
         )
 
+    comparison = None
+    if prior_size_mm is not None:
+        comparison = compare_prior(
+            size_mm,
+            prior_size_mm,
+            interval_months=interval_months,
+            volume_mm3=volume_mm3,
+            prior_volume_mm3=prior_volume_mm3,
+        )
+
     report_line = _report_line(
         nodule_type,
         multiple,
@@ -248,8 +426,14 @@ def assess(
         location,
         recommendation,
     )
+    if comparison:
+        report_line += f" {comparison['summary']}"
+        if comparison["growth_note"]:
+            report_line += f" {comparison['growth_note']}"
 
     return {
+        "measurement": measurement,
+        "comparison": comparison,
         "nodule_type": nodule_type,
         "nodule_type_label": NODULE_TYPES[nodule_type],
         "multiplicity": "multiple" if multiple else "single",

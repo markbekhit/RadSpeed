@@ -446,7 +446,7 @@ def llms_txt():
 - [PowerScribe companion](https://radspeed.com.au/powerscribe-companion): Windows companion workflow for drafting and pasting an impression beside an existing reporting system.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
 - [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds and a paste-ready report line. Decision support, not a diagnostic device.
-- [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules, with a paste-ready report line. Decision support, not a diagnostic device.
+- [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules. Averages the long and short axis into the guideline mean diameter with whole-millimetre rounding, compares the prior study against the 2 mm diameter and 25% volume growth thresholds, and returns a paste-ready report line. Decision support, not a diagnostic device.
 - [Adrenal washout calculator](https://radspeed.com.au/adrenal-washout-calculator): Free adrenal CT washout calculator for an incidental adrenal nodule — computes absolute and relative percentage washout from the unenhanced, portal-venous and delayed attenuation, with a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
@@ -740,11 +740,20 @@ def api_tirads_score(req: TiradsRequest):
 
 class FleischnerRequest(BaseModel):
     nodule_type: str
-    size_mm: float
+    size_mm: Optional[float] = None
     multiple: bool = False
     risk: str = "low"
     solid_component_mm: Optional[float] = None
     location: Optional[str] = None
+    # Supplying both axes lets web/fleischner.py apply the guideline mean and
+    # rounding, so the browser never reimplements the measurement rule.
+    long_axis_mm: Optional[float] = None
+    short_axis_mm: Optional[float] = None
+    # Optional interval comparison against the prior study.
+    prior_size_mm: Optional[float] = None
+    interval_months: Optional[float] = None
+    volume_mm3: Optional[float] = None
+    prior_volume_mm3: Optional[float] = None
 
 
 @app.post("/api/fleischner/recommend")
@@ -764,6 +773,12 @@ def api_fleischner_recommend(req: FleischnerRequest):
             risk=req.risk,
             solid_component_mm=req.solid_component_mm,
             location=location,
+            long_axis_mm=req.long_axis_mm,
+            short_axis_mm=req.short_axis_mm,
+            prior_size_mm=req.prior_size_mm,
+            interval_months=req.interval_months,
+            volume_mm3=req.volume_mm3,
+            prior_volume_mm3=req.prior_volume_mm3,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

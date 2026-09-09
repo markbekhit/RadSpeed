@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fleischner Calculator · RadSpeed</title>
-  <meta name="description" content="Free Fleischner Society 2017 pulmonary nodule follow-up calculator. Choose nodule type, size, number and risk to get the recommended CT follow-up for incidental lung nodules, plus a ready-to-paste report line." />
+  <meta name="description" content="Free Fleischner Society 2017 pulmonary nodule follow-up calculator. Enter the long and short axis to get the guideline mean diameter, the recommended CT follow-up for an incidental lung nodule, an interval comparison against the prior study, and a ready-to-paste report line." />
   <link rel="canonical" href="https://radspeed.com.au/fleischner-calculator" />
   <meta property="og:title" content="Fleischner 2017 Pulmonary Nodule Calculator · RadSpeed" />
-  <meta property="og:description" content="Get the Fleischner Society 2017 follow-up recommendation for an incidental lung nodule and copy a paste-ready report line. Free, no sign-up." />
+  <meta property="og:description" content="Get the guideline mean diameter, the Fleischner Society 2017 follow-up recommendation and the interval change against the prior study, then copy a paste-ready report line. Free, no sign-up." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://radspeed.com.au/fleischner-calculator" />
   <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
@@ -27,7 +27,7 @@
         "@type": "MedicalWebPage",
         "name": "Fleischner 2017 Pulmonary Nodule Calculator",
         "url": "https://radspeed.com.au/fleischner-calculator",
-        "description": "Free Fleischner Society 2017 incidental pulmonary nodule follow-up calculator with a paste-ready structured report line.",
+        "description": "Free Fleischner Society 2017 incidental pulmonary nodule follow-up calculator with guideline mean-diameter rounding, prior-study interval comparison and a paste-ready structured report line.",
         "medicalAudience": "https://schema.org/Clinician",
         "about": { "@type": "MedicalCondition", "name": "Pulmonary nodule" }
       },
@@ -48,6 +48,22 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "They apply to incidental pulmonary nodules in patients aged 35 or older. They do not apply to lung-cancer screening, immunocompromised patients, or patients with known or suspected primary cancer."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does a lung nodule have to grow to count as growth?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "An increase of 2 mm or more in mean diameter is taken as growth on manual caliper measurement, because smaller changes fall inside measurement variability. Where CT volumetry is available, a volume increase of more than 25 per cent is used instead. A nodule that grows is no longer a newly detected incidental nodule, so the Fleischner interval table no longer applies and management is reassessed."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do you round a lung nodule measurement of 8 by 5 mm?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Average the two axes and round the average to the nearest whole millimetre. A nodule measuring 8 by 5 mm averages 6.5 mm, which reports as 7 mm and therefore sits in the 6 to 8 mm Fleischner band, not below 6 mm."
             }
           },
           {
@@ -111,6 +127,27 @@
       background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
     }
     .fx-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+    .fx-sub {
+      margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);
+    }
+    .fx-sub h2 {
+      font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--muted); margin: 0 0 4px;
+    }
+    .fx-sub > p { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0 0 10px; }
+    .fx-derived {
+      font-size: 12px; color: var(--mint); line-height: 1.5; margin: -4px 0 10px; min-height: 16px;
+    }
+    .fx-change {
+      font-size: 14px; color: var(--text); line-height: 1.55; padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 12px;
+    }
+    .fx-change[data-status="growth"] { border-color: var(--red); }
+    .fx-change-tag {
+      display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; margin-bottom: 6px; color: var(--muted);
+    }
+    .fx-change[data-status="growth"] .fx-change-tag { color: var(--red); }
     .fx-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
     .fx-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .fx-cta a:hover { text-decoration: underline; }
@@ -141,9 +178,10 @@
   <div class="fx-hero">
     <h1>Fleischner 2017 pulmonary nodule calculator</h1>
     <p>
-      Get the Fleischner Society 2017 follow-up recommendation for an incidental lung nodule.
-      Choose the nodule type, mean diameter, number and patient risk, then copy a report line
-      you can paste straight into your CT chest report.
+      Enter the long and short axis and the calculator applies the guideline mean diameter and
+      rounding, then gives the Fleischner Society 2017 follow-up recommendation for an incidental
+      lung nodule. Add the prior study to see the interval change against the 2 mm growth threshold.
+      Copy a report line you can paste straight into your CT chest report.
     </p>
   </div>
 
@@ -160,6 +198,16 @@
         </div>
         <div class="fx-inline">
           <div class="fx-field">
+            <label for="long_axis_mm">Long axis (mm)</label>
+            <input type="number" id="long_axis_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 8" />
+          </div>
+          <div class="fx-field">
+            <label for="short_axis_mm">Short axis (mm)</label>
+            <input type="number" id="short_axis_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 5" />
+          </div>
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
             <label for="size_mm">Mean diameter (mm)</label>
             <input type="number" id="size_mm" min="0" step="0.1" inputmode="decimal" value="7" placeholder="e.g. 7" />
           </div>
@@ -171,6 +219,7 @@
             </select>
           </div>
         </div>
+        <p class="fx-derived" id="measurement-note"></p>
         <p class="fx-note" id="risk-note" style="display:none;margin-top:-6px;">
           The Fleischner subsolid recommendations are the same for low- and high-risk patients.
         </p>
@@ -184,8 +233,34 @@
           <input type="text" id="location" autocomplete="off" placeholder="e.g. right upper lobe" />
         </div>
         <p class="fx-note">
-          Use the mean of the long- and short-axis diameters, rounded to the nearest millimetre.
+          Enter both axes to have the mean diameter averaged and rounded for you, or type the mean
+          straight into the field.
         </p>
+
+        <div class="fx-sub">
+          <h2>Compare with the prior study</h2>
+          <p>Optional. Leave blank for a newly detected nodule.</p>
+          <div class="fx-inline">
+            <div class="fx-field">
+              <label for="prior_size_mm">Prior mean diameter (mm)</label>
+              <input type="number" id="prior_size_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 5" />
+            </div>
+            <div class="fx-field">
+              <label for="interval_months">Interval (months)</label>
+              <input type="number" id="interval_months" min="0" step="1" inputmode="decimal" placeholder="e.g. 12" />
+            </div>
+          </div>
+          <div class="fx-inline">
+            <div class="fx-field">
+              <label for="prior_volume_mm3">Prior volume (mm³)</label>
+              <input type="number" id="prior_volume_mm3" min="0" step="1" inputmode="decimal" placeholder="optional" />
+            </div>
+            <div class="fx-field">
+              <label for="volume_mm3">Current volume (mm³)</label>
+              <input type="number" id="volume_mm3" min="0" step="1" inputmode="decimal" placeholder="optional" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div>
@@ -195,6 +270,12 @@
         <div class="fx-summary" id="nodule-summary"></div>
 
         <div class="fx-recommendation" id="recommendation"></div>
+
+        <div class="fx-change" id="interval-change" style="display:none;">
+          <span class="fx-change-tag" id="change-tag"></span>
+          <div id="change-summary"></div>
+          <div class="fx-note" id="change-note" style="margin-top:8px;"></div>
+        </div>
 
         <div class="fx-report-title">
           <h3>Report line</h3>
@@ -212,6 +293,21 @@
       The guideline splits nodules by texture and size, and — for solid nodules — by whether the
       patient is low or high risk. Size is the mean diameter (average of the long and short axes).
       Approximate volume equivalents: &lt;6 mm ≈ &lt;100 mm³, 6–8 mm ≈ 100–250 mm³, &gt;8 mm ≈ &gt;250 mm³.
+    </p>
+    <h3 style="margin-top:14px;">Measuring the nodule</h3>
+    <p>
+      Manual caliper size is the average of the long- and short-axis diameters, rounded to the
+      nearest whole millimetre. The rounding matters at the band edges: a nodule measuring
+      8 × 5 mm averages 6.5 mm, reports as 7 mm and therefore sits in the 6–8 mm band rather than
+      below 6 mm. Enter both axes above and the calculator applies that rule for you.
+    </p>
+    <h3 style="margin-top:14px;">Comparing with the prior study</h3>
+    <p>
+      An increase of 2 mm or more in mean diameter counts as growth on manual measurement; smaller
+      changes sit inside measurement variability and read as stable. Where CT volumetry is
+      available, a volume increase of more than 25% is used instead, because volume changes earlier
+      than diameter. A nodule that has grown is no longer a newly detected incidental nodule, so the
+      follow-up table below stops applying and management is reassessed.
     </p>
     <h3 style="margin-top:14px;">Solid nodules</h3>
     <table>
@@ -243,9 +339,11 @@
       Multiple subsolid nodules are followed at 3–6 months, then by the most suspicious nodule.
     </p>
     <p>
-      Source: MacMahon H, Naidich DP, Goo JM, et al. Guidelines for Management of Incidental
+      Sources: MacMahon H, Naidich DP, Goo JM, et al. Guidelines for Management of Incidental
       Pulmonary Nodules Detected on CT Images: From the Fleischner Society 2017.
-      <em>Radiology</em> 2017;284(1):228–243.
+      <em>Radiology</em> 2017;284(1):228–243. Measurement and rounding follow Bankier AA,
+      MacMahon H, Goo JM, et al. Recommendations for Measuring Pulmonary Nodules at CT: A Statement
+      from the Fleischner Society. <em>Radiology</em> 2017;285(2):584–600.
     </p>
   </div>
 
