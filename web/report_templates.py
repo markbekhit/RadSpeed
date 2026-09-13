@@ -879,6 +879,23 @@ def get_entry(slug: str) -> Optional[dict]:
 
 
 _RELATED_OVERRIDES: dict[str, list[str]] = {
+    # Limb templates are otherwise displaced by the first six MRI entries.
+    "mri-ankle": ["mri-knee", "mri-hip", "mri-wrist", "mri-shoulder"],
+    "mri-hip": ["mri-knee", "mri-ankle", "mri-pelvis", "mri-shoulder", "mri-wrist"],
+    "mri-knee": ["mri-hip", "mri-ankle", "mri-shoulder", "mri-wrist"],
+    "mri-shoulder": ["mri-wrist", "mri-knee", "mri-hip", "mri-ankle"],
+    "mri-wrist": ["mri-shoulder", "mri-ankle", "mri-knee", "mri-hip"],
+    # Keep chest reporting formats together across modalities.
+    "cxr": ["ct-chest", "hrct-thorax", "ct-pulmonary-angiogram"],
+    "ct-chest": ["cxr", "hrct-thorax", "ct-pulmonary-angiogram", "ct-angiography-thoracic"],
+    "hrct-thorax": ["ct-chest", "cxr", "ct-pulmonary-angiogram"],
+    "ct-pulmonary-angiogram": ["ct-chest", "cxr", "ct-angiography-thoracic", "hrct-thorax"],
+    "ct-angiography-thoracic": ["ct-chest", "ct-pulmonary-angiogram", "cxr", "hrct-thorax"],
+    # Match thoracic and lumbar CT/MRI before unrelated same-modality studies.
+    "mri-spine-thoracic": ["ct-spine-thoracic", "mri-spine-cervical", "mri-spine-lumbar"],
+    "mri-spine-lumbar": ["ct-spine-lumbar", "mri-spine-thoracic", "mri-spine-cervical"],
+    "ct-spine-thoracic": ["mri-spine-thoracic", "ct-spine-cervical", "ct-spine-lumbar"],
+    "ct-spine-lumbar": ["mri-spine-lumbar", "ct-spine-thoracic", "ct-spine-cervical"],
     # Body and pelvic studies otherwise fall outside the first-six default.
     "mri-pelvis": ["mri-prostate", "ultrasound-pelvis", "ct-abdomen-pelvis"],
     "mri-prostate": ["mri-pelvis"],

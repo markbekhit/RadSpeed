@@ -129,6 +129,45 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn("Common femoral vein: [Compressibility and flow]", body)
         self.assertIn("It does not cover lower limb arterial Doppler", body)
 
+    def test_musculoskeletal_links_include_previously_hidden_limb_templates(self):
+        limbs = {"mri-ankle", "mri-hip", "mri-knee", "mri-shoulder", "mri-wrist"}
+        for slug in limbs:
+            related = [r["slug"] for r in rt.related_entries(slug)]
+            self.assertTrue((limbs - {slug}).issubset(related), slug)
+            self.assertIn(related[0], limbs, slug)
+
+    def test_spine_links_start_with_matching_region_across_modalities(self):
+        for region in ["thoracic", "lumbar"]:
+            for source, target in [("ct", "mri"), ("mri", "ct")]:
+                slug = f"{source}-spine-{region}"
+                related = rt.related_entries(slug)
+                self.assertEqual(related[0]["slug"], f"{target}-spine-{region}")
+                self.assertIn(f"{source}-spine-cervical", [r["slug"] for r in related])
+
+    def test_chest_templates_link_to_chest_xray(self):
+        for slug in ["ct-chest", "hrct-thorax", "ct-pulmonary-angiogram", "ct-angiography-thoracic"]:
+            related = [r["slug"] for r in rt.related_entries(slug)]
+            self.assertIn("cxr", related[:3], slug)
+        self.assertEqual(rt.related_entries("cxr")[0]["slug"], "ct-chest")
+
+    def test_related_heading_does_not_mislabel_other_modalities(self):
+        for slug in rt.all_slugs():
+            related = rt.related_entries(slug)
+            if related:
+                body = self.client.get(f"/report-templates/{slug}").text
+                self.assertIn("<h2>Related report templates</h2>", body, slug)
+                self.assertNotIn("<h2>More ", body, slug)
+            targets = [r["slug"] for r in related]
+            self.assertNotIn(slug, targets)
+            self.assertEqual(len(targets), len(set(targets)))
+            self.assertLessEqual(len(targets), 6)
+            self.assertTrue(all(rt.get_entry(s) for s in targets))
+
+    def test_software_workflow_links_to_library_and_example(self):
+        body = self.client.get("/radiology-reporting-software").text
+        self.assertIn('href="/report-templates"', body)
+        self.assertIn('href="/report-templates/mri-spine-lumbar"', body)
+
 
 if __name__ == "__main__":
     unittest.main()
