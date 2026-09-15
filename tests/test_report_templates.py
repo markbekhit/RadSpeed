@@ -168,6 +168,19 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn('href="/report-templates"', body)
         self.assertIn('href="/report-templates/mri-spine-lumbar"', body)
 
+    def test_ctpa_blank_scaffold_has_quality_prompts_not_preset_results(self):
+        entry = rt.get_entry("ct-pulmonary-angiogram")
+        scaffold = "\n".join(entry["report_format"])
+        for prompt in ["QUALITY:", "most distal assessable arterial level", "RV/LV ratio if measured", "diagnostic limitations", "If performed"]:
+            self.assertIn(prompt, scaffold)
+        for preset in ["No pulmonary embolism", "No right heart strain", "No pleural effusion"]:
+            self.assertNotIn(preset, scaffold)
+        body = self.client.get("/report-templates/ct-pulmonary-angiogram").text
+        self.assertIn("Copyable CTPA report format", body)
+        self.assertIn('href="https://doi.org/10.1093/ehjci/jeaf050"', body)
+        self.assertIn("not a society-issued template", body)
+        self.assertIn('href="/report-templates/cxr"', body)
+
 
 if __name__ == "__main__":
     unittest.main()

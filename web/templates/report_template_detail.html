@@ -99,6 +99,9 @@
         <p class="eyebrow"><span></span>Plain-text scaffold</p>
         <h2 id="report-format-heading">{{ t.report_format_heading }}</h2>
         <p>Copy this scaffold into your reporting system. Replace each bracketed prompt and remove any line you did not assess.</p>
+        {% if t.report_format_reference %}
+        <p class="detail-panel-note">Independent blank scaffold, not a society-issued template. For reporting guidance, see the <a href="{{ t.report_format_reference.url }}">{{ t.report_format_reference.label }}</a>.</p>
+        {% endif %}
         <button type="button" class="button button-secondary" id="copy-report-format" hidden>Copy blank report</button>
         <p id="copy-report-status" role="status" aria-live="polite"></p>
       </div>

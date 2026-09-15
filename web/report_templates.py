@@ -433,6 +433,44 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "CT_Pulmonary_Angiogram": {
+        "meta_description": (
+            "CTPA report template with a copyable blank format for CT pulmonary angiography. "
+            "Record scan quality, pulmonary arteries, right heart and relevant chest findings."
+        ),
+        "lead": (
+            "Copy a blank CTPA report into your reporting system and replace the prompts "
+            "with your findings. Keep scan quality and the assessable arterial level visible "
+            "alongside the pulmonary embolism assessment."
+        ),
+        "scope_note": (
+            "A scaffold for CT pulmonary angiography in suspected acute pulmonary embolism. "
+            "It is not a dedicated aortic angiography or chronic thromboembolic disease template."
+        ),
+        "report_format_heading": "Copyable CTPA report format",
+        "report_format_reference": {
+            "url": "https://doi.org/10.1093/ehjci/jeaf050",
+            "label": "2025 multidisciplinary CTPA reporting consensus",
+        },
+        "report_format": [
+            "EXAM: CT PULMONARY ANGIOGRAM (CTPA)",
+            "CLINICAL DETAILS: [Indication]",
+            "COMPARISON: [Prior study and date, or no comparison available]",
+            "TECHNIQUE: [Acquisition and contrast details]",
+            "QUALITY: [Arterial opacification, motion or other limitations; most distal assessable arterial level]",
+            "",
+            "FINDINGS:",
+            "Pulmonary arteries: [Findings; if emboli are present, describe location, extent and morphology]",
+            "Right heart: [Ventricular size, RV/LV ratio if measured, and septal appearance]",
+            "Lungs and airways: [Findings, including infarction or an alternative explanation where present]",
+            "Pleura: [Findings]",
+            "Mediastinum, heart and pericardium: [Other findings]",
+            "Bones, chest wall and visualised upper abdomen: [Findings]",
+            "",
+            "IMPRESSION:",
+            "[Pulmonary embolism assessment, qualified by any diagnostic limitations]",
+            "[Relevant right-heart and other findings]",
+            "COMMUNICATION: [If performed, document the recipient, time and method; otherwise remove this line]",
+        ],
         "indications": "Suspected pulmonary embolism.",
         "sections": [
             "Main, lobar, segmental and subsegmental pulmonary arteries",
@@ -845,6 +883,7 @@ def _entries() -> dict[str, dict]:
             "scope_note": curated.get("scope_note"),
             "report_format": curated.get("report_format"),
             "report_format_heading": curated.get("report_format_heading"),
+            "report_format_reference": curated.get("report_format_reference"),
             "technique": p.get("technique", ""),
             "group_id": g["id"] if g else "other",
             "group_label": g["label"] if g else "Other",
