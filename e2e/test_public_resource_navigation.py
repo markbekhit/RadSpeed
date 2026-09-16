@@ -50,3 +50,49 @@ def test_software_to_public_template_paths(page, base_url, width):
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
         link.click()
         assert page.url.endswith(path)
+
+
+@pytest.mark.parametrize("width", [390, 1440])
+def test_library_finder_filters_and_routes_unmatched_studies(page, base_url, width):
+    page.set_viewport_size({"width": width, "height": 844})
+    page.goto(f"{base_url}/report-templates")
+    search = page.locator('#template-search')
+    status = page.locator('#template-search-status')
+    cards = page.locator('.template-card:visible')
+    assert cards.count() >= 39
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+    search.fill('doppler report format')
+    assert cards.count() == 2
+    assert 'match “doppler report format”' in status.inner_text()
+    assert page.locator('.library-group:visible').count() == 1
+    assert '?q=doppler' in page.url
+
+    page.locator('.library-filter[data-modality="ct"]').click()
+    assert cards.count() == 0
+    empty = page.locator('#library-empty')
+    assert empty.is_visible()
+    assert 'No match in CT' in status.inner_text()
+
+    page.locator('.library-filter[data-modality="all"]').click()
+    search.fill('wrist ultrasound')
+    assert cards.count() == 0
+    closest = empty.locator('#library-closest a')
+    assert closest.first.get_attribute('href') == '/report-templates/mri-wrist'
+    assert closest.count() == 4
+    assert empty.locator('a[href="/impressions"]').is_visible()
+
+    page.locator('#library-empty-reset').click()
+    assert cards.count() >= 39
+    assert not empty.is_visible()
+    assert '?q=' not in page.url
+
+    search.fill('wrist ultrasound')
+    empty.locator('#library-closest a').first.click()
+    assert page.url.endswith('/report-templates/mri-wrist')
+
+    page.goto(f"{base_url}/report-templates?q=ctpa&modality=ct")
+    assert cards.count() == 1
+    assert page.locator('.library-filter.is-active').get_attribute('data-modality') == 'ct'
+    cards.first.click()
+    assert page.url.endswith('/report-templates/ct-pulmonary-angiogram')

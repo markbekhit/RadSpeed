@@ -81,6 +81,68 @@ class ReportTemplateLibraryTests(unittest.TestCase):
             for forbidden in FORBIDDEN:
                 self.assertNotIn(forbidden, body, f"{forbidden!r} leaked on {slug}")
 
+    def test_index_page_carries_the_finder_and_searchable_cards(self):
+        body = self.client.get("/report-templates").text
+        self.assertIn('id="template-search"', body)
+        self.assertIn('data-modality="ultrasound"', body)
+        self.assertIn('id="library-empty"', body)
+        self.assertIn("report-templates-finder.js", body)
+        for slug in rt.all_slugs():
+            entry = rt.get_entry(slug)
+            self.assertIn(
+                f'href="/report-templates/{slug}" data-group="{entry["group_id"]}" '
+                f'data-search="{entry["search_text"]}"',
+                body,
+                slug,
+            )
+        for forbidden in FORBIDDEN:
+            self.assertNotIn(forbidden, body)
+
+    def test_index_page_prefills_a_shared_search_query(self):
+        body = self.client.get("/report-templates?q=ctpa").text
+        self.assertIn('name="q" type="search"', body)
+        self.assertIn('value="ctpa"', body)
+        hostile = self.client.get("/report-templates?q=%3Cscript%3Ealert(1)%3C/script%3E").text
+        self.assertIn('value="&lt;script&gt;alert(1)&lt;/script&gt;"', hostile)
+        self.assertNotIn("<script>alert(1)</script>", hostile)
+
+    def test_finder_resolves_search_console_queries_to_the_right_templates(self):
+        # Queries recorded against the library index in Search Console. Each
+        # must land on the matching card rather than the ungrouped grid.
+        expectations = {
+            "mri breast report template": ["mri-breast"],
+            "doppler report format": ["ultrasound-carotid-doppler", "ultrasound-doppler-venous"],
+            "ctpa": ["ct-pulmonary-angiogram"],
+            "dvt": ["ultrasound-doppler-venous"],
+            "mammogram": ["mammography"],
+            "echo": ["echocardiography"],
+            "pet": ["pet-ct"],
+        }
+        for query, slugs in expectations.items():
+            result = rt.search_entries(query)
+            self.assertEqual([e["slug"] for e in result["matches"]], slugs, query)
+            self.assertEqual(result["closest"], [], query)
+        ct = [e["slug"] for e in rt.search_entries("ct reporting templates")["matches"]]
+        self.assertIn("ct-chest", ct)
+        self.assertIn("hrct-thorax", ct)
+        self.assertNotIn("mri-brain", ct)
+
+    def test_finder_stopwords_and_empty_state_route_to_the_closest_template(self):
+        self.assertEqual(rt.search_tokens("Structured radiology report template"), [])
+        self.assertEqual(
+            len(rt.search_entries("report template")["matches"]), rt.library_count()
+        )
+        # A study with no card of its own still routes to the nearest anatomy.
+        result = rt.search_entries("wrist ultrasound report template")
+        self.assertEqual(result["tokens"], ["wrist", "ultrasound"])
+        self.assertEqual(result["matches"], [])
+        self.assertEqual(result["closest"][0]["slug"], "mri-wrist")
+        self.assertTrue(all(e["group_id"] == "ultrasound" for e in result["closest"][1:]))
+        # Nothing shares a word with the query, so the page offers modality routes instead.
+        nothing = rt.search_entries("rsna reporting templates")
+        self.assertEqual(nothing["matches"], [])
+        self.assertEqual(nothing["closest"], [])
+
     def test_unknown_template_returns_404(self):
         self.assertEqual(
             self.client.get("/report-templates/not-a-real-study").status_code, 404

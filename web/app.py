@@ -1038,7 +1038,7 @@ def adrenal_washout_calculator_page(request: Request):
 
 
 @app.get("/report-templates", include_in_schema=False)
-def report_templates_index(request: Request):
+def report_templates_index(request: Request, q: str = ""):
     return _jinja.TemplateResponse(
         request,
         "report_templates_index.html",
@@ -1047,6 +1047,8 @@ def report_templates_index(request: Request):
             "static_version": _STATIC_VERSION,
             "groups": report_library.library_groups(),
             "template_count": report_library.library_count(),
+            "initial_query": q.strip()[:80],
+            "search_stopwords": " ".join(sorted(report_library.SEARCH_STOPWORDS)),
         },
     )
 

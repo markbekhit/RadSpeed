@@ -29,6 +29,7 @@ GROUPS: list[dict] = [
     {
         "id": "mri",
         "label": "MRI",
+        "aliases": "mri magnetic resonance",
         "blurb": "Structured MRI reporting scaffolds for neuro, body and musculoskeletal studies.",
         "stems": [
             "MRI_Brain", "MRI_Spine_Cervical", "MRI_Spine_Thoracic", "MRI_Spine_Lumbar",
@@ -39,6 +40,7 @@ GROUPS: list[dict] = [
     {
         "id": "ct",
         "label": "CT",
+        "aliases": "ct computed tomography",
         "blurb": "Section-by-section CT report structures from head to spine and angiography.",
         "stems": [
             "CT_Head_Brain", "CT_Sinuses", "CT_Neck", "CT_Chest", "HRCT_Thorax",
@@ -49,6 +51,7 @@ GROUPS: list[dict] = [
     {
         "id": "ultrasound",
         "label": "Ultrasound",
+        "aliases": "ultrasound us usg sonography sonographer duplex",
         "blurb": "Ultrasound and Doppler report templates for body, small parts and vascular work.",
         "stems": [
             "Ultrasound_Abdomen", "Ultrasound_Pelvis", "Ultrasound_Thyroid",
@@ -59,18 +62,21 @@ GROUPS: list[dict] = [
     {
         "id": "xray",
         "label": "X-ray & mammography",
+        "aliases": "x-ray xray radiograph radiography plain film",
         "blurb": "Plain-film and mammography report structures with concise impressions.",
         "stems": ["CXR", "Abdominal_Xray", "Mammography"],
     },
     {
         "id": "nuclear",
         "label": "Nuclear medicine & PET",
+        "aliases": "nuclear medicine scintigraphy",
         "blurb": "Whole-body scintigraphy and PET-CT report scaffolds.",
         "stems": ["Bone_Scan", "PET_CT"],
     },
     {
         "id": "cardiac",
         "label": "Cardiac",
+        "aliases": "cardiac heart echo",
         "blurb": "Echocardiography reporting structure with a chamber-by-chamber checklist.",
         "stems": ["Echocardiography"],
     },
@@ -89,6 +95,64 @@ SEO_TITLES = {
     "Ultrasound_Carotid_Doppler": "Carotid Doppler Ultrasound",
     "Ultrasound_Doppler_Venous": "Lower Limb Venous Doppler",
 }
+
+# Search vocabulary for the library finder. Readers arrive with abbreviations,
+# anatomy words and protocol names that do not appear in the exam line, so each
+# stem lists the plain terms a radiologist would type. Keep these to widely used
+# clinical shorthand; no proprietary lexicon content belongs here.
+SEARCH_ALIASES: dict[str, str] = {
+    "MRI_Brain": "brain head neuro cerebral stroke",
+    "MRI_Spine_Cervical": "cervical c-spine neck spine",
+    "MRI_Spine_Thoracic": "thoracic t-spine dorsal spine",
+    "MRI_Spine_Lumbar": "lumbar l-spine lumbosacral back spine",
+    "MRI_Shoulder": "shoulder rotator cuff labrum msk musculoskeletal joint",
+    "MRI_Knee": "knee meniscus acl ligament msk musculoskeletal joint",
+    "MRI_Hip": "hip labrum msk musculoskeletal joint",
+    "MRI_Ankle": "ankle foot hindfoot tendon msk musculoskeletal joint",
+    "MRI_Wrist": "wrist hand scaphoid tfcc msk musculoskeletal joint",
+    "MRI_Abdomen_Liver": "liver hepatic hepatobiliary abdomen abdo",
+    "MRCP": "mrcp biliary bile duct pancreatic duct cholangiopancreatography",
+    "MRI_Pelvis": "pelvis gynaecological uterus ovaries endometriosis female",
+    "MRI_Prostate": "prostate pi-rads pirads mpmri multiparametric",
+    "MRI_Breast": "breast bi-rads birads",
+    "CT_Head_Brain": "head brain ncct non-contrast stroke trauma",
+    "CT_Sinuses": "sinuses sinus paranasal ent",
+    "CT_Neck": "neck soft tissue ent",
+    "CT_Chest": "chest thorax lung thoracic",
+    "HRCT_Thorax": "hrct high resolution interstitial lung ild fibrosis",
+    "CT_Pulmonary_Angiogram": "ctpa pulmonary embolism pe angiogram angiography chest",
+    "CT_Angiography_Thoracic": "cta aorta aortic dissection angiography angiogram chest",
+    "CT_Abdomen_Pelvis": "abdomen abdo pelvis portal venous",
+    "CT_KUB": "kub renal colic stone calculus ureter kidney urinary",
+    "CT_Spine_Cervical": "cervical c-spine neck spine trauma",
+    "CT_Spine_Thoracic": "thoracic t-spine spine trauma",
+    "CT_Spine_Lumbar": "lumbar l-spine lumbosacral spine trauma",
+    "Ultrasound_Abdomen": "abdomen abdo liver gallbladder kidneys renal",
+    "Ultrasound_Pelvis": "pelvis transvaginal tvus gynaecological uterus ovaries female",
+    "Ultrasound_Thyroid": "thyroid ti-rads tirads nodule neck",
+    "Ultrasound_Breast": "breast bi-rads birads",
+    "Ultrasound_Scrotum": "scrotum scrotal testes testicular testis",
+    "Ultrasound_Carotid_Doppler": "carotid doppler vascular stenosis neck",
+    "Ultrasound_Doppler_Venous": "dvt deep vein thrombosis venous doppler lower limb leg vascular",
+    "CXR": "cxr chest x-ray xray radiograph film",
+    "Abdominal_Xray": "axr abdominal abdomen x-ray xray radiograph film kub",
+    "Mammography": "mammogram mammography breast bi-rads birads screening tomosynthesis",
+    "Bone_Scan": "bone scan scintigraphy skeletal whole body nuclear",
+    "PET_CT": "pet fdg oncology staging nuclear",
+    "Echocardiography": "echo echocardiogram cardiac heart tte toe transthoracic",
+}
+
+# Words that carry no study meaning in a finder query. "wrist ultrasound report
+# template" should search for "wrist ultrasound".
+SEARCH_STOPWORDS: frozenset[str] = frozenset(
+    {
+        "a", "an", "and", "the", "of", "for", "report", "reports", "reporting",
+        "template", "templates", "format", "formats", "structure", "structured",
+        "radiology", "radiologist", "scan", "study", "example", "sample", "free",
+        "checklist", "normal", "protocol", "pdf", "word", "docx", "download",
+        "printable", "blank",
+    }
+)
 
 # Curated, publishable reference layer. Keyed by template file stem.
 # `indications`: one plain line of typical clinical indications.
@@ -890,8 +954,61 @@ def _entries() -> dict[str, dict]:
             "indications": curated["indications"],
             "sections": curated["sections"],
             "impression": curated["impression"],
+            "search_text": _normalise_search_text(
+                " ".join(
+                    [
+                        exam,
+                        SEO_TITLES.get(stem, ""),
+                        stem,
+                        g.get("aliases", "") if g else "",
+                        SEARCH_ALIASES.get(stem, ""),
+                    ]
+                )
+            ),
         }
     return entries
+
+
+def _normalise_search_text(text: str) -> str:
+    """Lower-case and reduce to space-separated words, matching the finder JS."""
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", text.lower()).split())
+
+
+def search_tokens(query: str) -> list[str]:
+    """Return the meaningful words of a finder query, in order, without duplicates."""
+    tokens: list[str] = []
+    for word in _normalise_search_text(query).split():
+        if word in SEARCH_STOPWORDS or word in tokens:
+            continue
+        tokens.append(word)
+    return tokens
+
+
+def _token_hits(tokens: list[str], search_text: str) -> int:
+    """Count query tokens that start a word in the entry's search text."""
+    words = search_text.split()
+    return sum(1 for token in tokens if any(w.startswith(token) for w in words))
+
+
+def search_entries(query: str, closest_limit: int = 4) -> dict:
+    """Match a finder query against the library the same way the page script does.
+
+    Returns the tokens used, the entries that match every token, and — when
+    nothing matches fully — the closest partial matches so an unmatched study
+    still routes to a useful template.
+    """
+    tokens = search_tokens(query)
+    entries = list(_entries().values())
+    if not tokens:
+        return {"tokens": [], "matches": entries, "closest": []}
+    matches = [e for e in entries if _token_hits(tokens, e["search_text"]) == len(tokens)]
+    closest: list[dict] = []
+    if not matches:
+        scored = [(_token_hits(tokens, e["search_text"]), e) for e in entries]
+        scored = [(hits, e) for hits, e in scored if hits > 0]
+        scored.sort(key=lambda pair: -pair[0])
+        closest = [e for _, e in scored[:closest_limit]]
+    return {"tokens": tokens, "matches": matches, "closest": closest}
 
 
 def library_groups() -> list[dict]:

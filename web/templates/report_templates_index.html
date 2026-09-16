@@ -64,11 +64,26 @@
           <a class="button button-primary" href="/impressions">Draft an impression free <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4"/></svg></a>
           <a class="button button-secondary" href="/radiology-reporting-software">How RadSpeed works</a>
         </div>
-        <p class="library-jump">
-          Jump to:
-          {% for g in groups %}<a href="#{{ g.id }}">{{ g.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
-        </p>
+        <form class="library-finder" id="library-finder" role="search" action="/report-templates" method="get" data-stopwords="{{ search_stopwords }}">
+          <label class="library-finder-label" for="template-search">Find a template</label>
+          <div class="library-finder-row">
+            <input id="template-search" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Study, anatomy or abbreviation — CTPA, wrist, DVT…" value="{{ initial_query }}" />
+            <button class="button button-small button-outline" type="submit">Search</button>
+          </div>
+          <div class="library-finder-filters" role="group" aria-label="Filter by modality">
+            <a class="library-filter is-active" href="#{{ groups[0].id }}" data-modality="all">All</a>
+            {% for g in groups %}<a class="library-filter" href="#{{ g.id }}" data-modality="{{ g.id }}">{{ g.label }}</a>{% endfor %}
+          </div>
+          <p class="library-finder-status" id="template-search-status" aria-live="polite">{{ template_count }} templates across {{ groups | length }} modality groups.</p>
+        </form>
       </div>
+    </section>
+
+    <section class="library-empty" id="library-empty" hidden>
+      <h2>No template matches <q id="library-empty-query"></q> yet</h2>
+      <p id="library-empty-lede">The closest templates share a modality or a body region with your search. Open one to reuse its section checklist.</p>
+      <div class="related-chips" id="library-closest"></div>
+      <p class="library-empty-route">Need a report structure for a study that is not listed? <a href="/impressions">Draft an impression with Impressions</a> — it works for any study and needs no sign-in. Or <a href="#" id="library-empty-reset">clear the search</a> to browse the full library.</p>
     </section>
 
     {% for g in groups %}
@@ -79,7 +94,7 @@
       </div>
       <div class="template-grid">
         {% for t in g.entries %}
-        <a class="template-card" href="/report-templates/{{ t.slug }}">
+        <a class="template-card" href="/report-templates/{{ t.slug }}" data-group="{{ g.id }}" data-search="{{ t.search_text }}">
           <span class="template-card-modality">{{ t.group_label }}</span>
           <h3>{{ t.exam }}</h3>
           <p class="template-card-technique">{{ t.technique }}</p>
@@ -105,6 +120,7 @@
     <p class="library-disclaimer">These templates are reference scaffolds with synthetic sample text. They are not clinical guidance, and the sample impressions are illustrative only. RadSpeed is assistive software, not a diagnostic device. Never enter patient-identifiable information into public tools.</p>
   </main>
 
+  <script src="/static/report-templates-finder.js?v={{ static_version }}" defer></script>
   <footer class="site-footer">
     <a class="brand footer-brand" href="/">
       <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
