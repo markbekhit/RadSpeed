@@ -14,6 +14,7 @@ production. See docs/web-server-setup.md.
 
 import asyncio
 import base64
+import contextlib
 import difflib
 import json
 import logging
@@ -42,11 +43,13 @@ from starlette.middleware.sessions import SessionMiddleware
 from config.config import config
 from config.settings import save_web_settings
 from llm.dicom_sr_export import save_dicom_sr_report
+from llm.disclosure import append_disclosure
 from llm.fhir_export import save_fhir_report
 from llm.hl7_export import save_hl7_report
 from llm.hl7_import import archive_order, list_inbox
 from llm.format import (
     apply_report_feedback,
+    reinsert_identifiers,
     format_text,
     join_template,
     number_long_impression_body,
@@ -70,6 +73,8 @@ from llm.fracture_locator import (
 from llm.strong_fracture_model import score_strong_fracture_images
 from llm.impressions import extract_findings, replace_impression, stream_impression
 from llm.model_compat import completion_options
+from llm.text_client import get_text_client
+from config import practice
 from llm.worksheet import (
     MAX_WORKSHEET_IMAGE_BYTES,
     MAX_WORKSHEET_IMAGES,
@@ -114,6 +119,7 @@ from web.followups import (
     update_followup,
 )
 from web.fracture_workbench import resolve_workbench_image
+from web import retention
 from web import adrenal
 from web import fleischner
 from web import report_templates as report_library
@@ -169,9 +175,126 @@ class HeadRequestMiddleware:
 # App setup
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None)
-app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET_KEY(), max_age=2592000)  # 30 days
+async def _retention_loop() -> None:
+    """Run the retention purge on a schedule while the app is up."""
+    interval = max(300, practice.settings.retention_interval_seconds)
+    while True:
+        try:
+            await asyncio.get_running_loop().run_in_executor(None, retention.run_once)
+        except Exception as exc:  # never let a purge failure kill the loop
+            logger.warning("[retention] scheduled run failed: %s", exc)
+        await asyncio.sleep(interval)
+
+
+@contextlib.asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    task = None
+    if retention.enabled():
+        task = asyncio.create_task(_retention_loop())
+        logger.info(
+            "[retention] enabled: reports %sd, outboxes %sd, every %ss",
+            practice.settings.retention_days,
+            practice.settings.outbox_retention_days,
+            practice.settings.retention_interval_seconds,
+        )
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+
+
+app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None, lifespan=_lifespan)
+
+
+def _cookie_secure() -> bool:
+    """Mark the session cookie Secure when the site is served over HTTPS.
+
+    Explicit RADSPEED_COOKIE_SECURE wins; otherwise infer from the OAuth
+    redirect base URL so a plain-HTTP local install keeps working.
+    """
+    if practice.settings.cookie_secure is not None:
+        return practice.settings.cookie_secure
+    base_url = getattr(config, "oauth_redirect_base_url", "") or ""
+    return base_url.lower().startswith("https://")
+
+
+class PrivacyHeadersMiddleware:
+    """Cache and origin hygiene for everything that is not a public page.
+
+    * ``Cache-Control: no-store`` on authenticated pages and API responses so
+      report text and patient identifiers never sit in a browser or proxy
+      cache. Static assets and public marketing pages are left cacheable.
+    * With RADSPEED_STRICT_ORIGIN, state-changing requests whose ``Origin``
+      header names another site are rejected. Browsers always send Origin on
+      cross-site POSTs, so this closes cross-site request forgery for the JSON
+      API without adding a token to every form.
+    """
+
+    _PUBLIC_PREFIXES = ("/static/", "/report-templates", "/impressions")
+    _PUBLIC_EXACT = {
+        "/", "/login", "/health", "/favicon.ico", "/robots.txt", "/sitemap.xml",
+        "/llms.txt", "/radiology-reporting-software", "/powerscribe-companion",
+        "/ti-rads-calculator", "/fleischner-calculator", "/adrenal-washout-calculator",
+    }
+
+    def __init__(self, app):
+        self.app = app
+
+    def _is_public(self, path: str) -> bool:
+        return path in self._PUBLIC_EXACT or path.startswith(self._PUBLIC_PREFIXES)
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        path = scope.get("path", "")
+        method = scope.get("method", "GET")
+        headers = {k.decode().lower(): v.decode() for k, v in scope.get("headers", [])}
+
+        if practice.settings.strict_origin and method in ("POST", "PUT", "PATCH", "DELETE"):
+            origin = headers.get("origin")
+            if origin and not _origin_allowed(origin, headers.get("host", "")):
+                response = JSONResponse({"detail": "Cross-site request rejected"}, status_code=403)
+                await response(scope, receive, send)
+                return
+
+        if self._is_public(path):
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_headers(message):
+            if message["type"] == "http.response.start":
+                raw = list(message.get("headers", []))
+                if not any(k.lower() == b"cache-control" for k, _ in raw):
+                    raw.append((b"cache-control", b"no-store"))
+                message = {**message, "headers": raw}
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+
+def _origin_allowed(origin: str, host_header: str) -> bool:
+    from urllib.parse import urlparse
+    origin_host = (urlparse(origin).hostname or "").lower()
+    if not origin_host:
+        return False
+    allowed = {(host_header.split(":")[0] or "").lower()}
+    base = (getattr(config, "oauth_redirect_base_url", "") or "").strip()
+    if base:
+        allowed.add((urlparse(base).hostname or "").lower())
+    allowed.discard("")
+    return origin_host in allowed
+
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET_KEY(),
+    max_age=practice.settings.session_max_age_seconds,
+    https_only=_cookie_secure(),
+)
 app.add_middleware(HeadRequestMiddleware)
+app.add_middleware(PrivacyHeadersMiddleware)
 # auto_error=False so we can return a redirect (not a 401) when OAuth is active
 security = HTTPBasic(auto_error=False)
 
@@ -179,6 +302,43 @@ security = HTTPBasic(auto_error=False)
 init_db()
 init_audit_db()
 init_followup_db()
+
+
+def _validate_deployment_profile() -> None:
+    """Check the configured profile is internally consistent.
+
+    A practice deployment stops here rather than start with a hole in it,
+    because the whole point of the profile is that a misconfiguration cannot
+    quietly route patient data offshore or drop back to a shared password.
+    Personal deployments only log the findings.
+    """
+    if os.environ.get("VOXRAD_MOCK_MODE"):
+        return
+    problems = practice.validate(
+        practice.settings,
+        oauth_configured=oauth_enabled(),
+        text_base_url=config.BASE_URL,
+        transcription_base_url=config.TRANSCRIPTION_BASE_URL,
+        streaming_provider=resolve_streaming_provider_name(),
+        deepgram_key=bool(config.DEEPGRAM_API_KEY),
+    )
+    for problem in problems:
+        logger.error("[profile] %s", problem)
+    if problems and practice.settings.is_practice:
+        raise RuntimeError(
+            "RadSpeed practice profile refused to start: " + " | ".join(problems)
+        )
+    logger.info(
+        "[profile] %s profile, data_residency=%s, require_sso=%s, research_features=%s, "
+        "retention_days=%s, text_provider=%s, deepgram_region=%s",
+        practice.settings.profile, practice.settings.data_residency or "none",
+        practice.settings.require_sso, practice.settings.research_features,
+        practice.settings.retention_days, practice.settings.text_provider,
+        practice.settings.deepgram_region,
+    )
+
+
+_validate_deployment_profile()
 
 _BASE_DIR = os.path.dirname(__file__)
 app.mount(
@@ -221,6 +381,15 @@ def _verify_auth(
     if oauth_enabled():
         return require_oauth_user(request)
 
+    if practice.settings.require_sso:
+        # A practice deployment must never fall back to the shared password:
+        # it has no per-user identity, so sign-off, ownership checks and the
+        # audit trail would all lose their meaning.
+        raise HTTPException(
+            status_code=503,
+            detail="Single sign-on is required by this deployment but no OAuth client is configured.",
+        )
+
     # Basic Auth mode
     if credentials is None:
         raise HTTPException(
@@ -228,18 +397,61 @@ def _verify_auth(
             detail="Authentication required",
             headers={"WWW-Authenticate": "Basic"},
         )
+    client_ip = request.client.host if request.client else "unknown"
+    if _basic_auth_locked(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many failed sign-in attempts. Try again in a minute.",
+        )
     expected = os.environ.get("VOXRAD_WEB_PASSWORD", _DEFAULT_WEB_PASSWORD)
     ok = secrets.compare_digest(
         credentials.password.encode("utf-8"),
         expected.encode("utf-8"),
     )
     if not ok:
+        _basic_auth_record_failure(client_ip)
         raise HTTPException(
             status_code=401,
             detail="Incorrect password",
             headers={"WWW-Authenticate": "Basic"},
         )
+    _basic_auth_failures.pop(client_ip, None)
     return {"id": None, "email": credentials.username, "name": credentials.username}
+
+
+# Basic Auth brute-force guard: per-IP failure counter with a short lockout.
+_basic_auth_failures: dict[str, list[float]] = {}
+_BASIC_AUTH_MAX_FAILURES = 10
+_BASIC_AUTH_WINDOW = 60.0
+
+
+def _basic_auth_record_failure(client_ip: str) -> None:
+    now = time.time()
+    attempts = [t for t in _basic_auth_failures.get(client_ip, []) if now - t < _BASIC_AUTH_WINDOW]
+    attempts.append(now)
+    _basic_auth_failures[client_ip] = attempts
+
+
+def _basic_auth_locked(client_ip: str) -> bool:
+    now = time.time()
+    attempts = [t for t in _basic_auth_failures.get(client_ip, []) if now - t < _BASIC_AUTH_WINDOW]
+    if attempts:
+        _basic_auth_failures[client_ip] = attempts
+    else:
+        _basic_auth_failures.pop(client_ip, None)
+    return len(attempts) >= _BASIC_AUTH_MAX_FAILURES
+
+
+def _require_research_feature() -> None:
+    """Gate features that generate clinical content beyond formatting.
+
+    The Impression generator and Fracture Lab produce diagnostic content the
+    radiologist did not dictate. Under the TGA's software guidance that puts
+    them in medical-device territory, so a practice deployment keeps them off
+    (RADSPEED_RESEARCH_FEATURES=false) and the routes answer 404.
+    """
+    if not practice.settings.research_features:
+        raise HTTPException(status_code=404, detail="This feature is not enabled on this deployment.")
 
 
 def _get_username(user: dict) -> str:
@@ -505,7 +717,7 @@ def _impressions_rate_check(ip: str) -> tuple[bool, int]:
         return True, _IMPRESSIONS_RATE_LIMIT - len(hits)
 
 
-@app.get("/impressions", include_in_schema=False)
+@app.get("/impressions", include_in_schema=False, dependencies=[Depends(_require_research_feature)])
 def impressions_page(request: Request):
     return _jinja.TemplateResponse(
         request,
@@ -530,7 +742,7 @@ class ReportImpressionRequest(BaseModel):
     with_guidelines: bool = True
 
 
-@app.post("/api/impressions/stream")
+@app.post("/api/impressions/stream", dependencies=[Depends(_require_research_feature)])
 def api_impressions_stream(req: ImpressionsRequest, request: Request):
     """Stream a guideline-aware radiology impression from the supplied findings.
 
@@ -591,7 +803,7 @@ def api_impressions_stream(req: ImpressionsRequest, request: Request):
     )
 
 
-@app.post("/api/impressions/text", response_class=PlainTextResponse)
+@app.post("/api/impressions/text", response_class=PlainTextResponse, dependencies=[Depends(_require_research_feature)])
 def api_impressions_text(req: ImpressionsRequest, request: Request):
     """Non-streaming impression generation — returns plain text.
 
@@ -643,7 +855,7 @@ def api_impressions_text(req: ImpressionsRequest, request: Request):
     )
 
 
-@app.post("/api/report/impression")
+@app.post("/api/report/impression", dependencies=[Depends(_require_research_feature)])
 def api_report_impression(
     req: ReportImpressionRequest,
     user: dict = Depends(_verify_auth),
@@ -1088,11 +1300,12 @@ def index(request: Request, user: dict = Depends(_verify_auth)):
             "static_version": _STATIC_VERSION,
             "oauth_mode": oauth_enabled(),
             "paste_format": paste_format,
+            "research_features": practice.settings.research_features,
         },
     )
 
 
-@app.get("/fracture-workbench")
+@app.get("/fracture-workbench", dependencies=[Depends(_require_research_feature)])
 def fracture_workbench_page(user: dict = Depends(_verify_auth)):
     """Serve the public-data benchmark viewer behind RadSpeed sign-in."""
     if not _FRACTURE_WORKBENCH_PAGE.is_file():
@@ -1114,7 +1327,7 @@ def fracture_workbench_page(user: dict = Depends(_verify_auth)):
     )
 
 
-@app.post("/api/fracture-analysis")
+@app.post("/api/fracture-analysis", dependencies=[Depends(_require_research_feature)])
 async def fracture_analysis(
     images: list[UploadFile] = File(...),
     clinical_context: Optional[str] = Form(None),
@@ -1231,7 +1444,7 @@ async def fracture_analysis(
     )
 
 
-@app.get("/fracture-workbench/images/{image_path:path}")
+@app.get("/fracture-workbench/images/{image_path:path}", dependencies=[Depends(_require_research_feature)])
 def fracture_workbench_image(image_path: str, user: dict = Depends(_verify_auth)):
     """Serve one benchmark radiograph from the persistent encrypted volume."""
     try:
@@ -1497,7 +1710,7 @@ def _correct_asr_text(raw: str) -> str:
     if len(words) <= 3:
         return raw  # too short to bother; unlikely to have complex errors
     try:
-        client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+        client = get_text_client(OpenAI)
         resp = client.chat.completions.create(
             model=config.SELECTED_MODEL,
             messages=[
@@ -2557,7 +2770,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
 
         # Apply post-processing (capitalise after colons) to the full report.
         # Send corrected version so the client can replace the streamed text.
-        corrected_report = postprocess_report(full_report)
+        corrected_report = postprocess_report(reinsert_identifiers(full_report, _ctx))
 
         fhir_saved = False
         if _user_fhir_enabled(user) and corrected_report:
@@ -2630,6 +2843,13 @@ class FeedbackRequest(BaseModel):
     report: str
     feedback: str
     selected_text: str = ""
+    # Optional patient fields so identifier minimisation can scrub the report
+    # before it is sent to the model and restore the values afterwards.
+    patient_name: Optional[str] = None
+    patient_dob: Optional[str] = None
+    patient_id: Optional[str] = None
+    accession: Optional[str] = None
+    referring_physician: Optional[str] = None
 
 
 @app.post("/format/feedback")
@@ -2649,8 +2869,19 @@ def format_feedback(req: FeedbackRequest, user: dict = Depends(_verify_auth)):
             status_code=503, detail="Text model API key not loaded on server."
         )
 
+    feedback_ctx = {
+        k: v for k, v in {
+            "patient_name": req.patient_name,
+            "patient_dob": req.patient_dob,
+            "patient_id": req.patient_id,
+            "accession": req.accession,
+            "referring_physician": req.referring_physician,
+        }.items() if v
+    } or None
     try:
-        corrected = apply_report_feedback(req.report, req.feedback, req.selected_text)
+        corrected = apply_report_feedback(
+            req.report, req.feedback, req.selected_text, patient_context=feedback_ctx
+        )
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Report refinement failed: {e}")
 
@@ -2780,9 +3011,12 @@ def api_sign_off(req: SignOffRequest, user: dict = Depends(_verify_auth)):
             detail="Sign-off requires an authenticated user (OAuth login).",
         )
 
+    signed_text = append_disclosure(req.report_text, req.radiologist or user.get("name"))
+    req.report_text = signed_text
+
     saved = save_report_version(
         user_id=user_id,
-        report_text=req.report_text,
+        report_text=signed_text,
         status="final",
         accession=req.accession or None,
         patient_id=req.patient_id or None,
@@ -2859,9 +3093,12 @@ def api_amend(req: AmendmentRequest, user: dict = Depends(_verify_auth)):
             detail="Only signed reports (final / amended) can be amended.",
         )
 
+    amended_text = append_disclosure(req.report_text, prior.get("radiologist") or user.get("name"))
+    req.report_text = amended_text
+
     saved = save_report_version(
         user_id=user_id,
-        report_text=req.report_text,
+        report_text=amended_text,
         status="amended",
         accession=prior["accession"],
         patient_id=prior["patient_id"],
@@ -3115,6 +3352,29 @@ def api_audit_verify(user: dict = Depends(_verify_auth)):
     return verify_chain()
 
 
+@app.get("/api/retention")
+def api_retention_status(user: dict = Depends(_verify_auth)):
+    """Report the retention policy in force (admin only)."""
+    if not _is_admin(user):
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {
+        "enabled": retention.enabled(),
+        "retention_days": practice.settings.retention_days,
+        "outbox_retention_days": practice.settings.outbox_retention_days,
+        "interval_seconds": practice.settings.retention_interval_seconds,
+    }
+
+
+@app.post("/api/retention/run")
+def api_retention_run(user: dict = Depends(_verify_auth)):
+    """Run the retention purge now (admin only). Audited as retention_purge."""
+    if not _is_admin(user):
+        raise HTTPException(status_code=403, detail="Admin only")
+    if not retention.enabled():
+        raise HTTPException(status_code=400, detail="Retention is not enabled on this deployment.")
+    return retention.run_once(user_id=user.get("id"))
+
+
 # ---------------------------------------------------------------------------
 # Phase 2: NLP QA layer
 # ---------------------------------------------------------------------------
@@ -3293,6 +3553,10 @@ def api_capabilities():
     return {
         "streaming_stt": provider is not None,
         "provider": resolve_streaming_provider_name(),
+        "profile": practice.settings.profile,
+        "data_residency": practice.settings.data_residency or None,
+        "research_features": practice.settings.research_features,
+        "ai_disclosure_footer": practice.settings.ai_disclosure_footer,
     }
 
 
@@ -3709,8 +3973,8 @@ async def ws_transcribe(websocket: WebSocket, token: str = ""):
         # the voice edit isn't silently dropped.
         if last_interim_state["text"] and not last_interim_state["committed"]:
             logger.info(
-                "[stt] no final received after stop — committing last interim: %r",
-                last_interim_state["text"],
+                "[stt] no final received after stop — committing last interim (%d chars)",
+                len(last_interim_state["text"]),
             )
             finals.append(last_interim_state["text"])
 

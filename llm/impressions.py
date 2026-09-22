@@ -20,6 +20,7 @@ import re
 from typing import List, Optional
 
 from openai import OpenAI
+from llm.text_client import get_text_client
 
 from config.config import config
 from llm.format import _build_style_preamble
@@ -459,7 +460,7 @@ def stream_impression(
     if not findings or not findings.strip():
         return
 
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
 
     system_content = _IMPRESSION_SYSTEM_PROMPT + _build_style_preamble(style)
     if with_guidelines:

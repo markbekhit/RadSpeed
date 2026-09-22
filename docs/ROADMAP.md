@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-08-06
+Updated: 2026-09-22
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -338,10 +338,46 @@ Rad AI Continuity parity for the AU/NZ market.
   Fleischner management remains guideline-reference driven until a sufficiently
   complete and clinically reviewed input model is built.
 
+### Phase 6 (shipped 2026-09-22): Australian practice profile
+
+**Done.** Privacy and regulatory posture for selling to AU radiology
+practices, driven by the 22 Sep 2026 compliance review (Privacy Act APP 8 /
+APP 11, NSW HRIPA, Vic HRA, TGA digital-scribe guidance, RANZCR Standards
+v12). Everything is opt-in behind `RADSPEED_PROFILE=practice`; the personal
+profile is unchanged.
+
+- `config/practice.py` — profile loader, per-control env overrides, AU
+  residency host allow-list, start-up validation that refuses offshore
+  endpoints or a missing SSO client.
+- `llm/text_client.py` — provider factory. `bedrock-anthropic` adapts the
+  Anthropic Messages API on Bedrock (`au.anthropic.claude-sonnet-5`, Sydney +
+  Melbourne only) to the chat-completions shape the rest of `llm/` uses.
+- `web/stt_providers/deepgram.py` — `api.au.deepgram.com` + `mip_opt_out`.
+  AssemblyAI refused under AU residency.
+- `llm/format.py` — identifier minimisation: placeholders in the prompt,
+  age derived from DOB, prior report scrubbed, values restored on output
+  (format, stream, feedback paths).
+- `llm/disclosure.py` — "AI-assisted draft" line appended at sign-off and
+  amendment, so HL7 / SR / FHIR copies carry it.
+- `web/retention.py` — scheduled scrub of report rows and export files,
+  audited as `retention_purge`; audit chain still verifies after a purge.
+- `web/app.py` — SSO-required mode, Basic-auth lockout, session max age +
+  idle timeout, Secure cookie, strict-origin check, `no-store` on private
+  responses, research-feature gate (Impression generator, Fracture Lab → 404),
+  transcript text removed from logs, `/api/retention` admin endpoints.
+- `deploy/aws/Caddyfile` — plain HTTP now redirects except `/health`.
+- Docs: `docs/practice-deployment.md`, `deploy/practice.env.example`.
+
+Still to do before a practice pilot (Tier 2 of the review): privacy policy
+and terms, DPA + sub-processor list, security statement in the PainTrack /
+Qscan format, breach response plan, RANZCR AI-tool evidence pack, TGA scoping
+statement, and removing the "HIPAA-ready" / "No PHI stored" claims from the
+unpublished `landing/` mockups.
+
 ## Explicitly NOT doing (and why)
 
 - **HIPAA BAA documentation** — not relevant for AU/NZ launch. Revisit if/when
-  US enters scope.
+  US enters scope. (AU privacy work is Phase 6 above, not this item.)
 - **Chrome extension overlay for PowerScribe Web** — AU/NZ market is desktop
   PowerScribe. Browser extension is the wrong bet here.
 - **Agentic voice control of the PACS viewport** — RADPAIR's fight; requires

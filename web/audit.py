@@ -43,6 +43,7 @@ EVENT_TYPES = (
     "followup_create", "followup_update",
     "vocab_add", "style_apply",
     "worksheet_extract",
+    "retention_purge",
 )
 
 

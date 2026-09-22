@@ -20,6 +20,7 @@ from __future__ import annotations
 import os
 import secrets
 import sqlite3
+import time
 import urllib.parse
 from typing import Optional
 
@@ -242,10 +243,38 @@ def set_session_user(request: Request, user: dict) -> None:
         "email": user["email"],
         "name":  user["name"],
     }
+    request.session["last_seen"] = int(time.time())
+
+
+def _idle_timeout_seconds() -> int:
+    try:
+        from config import practice
+        return int(practice.settings.session_idle_timeout_seconds or 0)
+    except Exception:  # pragma: no cover - config import guard
+        return 0
 
 
 def get_session_user(request: Request) -> Optional[dict]:
-    return request.session.get("user")
+    """Return the signed-in user, expiring the session after inactivity.
+
+    With RADSPEED_SESSION_IDLE_TIMEOUT_SECONDS set (default 30 minutes in the
+    practice profile) a session that has not been used for that long is
+    cleared, so an unattended reporting workstation does not stay signed in.
+    The timestamp is refreshed at most once a minute to keep the cookie stable.
+    """
+    user = request.session.get("user")
+    if not user:
+        return None
+    idle_limit = _idle_timeout_seconds()
+    if idle_limit > 0:
+        now = int(time.time())
+        last_seen = request.session.get("last_seen")
+        if isinstance(last_seen, int) and now - last_seen > idle_limit:
+            request.session.clear()
+            return None
+        if not isinstance(last_seen, int) or now - last_seen >= 60:
+            request.session["last_seen"] = now
+    return user
 
 
 def clear_session(request: Request) -> None:

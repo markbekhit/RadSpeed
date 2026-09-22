@@ -9,11 +9,20 @@ radspeed.com.au, www.radspeed.com.au {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
 	}
 	reverse_proxy app:8765
 }
 
+# Plain HTTP: only the deploy health probe is answered here. Everything else
+# is redirected to HTTPS so no session cookie or report text can travel in
+# clear text, even when the server is reached by IP address.
 :80 {
-	reverse_proxy app:8765
+	@health path /health
+	handle @health {
+		reverse_proxy app:8765
+	}
+	handle {
+		redir https://radspeed.com.au{uri} permanent
+	}
 }
-

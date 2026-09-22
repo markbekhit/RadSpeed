@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from openai import OpenAI
+from llm.text_client import get_text_client
 
 from config.config import config
 from llm.model_compat import completion_options
@@ -162,7 +163,7 @@ def extract_worksheet_findings(
             }
         )
 
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     response = client.chat.completions.create(
         model=config.SELECTED_MODEL,
         messages=[

@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 from config.config import config
+from config import practice
 from .base import StreamingSTTProvider
 
 logger = logging.getLogger(__name__)
@@ -14,11 +15,11 @@ def resolve_streaming_provider_name() -> str:
     medical streaming service. Groq remains the segment-based fallback when no
     streaming key is available or when it is selected explicitly.
     """
-    provider = (config.STREAMING_STT_PROVIDER or "auto").strip().lower()
+    provider = (getattr(config, "STREAMING_STT_PROVIDER", None) or "auto").strip().lower()
     if provider == "auto":
-        if config.ASSEMBLYAI_API_KEY:
+        if getattr(config, "ASSEMBLYAI_API_KEY", None):
             return "assemblyai"
-        if config.DEEPGRAM_API_KEY:
+        if getattr(config, "DEEPGRAM_API_KEY", None):
             return "deepgram"
         return "groq"
     return provider
@@ -32,15 +33,21 @@ def get_streaming_provider() -> Optional[StreamingSTTProvider]:
     """
     provider = resolve_streaming_provider_name()
 
+    if provider == "assemblyai" and practice.settings.residency_au:
+        # AssemblyAI has no Australian region. Refuse rather than silently
+        # sending audio offshore under a residency rule.
+        logger.error("[factory] assemblyai is not permitted under RADSPEED_DATA_RESIDENCY=au")
+        return None
+
     if provider == "deepgram":
-        if not config.DEEPGRAM_API_KEY:
+        if not getattr(config, "DEEPGRAM_API_KEY", None):
             logger.warning("[factory] deepgram selected but DEEPGRAM_API_KEY not set")
             return None
         from .deepgram import DeepgramProvider
         return DeepgramProvider()
 
     if provider == "assemblyai":
-        if not config.ASSEMBLYAI_API_KEY:
+        if not getattr(config, "ASSEMBLYAI_API_KEY", None):
             logger.warning("[factory] assemblyai selected but ASSEMBLYAI_API_KEY not set")
             return None
         from .assemblyai import AssemblyAIProvider

@@ -1,5 +1,7 @@
 import logging
-from openai import OpenAI, AuthenticationError
+from openai import AuthenticationError
+from openai import OpenAI
+from llm.text_client import get_text_client
 from ui.utils import update_status
 from config.config import config
 from llm.model_compat import completion_options
@@ -143,7 +145,7 @@ def _keyword_select_template(transcript: str) -> Optional[str]:
 import re
 def _select_template(transcript: str, attempt: int = 1) -> Optional[str]:
     """Use function calling to select template name, with fallback to JSON chat completion"""
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     templates = _get_templates()
 
     if not templates:
@@ -633,7 +635,7 @@ def _create_structured_report(
 
     Patient context must already be prepended to transcript by the caller.
     """
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
 
     if not template_content:
         # Return None (not an error string) so callers treat this as a failure
@@ -678,7 +680,7 @@ def _create_structured_report(
 
 def _analyze_recommendation_needs(structured_report: str, attempt: int = 1) -> Tuple[bool, List[str]]:
     """Determine if recommendations are needed and select from AVAILABLE guidelines using tool-use, with fallback to JSON chat completion."""
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     guidelines = _get_guidelines()
 
     if attempt > 3:
@@ -807,7 +809,7 @@ def _validate_guidelines(potential_guides: List[str]) -> Tuple[List[str], List[s
 
 def _generate_recommendations(structured_report: str, guides: List[str]) -> Optional[str]:
     """Generate recommendations using validated guidelines"""
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     if not guides:
         return "No applicable guidelines available for these findings"
 
@@ -848,10 +850,72 @@ def _generate_recommendations(structured_report: str, guides: List[str]) -> Opti
         return "Error generating recommendations."
 
 
+# Identifier minimisation (practice profile). The language model never needs
+# to know who the patient is to format a dictation. When
+# RADSPEED_MINIMISE_LLM_IDENTIFIERS is on, direct identifiers are replaced by
+# fixed placeholders in everything sent to the model, and the placeholders are
+# swapped back for the real values in the returned text. Age is derived from
+# the date of birth so age-dependent wording still works.
+IDENTIFIER_PLACEHOLDERS = {
+    "patient_name": "[PATIENT NAME]",
+    "patient_dob": "[PATIENT DOB]",
+    "patient_id": "[PATIENT MRN]",
+    "accession": "[ACCESSION]",
+    "referring_physician": "[REFERRER]",
+}
+
+
+def minimise_identifiers_enabled() -> bool:
+    from config import practice
+    return bool(practice.settings.minimise_llm_identifiers)
+
+
+def _age_from_dob(dob: Optional[str]) -> Optional[int]:
+    """Best-effort age in years from common date formats; None if unparseable."""
+    if not dob:
+        return None
+    from datetime import date, datetime
+    cleaned = dob.strip()
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y%m%d", "%d %b %Y", "%d %B %Y", "%m/%d/%Y"):
+        try:
+            born = datetime.strptime(cleaned, fmt).date()
+        except ValueError:
+            continue
+        today = date.today()
+        years = today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        return years if 0 <= years <= 130 else None
+    return None
+
+
+def scrub_identifiers(text: str, patient_context: Optional[dict]) -> str:
+    """Replace known identifier values inside free text with placeholders."""
+    if not text or not patient_context or not minimise_identifiers_enabled():
+        return text
+    out = text
+    for key, placeholder in IDENTIFIER_PLACEHOLDERS.items():
+        value = (patient_context.get(key) or "").strip()
+        if len(value) >= 3:
+            out = re.sub(re.escape(value), placeholder, out, flags=re.IGNORECASE)
+    return out
+
+
+def reinsert_identifiers(text: str, patient_context: Optional[dict]) -> str:
+    """Swap placeholders back for the real values after the model responds."""
+    if not text or not patient_context:
+        return text
+    out = text
+    for key, placeholder in IDENTIFIER_PLACEHOLDERS.items():
+        value = (patient_context.get(key) or "").strip()
+        if value and placeholder in out:
+            out = out.replace(placeholder, value)
+    return out
+
+
 def _build_patient_context_block(patient_context: Optional[dict]) -> str:
     """Build a human-readable patient context header to prepend to the transcript."""
     if not patient_context:
         return ""
+    minimise = minimise_identifiers_enabled()
     lines = ["Patient context:"]
     field_labels = {
         "patient_name": "Name",
@@ -865,11 +929,21 @@ def _build_patient_context_block(patient_context: Optional[dict]) -> str:
     }
     for key, label in field_labels.items():
         val = patient_context.get(key)
-        if val:
-            lines.append(f"  {label}: {val}")
+        if not val:
+            continue
+        if minimise and key in IDENTIFIER_PLACEHOLDERS:
+            lines.append(f"  {label}: {IDENTIFIER_PLACEHOLDERS[key]}")
+            if key == "patient_dob":
+                age = _age_from_dob(val)
+                if age is not None:
+                    lines.append(f"  Age: {age} years")
+            continue
+        lines.append(f"  {label}: {val}")
     block = "\n".join(lines) + "\n\n" if len(lines) > 1 else ""
 
     prior = (patient_context.get("comparison_report") or "").strip()
+    if prior and minimise:
+        prior = scrub_identifiers(prior, patient_context)
     if prior:
         comparison_date = (patient_context.get("comparison_date") or "date not recorded").strip()
         # Keep prompt size bounded. This is a local signed report selected by
@@ -939,6 +1013,7 @@ def format_text(
 
         if report_content:
             report_content = re.sub(r'<think>.*?</think>', '', report_content, flags=re.DOTALL)
+            report_content = reinsert_identifiers(report_content, patient_context)
 
             if config.fhir_export_enabled:
                 from llm.fhir_export import save_fhir_report
@@ -1110,7 +1185,7 @@ def _stream_create_structured_report(
 
     Patient context must already be prepended to transcript by the caller.
     """
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     stream = client.chat.completions.create(
         model=config.SELECTED_MODEL,
         stream=True,
@@ -1198,14 +1273,26 @@ def stream_format_text(
         yield f"\n\n[Report generation error: {e}]"
 
 
-def apply_report_feedback(report: str, feedback: str, selected_text: str = "") -> str:
+def apply_report_feedback(
+    report: str,
+    feedback: str,
+    selected_text: str = "",
+    patient_context: Optional[dict] = None,
+) -> str:
     """Apply radiologist verbal feedback to a generated report.
 
     If selected_text is non-empty, only that passage is revised; the rest of the
     report is returned unchanged.  Otherwise the feedback is applied globally.
     Returns the complete corrected report.
+
+    ``patient_context`` lets identifier minimisation scrub the patient's name,
+    DOB, MRN, accession and referrer from what the model sees and restore them
+    afterwards.
     """
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
+    report = scrub_identifiers(report, patient_context)
+    selected_text = scrub_identifiers(selected_text, patient_context)
+    feedback = scrub_identifiers(feedback, patient_context)
 
     if selected_text.strip():
         system = (
@@ -1241,7 +1328,8 @@ def apply_report_feedback(report: str, feedback: str, selected_text: str = "") -
             ],
             **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
-        return postprocess_report(resp.choices[0].message.content.strip())
+        corrected = resp.choices[0].message.content.strip()
+        return postprocess_report(reinsert_identifiers(corrected, patient_context))
     except Exception as e:
         logger.error("apply_report_feedback error: %s", e, exc_info=True)
         raise

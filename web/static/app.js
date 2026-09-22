@@ -3109,6 +3109,11 @@ async function _onFeedbackStop() {
         report: $("report-raw").value,
         feedback: feedbackText,
         selected_text: fbState.selectedText || "",
+        patient_name:        ($("patient-name")?.value || "").trim()        || null,
+        patient_dob:         ($("patient-dob")?.value || "").trim()         || null,
+        patient_id:          ($("patient-id")?.value || "").trim()          || null,
+        accession:           ($("accession")?.value || "").trim()           || null,
+        referring_physician: ($("referring-physician")?.value || "").trim() || null,
       }),
     });
     if (!resp.ok) {

@@ -11,6 +11,7 @@ from typing import Any, Literal, Optional
 
 import numpy as np
 from openai import OpenAI
+from llm.text_client import get_text_client
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, Field, model_validator
 
@@ -251,7 +252,7 @@ def _parse_assessment(text: str, image_count: int) -> FractureAssessment:
 
 
 def _completion(content: list[dict]) -> str:
-    client = OpenAI(api_key=config.TEXT_API_KEY, base_url=config.BASE_URL)
+    client = get_text_client(OpenAI)
     response = client.chat.completions.create(
         model=config.SELECTED_MODEL,
         messages=[

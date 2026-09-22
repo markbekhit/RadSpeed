@@ -7,6 +7,7 @@ import websockets
 import websockets.exceptions
 
 from config.model_defaults import DEEPGRAM_STREAMING_MODEL
+from config import practice
 
 from .base import StreamingSTTProvider, TranscriptEvent
 
@@ -14,6 +15,52 @@ logger = logging.getLogger(__name__)
 
 # Max keyterms Deepgram accepts in the URL
 _MAX_KEYWORDS = 100
+
+# Regional endpoints. The Australian endpoint stores and processes audio in
+# AWS Sydney; the EU endpoint in Ireland. Nova-3 Medical is available on all
+# hosted regions.
+_REGION_HOSTS = {
+    "global": "api.deepgram.com",
+    "au": "api.au.deepgram.com",
+    "eu": "api.eu.deepgram.com",
+}
+
+
+def deepgram_host(region: str | None = None) -> str:
+    region = (region or practice.settings.deepgram_region or "global").lower()
+    return _REGION_HOSTS.get(region, _REGION_HOSTS["global"])
+
+
+def build_listen_url(
+    sample_rate: int,
+    keywords: List[str],
+    *,
+    region: str | None = None,
+    mip_opt_out: bool | None = None,
+) -> str:
+    """Build the live-transcription WebSocket URL for the configured region.
+
+    ``mip_opt_out=true`` keeps the audio out of Deepgram's Model Improvement
+    Program, so it is retained only for as long as the request takes.
+    """
+    params = (
+        f"encoding=linear16&sample_rate={sample_rate}&channels=1"
+        f"&punctuate=true&interim_results=true"
+        f"&endpointing=800&model={DEEPGRAM_STREAMING_MODEL}"
+        f"&version=latest&smart_format=true"
+    )
+    opt_out = practice.settings.deepgram_mip_opt_out if mip_opt_out is None else mip_opt_out
+    if opt_out:
+        params += "&mip_opt_out=true"
+    # Keyterm prompting — Nova-3 replaced the Nova-2 ?keywords=term:boost
+    # syntax with ?keyterm=term (no boost weights).
+    if keywords:
+        kw_str = "&".join(
+            f"keyterm={quote(k)}"
+            for k in keywords[:_MAX_KEYWORDS]
+        )
+        params += "&" + kw_str
+    return f"wss://{deepgram_host(region)}/v1/listen?{params}"
 
 
 class DeepgramProvider(StreamingSTTProvider):
@@ -28,23 +75,13 @@ class DeepgramProvider(StreamingSTTProvider):
         self._closed = False
 
     async def connect(self, api_key: str, sample_rate: int, keywords: List[str]) -> None:
-        params = (
-            f"encoding=linear16&sample_rate={sample_rate}&channels=1"
-            f"&punctuate=true&interim_results=true"
-            f"&endpointing=800&model={DEEPGRAM_STREAMING_MODEL}"
-            f"&version=latest&smart_format=true"
+        url = build_listen_url(sample_rate, keywords)
+        logger.info(
+            "[deepgram] connecting to %s (region=%s, mip_opt_out=%s)",
+            deepgram_host(),
+            practice.settings.deepgram_region,
+            practice.settings.deepgram_mip_opt_out,
         )
-        # Keyterm prompting — Nova-3 replaced the Nova-2 ?keywords=term:boost
-        # syntax with ?keyterm=term (no boost weights).
-        if keywords:
-            kw_str = "&".join(
-                f"keyterm={quote(k)}"
-                for k in keywords[:_MAX_KEYWORDS]
-            )
-            params += "&" + kw_str
-
-        url = f"wss://api.deepgram.com/v1/listen?{params}"
-        logger.info("[deepgram] connecting to %s", url[:80])
         self._ws = await websockets.connect(
             url,
             additional_headers={"Authorization": f"Token {api_key}"},

@@ -156,6 +156,30 @@ Key vars:
 | `VOXRAD_MWL_AGENT_TOKEN` | Shared secret for the MWL bridge agent |
 | `VOXRAD_FHIR_EXPORT_ENABLED` / `FHIR_BASE_URL` | FHIR R4 export + RIS lookup |
 | `GOOGLE_CLIENT_ID` / `MICROSOFT_CLIENT_ID` / ... | OAuth mode |
+| `RADSPEED_PROFILE` | `practice` turns on the Australian practice profile: onshore-only processing, mandatory SSO, session limits, identifier minimisation, AI disclosure line, research features off, retention purge. See below. |
+
+### Practice profile (Australian radiology practices)
+
+`RADSPEED_PROFILE=practice` changes the defaults so a practice can meet the
+Privacy Act (APP 8, APP 11), state health records laws and the RANZCR AI-tool
+standards without editing code:
+
+- speech to text on Deepgram's Sydney endpoint with model-improvement opt-out
+  (`DEEPGRAM_REGION=au`, `DEEPGRAM_MIP_OPT_OUT=true`);
+- report formatting on Claude via Amazon Bedrock's Australian inference
+  profile (`RADSPEED_TEXT_PROVIDER=bedrock-anthropic`,
+  `VOXRAD_TEXT_MODEL=au.anthropic.claude-sonnet-5`);
+- start-up refuses any endpoint outside Australia or a missing SSO client;
+- the language model never receives the patient's name, DOB, MRN, accession
+  or referrer;
+- signed reports carry an "AI-assisted draft" line in the report and every
+  HL7 / SR / FHIR export;
+- Impression generator and Fracture Lab are switched off;
+- stored report copies are scrubbed after 30 days and export files after 14.
+
+Each control has its own variable for tuning. The default `personal` profile
+is unchanged. Full guide: [docs/practice-deployment.md](docs/practice-deployment.md);
+example environment: [deploy/practice.env.example](deploy/practice.env.example).
 
 ## 🔌 Integration setup
 
@@ -245,6 +269,7 @@ integration features the web app has. New work lands web-first.
 In this repo:
 - [`docs/deploy-aws.md`](docs/deploy-aws.md) — AWS production deployment
 - [`docs/deploy-web.md`](docs/deploy-web.md) — Docker self-hosting
+- [`docs/practice-deployment.md`](docs/practice-deployment.md) — Australian practice profile (privacy, residency, retention)
 - [`docs/mwl-bridge-agent.md`](docs/mwl-bridge-agent.md) — MWL bridge setup
 - [`docs/local-whisper-setup.md`](docs/local-whisper-setup.md) — self-hosted STT
 - [`docs/FFmpeg.md`](docs/FFmpeg.md) — audio pipeline notes
