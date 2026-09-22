@@ -314,13 +314,17 @@ def _validate_deployment_profile() -> None:
     """
     if os.environ.get("VOXRAD_MOCK_MODE"):
         return
+    try:
+        oauth_configured = bool(oauth_enabled())
+    except Exception:  # config may be a partial stub under test
+        oauth_configured = False
     problems = practice.validate(
         practice.settings,
-        oauth_configured=oauth_enabled(),
-        text_base_url=config.BASE_URL,
-        transcription_base_url=config.TRANSCRIPTION_BASE_URL,
+        oauth_configured=oauth_configured,
+        text_base_url=getattr(config, "BASE_URL", None),
+        transcription_base_url=getattr(config, "TRANSCRIPTION_BASE_URL", None),
         streaming_provider=resolve_streaming_provider_name(),
-        deepgram_key=bool(config.DEEPGRAM_API_KEY),
+        deepgram_key=bool(getattr(config, "DEEPGRAM_API_KEY", None)),
     )
     for problem in problems:
         logger.error("[profile] %s", problem)
