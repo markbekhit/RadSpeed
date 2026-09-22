@@ -1,7 +1,7 @@
 # RadSpeed Terms of Use
 
-**Version 1.0 draft, 22 September 2026**
-**Supplier:** [Clarity Insights Imaging Pty Ltd, ABN to confirm] ("RadSpeed", "we")
+**Version 1.0, 22 September 2026**
+**Supplier:** Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we")
 
 These terms apply to radiology practices ("Practice") and the radiologists
 and staff the Practice authorises ("Users"). A signed order form or pilot

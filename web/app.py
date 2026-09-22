@@ -234,7 +234,7 @@ class PrivacyHeadersMiddleware:
     _PUBLIC_PREFIXES = ("/static/", "/report-templates", "/impressions")
     _PUBLIC_EXACT = {
         "/", "/login", "/health", "/favicon.ico", "/robots.txt", "/sitemap.xml",
-        "/llms.txt", "/radiology-reporting-software", "/powerscribe-companion",
+        "/llms.txt", "/privacy", "/terms", "/radiology-reporting-software", "/powerscribe-companion",
         "/ti-rads-calculator", "/fleischner-calculator", "/adrenal-washout-calculator",
     }
 
@@ -638,6 +638,8 @@ def sitemap():
   <url><loc>https://radspeed.com.au/fleischner-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/adrenal-washout-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radspeed.com.au/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://radspeed.com.au/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 {template_urls}</urlset>
 """
     template_urls = "".join(
@@ -1206,6 +1208,49 @@ def landing_page(request: Request):
             "static_version": _STATIC_VERSION,
         },
     )
+
+
+_LEGAL_DIR = Path(_BASE_DIR) / "templates" / "legal"
+_LEGAL_PAGES = {
+    "/privacy": (
+        "privacy.html", "Privacy Policy",
+        "How RadSpeed handles personal and health information under the Australian Privacy Principles.",
+    ),
+    "/terms": (
+        "terms.html", "Terms of Use",
+        "Terms for radiology practices and radiologists using RadSpeed.",
+    ),
+}
+
+
+def _legal_page(request: Request, path: str):
+    """Serve a legal page generated from docs/compliance by tools/build_compliance_pack.py."""
+    filename, title, description = _LEGAL_PAGES[path]
+    source = _LEGAL_DIR / filename
+    if not source.is_file():
+        raise HTTPException(status_code=503, detail="Page not built")
+    return _jinja.TemplateResponse(
+        request,
+        "legal.html",
+        {
+            "request": request,
+            "title": title,
+            "description": description,
+            "path": path,
+            "body": source.read_text(encoding="utf-8"),
+            "static_version": _STATIC_VERSION,
+        },
+    )
+
+
+@app.get("/privacy", include_in_schema=False)
+def privacy_page(request: Request):
+    return _legal_page(request, "/privacy")
+
+
+@app.get("/terms", include_in_schema=False)
+def terms_page(request: Request):
+    return _legal_page(request, "/terms")
 
 
 @app.get("/radiology-reporting-software", include_in_schema=False)

@@ -1,7 +1,6 @@
 # RadSpeed: TGA regulatory scoping statement
 
-**Version 1.0 draft, 22 September 2026. Manufacturer: [Clarity Insights
-Imaging Pty Ltd, ABN to confirm]. Prepared by Dr Mark Bekhit.**
+**Version 1.0 draft, 22 September 2026. Manufacturer: Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740). Prepared by Dr Mark Bekhit.**
 
 ## 1. Conclusion
 

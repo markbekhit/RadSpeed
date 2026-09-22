@@ -1,0 +1,79 @@
+<h1 id="radspeed-privacy-policy">RadSpeed Privacy Policy</h1>
+<p><strong>Version 1.0, 22 September 2026</strong> <strong>Operator:</strong> Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we") <strong>Contact:</strong> Dr Mark Bekhit, <a href="mailto:hello@radspeed.com.au">hello@radspeed.com.au</a></p>
+<p>RadSpeed is an AI-assisted dictation and report-formatting service for radiologists. This policy explains what information we handle, why, where it is processed, and your rights. It is written to meet the Australian Privacy Principles (APPs) in the <em>Privacy Act 1988</em> (Cth). We are a health service provider under that Act, so it applies to us regardless of our size.</p>
+<h2 id="1-who-this-policy-covers">1. Who this policy covers</h2>
+<ul>
+<li><strong>Radiologists and practice staff</strong> who sign in to RadSpeed.</li>
+<li><strong>Patients</strong> whose imaging reports are drafted through RadSpeed. Patients do not use RadSpeed directly. Their information reaches us only from the radiology practice that has engaged us and only to draft that practice's report.</li>
+<li><strong>Visitors</strong> to radspeed.com.au and users of the free public tools.</li>
+</ul>
+<h2 id="2-what-we-collect">2. What we collect</h2>
+<p><strong>From radiologists and staff:</strong> name, email address and identity-provider account identifier (Google or Microsoft), reporting style preferences, learned vocabulary, templates, and an audit record of actions taken in the service.</p>
+<p><strong>From practices, about patients (practice deployments):</strong> the dictated audio and transcript, the formatted report, and the patient details the practice's radiology information system supplies with the order: name, date of birth, patient identifier, accession number, modality, body part and referrer. This is health information and sensitive information under the Act.</p>
+<p><strong>From website visitors:</strong> standard server logs (IP address, browser, pages requested). The free Impressions tool processes the findings text you paste and does not store it. Do not paste patient identifiers into public tools.</p>
+<p>We do not collect payment card details directly; we invoice practices directly.</p>
+<h2 id="3-why-we-collect-it">3. Why we collect it</h2>
+<ul>
+<li>To transcribe dictation and draft a formatted report for the reporting radiologist to review, edit and sign.</li>
+<li>To deliver the signed report to the practice's own systems (HL7, DICOM SR or FHIR export).</li>
+<li>To keep a medico-legal audit trail of who drafted, edited, signed and amended each report.</li>
+<li>To operate, secure and support the service.</li>
+</ul>
+<p>We do not use patient information to train or improve AI models, and our providers are contractually or technically prevented from doing so (see section 5).</p>
+<h2 id="4-how-we-use-ai-and-automated-decisions">4. How we use AI, and automated decisions</h2>
+<p>RadSpeed uses two kinds of artificial intelligence:</p>
+<ol type="1">
+<li><strong>Speech to text</strong> converts dictation into a transcript.</li>
+<li><strong>A language model</strong> arranges the transcript into the practice's report template and applies the radiologist's style preferences.</li>
+</ol>
+<p>Neither makes a clinical decision. Every report is a draft until the reporting radiologist reviews and signs it. Signed reports carry the line "AI-assisted draft (RadSpeed). Reviewed and signed by [radiologist] on [date]". Deterministic checks flag possible laterality, sex, anatomy and unit inconsistencies for the radiologist; they never change the text.</p>
+<p><em>Automated decision-making disclosure (APP 1.7, in force from 10 December 2026):</em> RadSpeed does not use computer programs to make decisions that could reasonably be expected to significantly affect an individual's rights or interests. The only decisions with such an effect are clinical decisions made by the reporting radiologist. Practice deployments can disable optional research features (an impression generator and a fracture-analysis workbench) that generate content the radiologist did not dictate, and those features are off by default for practices.</p>
+<h2 id="5-where-information-is-processed-and-who-receives-it">5. Where information is processed and who receives it</h2>
+<p><strong>Practice deployments (Australian practice profile).</strong> All processing of patient information occurs in Australia:</p>
+<table>
+<thead>
+<tr>
+<th>Processor</th>
+<th>Role</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Amazon Web Services</td>
+<td>Hosting, storage, backups</td>
+<td>Sydney (ap-southeast-2)</td>
+</tr>
+<tr>
+<td>Deepgram</td>
+<td>Speech to text, Australian endpoint, model-improvement opt-out</td>
+<td>Sydney</td>
+</tr>
+<tr>
+<td>Amazon Bedrock (Anthropic Claude models)</td>
+<td>Report formatting, Australian inference profile</td>
+<td>Sydney and Melbourne only</td>
+</tr>
+<tr>
+<td>Google or Microsoft</td>
+<td>Sign-in identity only; receives no patient data</td>
+<td>Provider's infrastructure</td>
+</tr>
+</tbody>
+</table>
+<p>Amazon Bedrock does not store prompts or outputs and does not use them to train models. Deepgram retains audio only for the duration of the request. No patient information is disclosed to an overseas recipient in a practice deployment. Before the practice profile existed, or where a practice explicitly chooses other providers, processing may occur in the United States; that choice is the practice's and is recorded in its agreement with us.</p>
+<p><strong>Personal (single-radiologist) deployments</strong> may use providers the radiologist configures, including providers outside Australia. Radiologists using such a configuration must not enter patient identifiers.</p>
+<p>We do not sell personal information and do not share it with advertisers.</p>
+<h2 id="6-security">6. Security</h2>
+<p>Sign-in is through the practice's own single sign-on with its multi-factor policy. Sessions expire after 12 hours and after 30 minutes of inactivity. All traffic is encrypted in transit (HTTPS with HSTS). Data at rest is held on encrypted storage in Sydney. The language model does not receive the patient's name, date of birth, record number, accession or referrer; those are replaced by placeholders and restored after formatting. Every login, transcription, draft, edit, sign-off, amendment, export and purge is written to a tamper-evident audit log. Details are in our Security Statement, available to practices on request.</p>
+<h2 id="7-retention-and-deletion">7. Retention and deletion</h2>
+<p>The practice's radiology information system holds the report of record. RadSpeed keeps its own copy of a signed report for 30 days to support amendments and audit review, then replaces the report text and patient identifiers with a purge marker while keeping the audit entries. Export files handed to the practice's integration engine are deleted after 14 days. Transcripts are held in memory for at most 30 minutes. Audio is not stored. Server backups are retained for 7 days. A practice can request earlier deletion at any time.</p>
+<p>Account information for radiologists is kept while the account is active and deleted within 30 days of a closure request, except audit entries that must be retained for medico-legal reasons.</p>
+<h2 id="8-access-and-correction">8. Access and correction</h2>
+<p>Patients should direct requests to see or correct their imaging report to the radiology practice, which holds the record of record and can amend it through the practice's normal process. Radiologists and staff can see the information we hold about them in the service settings or by contacting us. We respond to access and correction requests within 30 days.</p>
+<h2 id="9-data-breaches">9. Data breaches</h2>
+<p>We maintain a data breach response plan aligned with the Notifiable Data Breaches scheme. If a breach is likely to result in serious harm, we notify the affected practice without delay so that it can notify patients and the Office of the Australian Information Commissioner, and we assist with that notification. Where we are the responsible entity, we notify the Commissioner and affected individuals ourselves.</p>
+<h2 id="10-complaints">10. Complaints</h2>
+<p>Contact us first at <a href="mailto:hello@radspeed.com.au">hello@radspeed.com.au</a>. We acknowledge complaints within 7 days and aim to resolve them within 30 days. If you are not satisfied, you may complain to the Office of the Australian Information Commissioner (oaic.gov.au, 1300 363 992). Patients may also contact their state health complaints body.</p>
+<h2 id="11-changes">11. Changes</h2>
+<p>We will publish changes to this policy at radspeed.com.au/privacy and notify practices of material changes in writing at least 30 days before they take effect.</p>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ description }}" />
+  <meta name="theme-color" content="#050a12" />
+  <link rel="canonical" href="https://radspeed.com.au{{ path }}" />
+  <meta property="og:title" content="{{ title }} · RadSpeed" />
+  <meta property="og:description" content="{{ description }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au{{ path }}" />
+  <title>{{ title }} · RadSpeed</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/landing.css?v={{ static_version }}" />
+  <style>
+    .legal-main { max-width: 800px; margin: 0 auto; padding: 32px 20px 72px; }
+    .legal-main h1 { font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.15; margin: 0 0 8px; }
+    .legal-main h1 + p { color: var(--muted, #9aa7b1); margin-top: 0; }
+    .legal-main h2 { font-size: 1.25rem; margin: 2rem 0 .6rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.12); }
+    .legal-main h3 { font-size: 1.05rem; margin: 1.2rem 0 .4rem; }
+    .legal-main p, .legal-main li { line-height: 1.6; max-width: 72ch; }
+    .legal-main ul, .legal-main ol { padding-left: 1.3rem; }
+    .legal-main li { margin-bottom: .35rem; }
+    .legal-main table { border-collapse: collapse; width: 100%; font-size: .92rem; margin: .6rem 0 1.2rem; display: block; overflow-x: auto; }
+    .legal-main th, .legal-main td { border: 1px solid rgba(255,255,255,.14); padding: .5rem .65rem; vertical-align: top; text-align: left; }
+    .legal-main th { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; opacity: .85; }
+    .legal-main code { font-size: .9em; padding: 0 .3em; border-radius: 3px; background: rgba(255,255,255,.08); }
+    .legal-main a { color: inherit; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="/" aria-label="RadSpeed home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
+        <span>RadSpeed</span>
+      </a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="/radiology-reporting-software">Reporting software</a>
+        <a href="/powerscribe-companion">Windows companion</a>
+        <a href="/report-templates">Templates</a>
+      </nav>
+      <div class="nav-actions"><a class="button button-small button-outline" href="/app">Sign in</a></div>
+    </div>
+  </header>
+
+  <main id="main-content" class="legal-main">
+    {{ body | safe }}
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand footer-brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </span>
+      <span>RadSpeed</span>
+    </a>
+    <p>Practical radiology reporting software for AU/NZ workflows. Operated by Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740).</p>
+    <nav aria-label="Footer navigation">
+      <a href="/radiology-reporting-software">Reporting software</a>
+      <a href="/powerscribe-companion">Windows companion</a>
+      <a href="/report-templates">Templates</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+    </nav>
+  </footer>
+</body>
+</html>

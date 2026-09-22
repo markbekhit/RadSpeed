@@ -53,7 +53,7 @@ laptop with a signed-in session, or a report shown to the wrong user.
 - OAIC: 1300 363 992, oaic.gov.au, NDB form.
 - Australian Cyber Security Centre: 1300 292 371 (24 hours), report at
   cyber.gov.au.
-- Cyber insurance: [insurer and policy number to confirm].
+- Cyber insurance: none currently held; obtaining cover is on the pre-pilot list.
 - Practice contacts: per Data Processing Agreement schedule.
 
 ### 7. Testing

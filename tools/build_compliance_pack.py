@@ -21,6 +21,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "docs" / "compliance"
 OUT = SRC / "build"
+LEGAL_DIR = ROOT / "web" / "templates" / "legal"
+# Documents also published on the live site (served by /privacy and /terms).
+LEGAL = {"privacy-policy": "privacy.html", "terms-of-use": "terms.html"}
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 ORDER = [
@@ -55,7 +58,7 @@ strong{font-weight:600}
 
 def pandoc_fragment(md_path: Path) -> str:
     return subprocess.run(
-        ["pandoc", "-f", "gfm", "-t", "html5", str(md_path)],
+        ["pandoc", "-f", "gfm", "-t", "html5", "--wrap=none", str(md_path)],
         check=True, capture_output=True, text=True,
     ).stdout
 
@@ -127,12 +130,10 @@ h1{{font-family:"Source Serif 4",Georgia,serif;font-size:1.9rem;font-weight:600;
   <div class="eyebrow">RadSpeed · Tier 2 document pack · drafts 22 September 2026</div>
   <h1>RadSpeed Compliance Pack</h1>
   <p class="intro">Seven documents a radiology practice will ask for before a pilot. Editable sources live in the repository under <code>docs/compliance/</code>, with PDFs in <code>docs/compliance/build/</code>. Pick a tab to read each one.</p>
-  <div class="todo"><strong>Confirm before sending:</strong>
+  <div class="todo"><strong>Confirmed 22 September 2026:</strong> supplier Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740); contact hello@radspeed.com.au; one dedicated instance per practice; no cyber insurance yet (on the pre-pilot list).
     <ul>
-      <li>The legal entity and ABN supplying RadSpeed (existing material names Clarity Insights Imaging Pty Ltd for Imaging Finder).</li>
-      <li>A monitored privacy and security contact address on radspeed.com.au.</li>
-      <li>Cyber insurance status, and whether each practice gets a dedicated instance (recommended).</li>
-      <li>A backup person for the breach plan roles.</li>
+      <li>Still open: a backup person for the breach-plan roles and a privacy lawyer for regulator contact.</li>
+      <li>The privacy policy and terms are live at radspeed.com.au/privacy and /terms.</li>
     </ul>
   </div>
   <nav class="tabs" role="tablist" aria-label="Documents">{tabs}</nav>
@@ -175,6 +176,10 @@ def main() -> int:
         html_path.write_text(standalone(label, frag), encoding="utf-8")
         ok = to_pdf(html_path, OUT / f"{slug}.pdf")
         print(f"{slug}: html{' + pdf' if ok else ''}")
+        if slug in LEGAL:
+            LEGAL_DIR.mkdir(exist_ok=True)
+            (LEGAL_DIR / LEGAL[slug]).write_text(frag, encoding="utf-8")
+            print(f"  -> web/templates/legal/{LEGAL[slug]}")
     if args.review:
         review = OUT / "review.html"
         review.write_text(build_review_page(fragments), encoding="utf-8")

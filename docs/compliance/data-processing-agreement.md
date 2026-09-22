@@ -2,7 +2,7 @@
 
 **RadSpeed practice deployment. Version 1.0 draft, 22 September 2026**
 
-**Between:** [Clarity Insights Imaging Pty Ltd, ABN to confirm] ("RadSpeed")
+**Between:** Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed")
 **and:** [Practice legal name, ABN] ("Practice")
 
 This agreement forms part of the RadSpeed order form or pilot agreement. It
@@ -45,8 +45,7 @@ reasonable grounds.
 | Amazon Bedrock (Anthropic Claude models supplied through AWS) | Report formatting, `au.` inference profile | Sydney and Melbourne regions only | No storage of prompts or outputs; no training on customer content; AWS terms |
 | Google LLC or Microsoft Corporation | Single sign-on identity | Provider infrastructure | Receives staff name and email only; no patient data |
 
-RadSpeed's own hosting is dedicated to the Practice: [one instance per
-practice / shared instance with per-user isolation — confirm].
+RadSpeed's own hosting is dedicated to the Practice: one dedicated instance per practice, so no other practice's data shares the database, storage or audit log.
 
 ## 4. Security measures
 
@@ -70,7 +69,7 @@ RadSpeed maintains the measures in its Security Statement, including:
 
 ## 5. Personnel
 
-Only Dr Mark Bekhit and [named support personnel] have administrative access
+Only Dr Mark Bekhit has administrative access
 to the Practice's deployment. Access is logged. RadSpeed will remove access
 within one business day when a person's role ends.
 
@@ -82,8 +81,8 @@ within one business day when a person's role ends.
 | Transcript awaiting formatting | Up to 30 minutes | In-memory cache, then discarded |
 | Signed report copy and patient identifiers | 30 days (configurable) | Text and identifiers replaced by a purge marker; row, version chain and audit events retained |
 | HL7 / DICOM SR / FHIR export files | 14 days (configurable) | Deleted by scheduled job |
-| Audit log | Life of the agreement plus [7] years, or as the Practice directs | Retained without patient free text; contains identifiers only where the Practice's accession is the key |
-| Server snapshots | [7] days rolling | Automatic expiry |
+| Audit log | Life of the agreement plus 7 years, or as the Practice directs | Retained without patient free text; contains identifiers only where the Practice's accession is the key |
+| Server snapshots | 7 days rolling | Automatic expiry |
 | Staff accounts and preferences | Life of the agreement | Deleted within 30 days of termination |
 
 On termination RadSpeed exports any unpurged signed reports to the Practice on

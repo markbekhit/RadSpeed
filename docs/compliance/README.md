@@ -19,12 +19,12 @@ in square brackets must be confirmed before any document is sent.
 Rendered PDFs are built with `python tools/build_compliance_pack.py` into
 `docs/compliance/build/`.
 
-## Facts to confirm before sending
+## Facts confirmed 22 September 2026
 
-- Legal entity and ABN that supplies RadSpeed (existing material names
-  **Clarity Insights Imaging Pty Ltd** for Imaging Finder; confirm the same
-  entity supplies RadSpeed).
-- A monitored privacy and security contact address on the radspeed.com.au
-  domain.
-- Cyber insurance status.
-- Whether each practice gets a dedicated instance (recommended) or shares one.
+- Supplier: Clarity Insights Imaging Pty Ltd, ABN 92 696 493 740.
+- Privacy and security contact: hello@radspeed.com.au.
+- Cyber insurance: none held yet; obtaining cover is on the pre-pilot list.
+- Hosting: one dedicated instance per practice.
+
+Still open: a backup person for the breach-plan roles and a privacy lawyer
+for regulator contact.

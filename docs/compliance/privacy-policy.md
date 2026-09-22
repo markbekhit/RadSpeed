@@ -1,8 +1,8 @@
 # RadSpeed Privacy Policy
 
-**Version 1.0 draft, 22 September 2026**
-**Operator:** [Clarity Insights Imaging Pty Ltd, ABN to confirm] ("RadSpeed", "we")
-**Contact:** Dr Mark Bekhit, [privacy contact address to confirm]
+**Version 1.0, 22 September 2026**
+**Operator:** Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we")
+**Contact:** Dr Mark Bekhit, hello@radspeed.com.au
 
 RadSpeed is an AI-assisted dictation and report-formatting service for
 radiologists. This policy explains what information we handle, why, where it
@@ -35,8 +35,7 @@ is health information and sensitive information under the Act.
 requested). The free Impressions tool processes the findings text you paste
 and does not store it. Do not paste patient identifiers into public tools.
 
-We do not collect payment card details directly; billing is handled by
-[payment provider to confirm].
+We do not collect payment card details directly; we invoice practices directly.
 
 ## 3. Why we collect it
 
@@ -120,7 +119,7 @@ amendments and audit review, then replaces the report text and patient
 identifiers with a purge marker while keeping the audit entries. Export files
 handed to the practice's integration engine are deleted after 14 days.
 Transcripts are held in memory for at most 30 minutes. Audio is not stored.
-Server backups are retained for [7] days. A practice can request earlier
+Server backups are retained for 7 days. A practice can request earlier
 deletion at any time.
 
 Account information for radiologists is kept while the account is active and
@@ -146,7 +145,7 @@ and affected individuals ourselves.
 
 ## 10. Complaints
 
-Contact us first at [privacy contact address]. We acknowledge complaints
+Contact us first at hello@radspeed.com.au. We acknowledge complaints
 within 7 days and aim to resolve them within 30 days. If you are not
 satisfied, you may complain to the Office of the Australian Information
 Commissioner (oaic.gov.au, 1300 363 992). Patients may also contact their
