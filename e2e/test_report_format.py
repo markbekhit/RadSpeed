@@ -3,7 +3,10 @@ import pytest
 from playwright.sync_api import expect
 
 
-@pytest.mark.parametrize('slug', ['ct-head-brain', 'ultrasound-doppler-venous', 'ct-pulmonary-angiogram'])
+@pytest.mark.parametrize(
+    'slug',
+    ['ct-head-brain', 'ct-neck', 'ultrasound-doppler-venous', 'ct-pulmonary-angiogram'],
+)
 def test_blank_report_copy_preserves_placeholders(page, base_url, slug):
     page.context.grant_permissions(['clipboard-read', 'clipboard-write'])
     page.goto(f'{base_url}/report-templates/{slug}')

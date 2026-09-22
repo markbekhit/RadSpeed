@@ -171,6 +171,7 @@ class ReportTemplateLibraryTests(unittest.TestCase):
             "mammography": "mri-breast",
             "mri-spine-cervical": "ct-spine-cervical",
             "ct-spine-cervical": "mri-spine-cervical",
+            "ct-neck": "ct-head-brain",
         }
         for source, target in expected_pairs.items():
             body = self.client.get(f"/report-templates/{source}").text
@@ -242,6 +243,25 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn('href="https://doi.org/10.1093/ehjci/jeaf050"', body)
         self.assertIn("not a society-issued template", body)
         self.assertIn('href="/report-templates/cxr"', body)
+
+    def test_ct_neck_blank_scaffold_covers_key_regions_without_preset_results(self):
+        entry = rt.get_entry("ct-neck")
+        scaffold = "\n".join(entry["report_format"])
+        for prompt in [
+            "Airway and aerodigestive tract:",
+            "Deep neck spaces and soft tissues:",
+            "Lymph nodes:",
+            "[Side, level, short-axis size, morphology and necrosis where relevant]",
+            "lung apices and superior mediastinum",
+        ]:
+            self.assertIn(prompt, scaffold)
+        for preset in ["No airway compromise", "No lymphadenopathy", "No collection"]:
+            self.assertNotIn(preset, scaffold)
+        body = self.client.get("/report-templates/ct-neck").text
+        self.assertIn("Copyable CT neck report format", body)
+        self.assertIn('href="https://pubmed.ncbi.nlm.nih.gov/31589582/"', body)
+        self.assertIn("not a dedicated CT angiogram", body)
+        self.assertIn('href="/report-templates/ultrasound-thyroid"', body)
 
 
 if __name__ == "__main__":

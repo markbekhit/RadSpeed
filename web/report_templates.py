@@ -449,14 +449,74 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "CT_Neck": {
+        "meta_description": (
+            "CT neck report template with a copyable blank format for contrast-enhanced "
+            "neck CT. Cover the airway, deep spaces, glands, nodes and thoracic inlet."
+        ),
+        "lead": (
+            "Copy a blank CT neck report into your reporting system and replace the prompts "
+            "with your findings. The format keeps the airway, deep neck spaces and nodal "
+            "levels visible during review."
+        ),
+        "scope_note": (
+            "A general scaffold for contrast-enhanced CT neck in mass, infection or initial "
+            "staging work. It is not a dedicated CT angiogram, cervical spine or post-treatment "
+            "NI-RADS surveillance template. Adapt it to the indication and local protocol."
+        ),
+        "report_format_heading": "Copyable CT neck report format",
+        "report_format_reference": {
+            "url": "https://pubmed.ncbi.nlm.nih.gov/31589582/",
+            "label": "systematic emergency neck CT review",
+        },
+        "report_format": [
+            "EXAM: CT NECK WITH IV CONTRAST",
+            "",
+            "CLINICAL DETAILS: [Indication and relevant history]",
+            "",
+            "COMPARISON: [Prior study and date]",
+            "",
+            "TECHNIQUE: [Coverage, IV contrast, phases and reformats]",
+            "",
+            "FINDINGS:",
+            "Airway and aerodigestive tract:",
+            "[Nasopharynx, oropharynx, oral cavity, hypopharynx and larynx]",
+            "",
+            "Deep neck spaces and soft tissues:",
+            "[Parapharyngeal, retropharyngeal, carotid, masticator and visceral spaces]",
+            "",
+            "Salivary glands:",
+            "[Parotid and submandibular glands]",
+            "",
+            "Thyroid:",
+            "[Thyroid gland]",
+            "",
+            "Lymph nodes:",
+            "[Side, level, short-axis size, morphology and necrosis where relevant]",
+            "",
+            "Vessels:",
+            "[Carotid and jugular structures within scan limits]",
+            "",
+            "Bones, teeth and air spaces:",
+            "[Skull base, mandible, dentition, paranasal sinuses and cervical spine]",
+            "",
+            "Other structures:",
+            "[Orbits, imaged brain, lung apices and superior mediastinum]",
+            "",
+            "IMPRESSION:",
+            "1. [Primary finding and location]",
+            "2. [Airway, collection or nodal extent where relevant]",
+            "3. [Important limitation or follow-up recommendation if required]",
+        ],
         "indications": "Neck mass, suspected infection or abscess, or staging of a known malignancy.",
         "sections": [
-            "Mucosal spaces and airway",
+            "Airway and aerodigestive tract",
+            "Deep neck spaces and soft tissues",
             "Salivary glands and thyroid",
             "Cervical lymph node levels",
-            "Vessels and carotid spaces",
-            "Bones and soft tissues",
-            "Lung apices",
+            "Carotid and jugular structures",
+            "Bones, teeth and paranasal sinuses",
+            "Orbits and imaged brain",
+            "Lung apices and superior mediastinum",
         ],
         "impression": [
             "Enlarged left level II lymph node with central necrosis.",
@@ -1076,6 +1136,14 @@ _RELATED_OVERRIDES: dict[str, list[str]] = {
         "mri-spine-cervical",
         "ct-spine-thoracic",
         "ct-spine-lumbar",
+    ],
+    "ct-neck": [
+        "ct-head-brain",
+        "ct-sinuses",
+        "ultrasound-thyroid",
+        "ultrasound-carotid-doppler",
+        "ct-spine-cervical",
+        "cxr",
     ],
 }
 
