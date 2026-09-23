@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TI-RADS Calculator · RadSpeed</title>
-  <meta name="description" content="Free ACR TI-RADS 2017 thyroid nodule calculator. Score composition, echogenicity, shape, margin and echogenic foci, get the TR level with FNA and follow-up thresholds, and copy a ready-to-paste report line." />
+  <meta name="description" content="Free ACR TI-RADS 2017 thyroid nodule calculator. Score the five ultrasound features, get the TR level with FNA and follow-up thresholds, check growth against a prior study, and copy a paste-ready report line." />
   <link rel="canonical" href="https://radspeed.com.au/ti-rads-calculator" />
   <meta property="og:title" content="ACR TI-RADS Calculator · RadSpeed" />
-  <meta property="og:description" content="Score a thyroid nodule with ACR TI-RADS 2017, see the FNA and follow-up thresholds, and copy a paste-ready report line. Free, no sign-up." />
+  <meta property="og:description" content="Score a thyroid nodule with ACR TI-RADS 2017, see the FNA and follow-up thresholds, check significant enlargement against a prior study, and copy a paste-ready report line. Free, no sign-up." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://radspeed.com.au/ti-rads-calculator" />
   <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
@@ -27,7 +27,7 @@
         "@type": "MedicalWebPage",
         "name": "ACR TI-RADS Calculator",
         "url": "https://radspeed.com.au/ti-rads-calculator",
-        "description": "Free ACR TI-RADS 2017 thyroid nodule risk calculator with FNA and follow-up thresholds and a paste-ready structured report line.",
+        "description": "Free ACR TI-RADS 2017 thyroid nodule risk calculator with FNA and follow-up thresholds, a prior-study growth check and a paste-ready structured report line.",
         "medicalAudience": "https://schema.org/Clinician",
         "about": { "@type": "MedicalCondition", "name": "Thyroid nodule" }
       },
@@ -48,6 +48,46 @@
             "acceptedAnswer": {
               "@type": "Answer",
               "text": "TR3: FNA at 2.5 cm or larger, follow-up ultrasound at 1.5 cm or larger. TR4: FNA at 1.5 cm, follow-up at 1.0 cm. TR5: FNA at 1.0 cm, follow-up at 0.5 cm. TR1 and TR2 need no FNA or follow-up."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do you score a feature that cannot be determined?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The ACR chart assigns 2 points when composition cannot be determined because of calcification, 1 point when echogenicity cannot be determined, and 0 points when the margin cannot be determined."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do spongiform nodules get points for other features?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. A spongiform nodule is composed predominantly (more than 50%) of small cystic spaces. The ACR chart says to add no further points for other categories, so it scores 0 points, TR1. Small echogenic foci in a spongiform nodule are not suspicious."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What counts as significant thyroid nodule growth under ACR TI-RADS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A 20% increase in at least two nodule dimensions with a minimal increase of 2 mm, or a 50% or greater increase in volume. The new size then decides management for the nodule's TR level. If the TR level increases, the next sonogram should be in 1 year, regardless of the initial level."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "When can thyroid nodule follow-up stop?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Imaging can stop at 5 years if there is no change in size. Follow-up intervals are 1, 3 and 5 years for TR3, 1, 2, 3 and 5 years for TR4, and every year for up to 5 years for TR5."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How many thyroid nodules should be biopsied or followed?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "ACR recommends FNA of no more than two nodules, chosen by the highest point totals rather than size, and formal follow-up of no more than four nodules that fall below the FNA size threshold."
             }
           },
           {
@@ -124,6 +164,15 @@
       white-space: pre-wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
       background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
     }
+    .tirads-dims { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .tirads-prior { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; }
+    .tirads-prior summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text); }
+    .tirads-prior[open] summary { margin-bottom: 10px; }
+    .tirads-hint { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0 0 10px; }
+    .tirads-growth { font-size: 13px; line-height: 1.5; margin-bottom: 12px; color: var(--text); }
+    .tirads-growth.is-significant { color: var(--red); font-weight: 600; }
+    .tirads-notes { margin: 0 0 12px; padding-left: 18px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .tirads-faq h4 { font-size: 14px; margin: 16px 0 4px; color: var(--text); }
     .tirads-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
     .tirads-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .tirads-cta a:hover { text-decoration: underline; }
@@ -170,6 +219,7 @@
             <option value="spongiform">Spongiform (0)</option>
             <option value="mixed">Mixed cystic and solid (1)</option>
             <option value="solid" selected>Solid or almost completely solid (2)</option>
+            <option value="indeterminate">Cannot be determined because of calcification (2)</option>
           </select>
         </div>
         <div class="tirads-field">
@@ -179,6 +229,7 @@
             <option value="iso_hyper">Hyperechoic or isoechoic (1)</option>
             <option value="hypo" selected>Hypoechoic (2)</option>
             <option value="very_hypo">Very hypoechoic (3)</option>
+            <option value="indeterminate">Cannot be determined (1)</option>
           </select>
         </div>
         <div class="tirads-field">
@@ -195,6 +246,7 @@
             <option value="ill_defined">Ill-defined (0)</option>
             <option value="lobulated">Lobulated or irregular (2)</option>
             <option value="ete">Extra-thyroidal extension (3)</option>
+            <option value="indeterminate">Cannot be determined (0)</option>
           </select>
         </div>
         <div class="tirads-field">
@@ -206,15 +258,41 @@
             <label class="tirads-check" style="color:var(--muted);">None or large comet-tail = 0 points</label>
           </div>
         </div>
-        <div class="tirads-inline">
-          <div class="tirads-field">
-            <label for="size_mm">Maximum diameter (mm, optional)</label>
-            <input type="number" id="size_mm" min="0" step="0.1" inputmode="decimal" placeholder="e.g. 18" />
+        <div class="tirads-field">
+          <label for="dim_1">Size in mm (optional: one to three dimensions)</label>
+          <div class="tirads-dims">
+            <input type="number" id="dim_1" class="dim" min="0" step="0.1" inputmode="decimal" placeholder="Transverse" aria-label="Current transverse dimension in mm" />
+            <input type="number" id="dim_2" class="dim" min="0" step="0.1" inputmode="decimal" placeholder="AP" aria-label="Current AP dimension in mm" />
+            <input type="number" id="dim_3" class="dim" min="0" step="0.1" inputmode="decimal" placeholder="Longitudinal" aria-label="Current longitudinal dimension in mm" />
           </div>
-          <div class="tirads-field">
-            <label for="location">Location (optional, for the report line)</label>
-            <input type="text" id="location" autocomplete="off" placeholder="e.g. Right mid pole" />
+        </div>
+        <details class="tirads-prior" id="prior-panel">
+          <summary>Compare with a prior study</summary>
+          <p class="tirads-hint">
+            Enter the prior measurements in the same order. The check applies the ACR growth rule:
+            a 20% and 2 mm increase in at least two dimensions, or a 50% volume increase (all three
+            dimensions needed for volume).
+          </p>
+          <div class="tirads-dims" style="margin-bottom:10px;">
+            <input type="number" id="prior_1" class="prior-dim" min="0" step="0.1" inputmode="decimal" placeholder="Transverse" aria-label="Prior transverse dimension in mm" />
+            <input type="number" id="prior_2" class="prior-dim" min="0" step="0.1" inputmode="decimal" placeholder="AP" aria-label="Prior AP dimension in mm" />
+            <input type="number" id="prior_3" class="prior-dim" min="0" step="0.1" inputmode="decimal" placeholder="Longitudinal" aria-label="Prior longitudinal dimension in mm" />
           </div>
+          <div class="tirads-field" style="margin-bottom:0;">
+            <label for="prior_level">Prior TR level (optional)</label>
+            <select id="prior_level">
+              <option value="">Not recorded</option>
+              <option value="TR1">TR1</option>
+              <option value="TR2">TR2</option>
+              <option value="TR3">TR3</option>
+              <option value="TR4">TR4</option>
+              <option value="TR5">TR5</option>
+            </select>
+          </div>
+        </details>
+        <div class="tirads-field">
+          <label for="location">Location (optional, for the report line)</label>
+          <input type="text" id="location" autocomplete="off" placeholder="e.g. Right mid pole" />
         </div>
       </div>
 
@@ -228,6 +306,8 @@
         <div class="tirads-meta" id="thresholds"></div>
 
         <div class="tirads-management" id="management"></div>
+        <div class="tirads-growth" id="growth" hidden></div>
+        <ul class="tirads-notes" id="notes" hidden></ul>
 
         <div class="tirads-report-title">
           <h3>Report line</h3>
@@ -259,9 +339,51 @@
       </tbody>
     </table>
     <p>
-      Source: Tessler FN et al., ACR Thyroid Imaging, Reporting and Data System (TI-RADS): White
-      Paper of the ACR TI-RADS Committee, <em>J Am Coll Radiol</em> 2017.
+      Chart notes the calculator applies: a spongiform nodule takes no further points; composition
+      that cannot be determined because of calcification scores 2, echogenicity that cannot be
+      determined scores 1, and a margin that cannot be determined scores 0. Mixed cystic and solid
+      nodules are scored on the solid component.
     </p>
+    <p>
+      Source: Tessler FN et al., ACR Thyroid Imaging, Reporting and Data System (TI-RADS): White
+      Paper of the ACR TI-RADS Committee, <em>J Am Coll Radiol</em> 2017;14:587–595. ACR has not
+      replaced the 2017 system.
+    </p>
+  </div>
+
+  <div class="card tirads-explainer">
+    <h3>Worked example: a follow-up scan</h3>
+    <p>
+      A synthetic case. A right mid pole nodule is solid (2), hypoechoic (2), wider-than-tall (0),
+      with a smooth margin (0) and no echogenic foci (0). That is 4 points, TR4. It measures
+      14 &times; 10 &times; 9 mm. The largest diameter, 1.4 cm, is above the 1.0 cm follow-up
+      threshold and below the 1.5 cm FNA threshold, so follow-up ultrasound is advised.
+    </p>
+    <p>
+      The prior study measured 11 &times; 8 &times; 7 mm. The transverse dimension grew 3 mm (27%),
+      AP 2 mm (25%) and longitudinal 2 mm (29%), so all three meet the 20% and 2 mm rule. The
+      ellipsoid volume roughly doubled (+105%). This is significant enlargement. The nodule still sits
+      below the TR4 FNA threshold, so follow-up continues. If it had been TR3 on the prior study, the
+      level increase alone means the next sonogram is due in 1 year.
+    </p>
+  </div>
+
+  <div class="card tirads-explainer tirads-faq">
+    <h3>Questions radiologists ask</h3>
+    <h4>How do you score a feature that cannot be determined?</h4>
+    <p>The ACR chart assigns 2 points when composition cannot be determined because of calcification, 1 point when echogenicity cannot be determined, and 0 points when the margin cannot be determined.</p>
+    <h4>Do spongiform nodules get points for other features?</h4>
+    <p>No. A spongiform nodule is composed predominantly (more than 50%) of small cystic spaces. The ACR chart says to add no further points for other categories, so it scores 0 points, TR1. Small echogenic foci in a spongiform nodule are not suspicious.</p>
+    <h4>What counts as significant thyroid nodule growth under ACR TI-RADS?</h4>
+    <p>A 20% increase in at least two nodule dimensions with a minimal increase of 2 mm, or a 50% or greater increase in volume. The new size then decides management for the nodule's TR level. If the TR level increases, the next sonogram should be in 1 year, regardless of the initial level. Compare with earlier scans too, because slow growth can hide between consecutive studies.</p>
+    <h4>When can thyroid nodule follow-up stop?</h4>
+    <p>Imaging can stop at 5 years if there is no change in size. Follow-up intervals are 1, 3 and 5 years for TR3, 1, 2, 3 and 5 years for TR4, and every year for up to 5 years for TR5.</p>
+    <h4>How many thyroid nodules should be biopsied or followed?</h4>
+    <p>ACR recommends FNA of no more than two nodules, chosen by the highest point totals rather than size, and formal follow-up of no more than four nodules that fall below the FNA size threshold.</p>
+    <h4>What about a 5–9 mm TR5 nodule?</h4>
+    <p>ACR advises against routine FNA below 1 cm. FNA may still be appropriate after shared decision-making, so the report should say whether the nodule can be measured reproducibly and whether it abuts the trachea or the tracheoesophageal groove.</p>
+    <h4>Is the TI-RADS calculator a diagnostic device?</h4>
+    <p>No. It is decision-support software that reproduces the published ACR TI-RADS rules. It does not store patient data. Always confirm the result and apply clinical judgement before reporting.</p>
   </div>
 
   <div class="tirads-cta">

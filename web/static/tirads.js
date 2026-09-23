@@ -12,6 +12,12 @@
       .map((el) => el.value);
   }
 
+  function collectDims(selector) {
+    return Array.from(document.querySelectorAll(selector))
+      .map((el) => (el.value ? parseFloat(el.value) : null))
+      .filter((v) => v != null && v > 0);
+  }
+
   function setStatus(msg, kind) {
     const el = $("status");
     el.textContent = msg || "";
@@ -39,17 +45,44 @@
     }
 
     $("management").textContent = r.management;
+
+    const growth = $("growth");
+    if (r.comparison) {
+      growth.textContent = r.comparison.summary;
+      growth.className = "tirads-growth" + (r.comparison.significant_enlargement ? " is-significant" : "");
+      growth.hidden = false;
+    } else {
+      growth.hidden = true;
+    }
+
+    const notes = $("notes");
+    notes.replaceChildren(...(r.notes || []).map((text) => {
+      const li = document.createElement("li");
+      li.textContent = text;
+      return li;
+    }));
+    notes.hidden = !(r.notes && r.notes.length);
+
     $("report-line").textContent = r.report_line;
   }
 
   async function score() {
+    const dims = collectDims(".dim");
+    let priorDims = collectDims(".prior-dim");
+    let hint = "";
+    if (priorDims.length && priorDims.length !== dims.length) {
+      hint = "Enter the same number of current and prior dimensions to check growth.";
+      priorDims = [];
+    }
     const payload = {
       composition: $("composition").value,
       echogenicity: $("echogenicity").value,
       shape: $("shape").value,
       margin: $("margin").value,
       foci: collectFoci(),
-      size_mm: $("size_mm").value ? parseFloat($("size_mm").value) : null,
+      dims_mm: dims,
+      prior_dims_mm: priorDims,
+      prior_level: $("prior_level").value || null,
       location: $("location").value.trim() || null,
     };
     try {
@@ -67,7 +100,7 @@
         throw new Error(detail);
       }
       render(await resp.json());
-      setStatus("");
+      setStatus(hint);
     } catch (err) {
       setStatus("Error: " + (err.message || err), "error");
     }
@@ -95,8 +128,9 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     const inputs = [
-      "composition", "echogenicity", "shape", "margin", "size_mm", "location",
+      "composition", "echogenicity", "shape", "margin", "location", "prior_level",
     ].map($);
+    inputs.push(...document.querySelectorAll(".dim, .prior-dim"));
     for (const el of inputs) {
       el.addEventListener("change", score);
       if (el.tagName === "INPUT") el.addEventListener("input", score);

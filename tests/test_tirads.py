@@ -90,6 +90,84 @@ class TiradsScoringTests(unittest.TestCase):
         self.assertIn("FNA if ≥1.5 cm", r["management"])
         self.assertNotIn("measuring", r["report_line"])
 
+    def test_spongiform_takes_no_further_points(self):
+        # ACR chart note: do not add further points for other categories.
+        r = tirads.score("spongiform", "hypo", "taller", "lobulated", foci=["punctate"])
+        self.assertEqual(r["points"], 0)
+        self.assertEqual(r["level"], "TR1")
+        self.assertIn("spongiform (no further points assigned)", r["report_line"])
+
+    def test_indeterminate_features_use_chart_points(self):
+        # Composition 2, echogenicity 1, margin 0 when they cannot be determined.
+        r = tirads.score("indeterminate", "indeterminate", "wider", "indeterminate")
+        self.assertEqual(r["points"], 3)
+        self.assertEqual(r["level"], "TR3")
+        self.assertIn("composition obscured by calcification", r["report_line"])
+        self.assertIn("margin not assessable", r["report_line"])
+
+    def test_dimensions_supply_the_maximum_diameter(self):
+        r = tirads.score("solid", "hypo", "wider", "smooth", dims_mm=[12, 18, 9])
+        self.assertEqual(r["size_mm"], 18)
+        self.assertEqual(r["management"], "FNA recommended.")
+        self.assertIn("measuring 1.2 × 1.8 × 0.9 cm", r["report_line"])
+
+    def test_tr5_interval_reads_as_a_sentence(self):
+        r = tirads.score("solid", "very_hypo", "taller", "smooth", dims_mm=[8, 6, 6])
+        self.assertIn("recommended annually for up to 5 years", r["management"])
+        self.assertIn("Imaging can stop at 5 years", r["management"])
+        self.assertTrue(any("5–9 mm TR5" in n for n in r["notes"]))
+
+    def test_growth_in_two_dimensions_is_significant(self):
+        c = tirads.compare_prior([14, 10, 9], [11, 8, 7])
+        self.assertTrue(c["significant_enlargement"])
+        self.assertEqual(c["qualifying_dimensions"], 3)
+        self.assertAlmostEqual(c["volume_change_percent"], 104.5)
+
+    def test_growth_needs_the_2mm_floor(self):
+        # 5 -> 6.5 mm is 30% but only 1.5 mm, so neither dimension qualifies;
+        # volume rises 69%, which is significant on its own.
+        c = tirads.compare_prior([6.5, 6.5, 5], [5, 5, 5])
+        self.assertEqual(c["qualifying_dimensions"], 0)
+        self.assertTrue(c["significant_enlargement"])
+        c = tirads.compare_prior([6.5, 6.5], [5, 5])
+        self.assertFalse(c["significant_enlargement"])
+        self.assertIsNone(c["volume_change_percent"])
+
+    def test_growth_in_one_dimension_is_not_significant(self):
+        c = tirads.compare_prior([15, 10, 10], [12, 10, 10])
+        self.assertEqual(c["qualifying_dimensions"], 1)
+        self.assertFalse(c["significant_enlargement"])
+        self.assertIn("below the ACR TI-RADS threshold", c["summary"])
+
+    def test_stable_nodule_reports_no_enlargement(self):
+        c = tirads.compare_prior([10, 9, 8], [10, 9, 8])
+        self.assertEqual(c["summary"], "No interval enlargement.")
+
+    def test_mismatched_dimension_counts_raise(self):
+        with self.assertRaises(ValueError):
+            tirads.compare_prior([10, 9, 8], [10, 9])
+
+    def test_enlargement_below_fna_threshold_continues_follow_up(self):
+        r = tirads.score(
+            "solid", "hypo", "wider", "smooth",
+            dims_mm=[14, 10, 9], prior_dims_mm=[11, 8, 7],
+        )
+        self.assertNotIn("Imaging can stop", r["management"])
+        self.assertIn("Previously 1.1 × 0.8 × 0.7 cm", r["report_line"])
+        self.assertIn("Significant enlargement", r["report_line"])
+        self.assertTrue(any("continued follow-up" in n for n in r["notes"]))
+
+    def test_level_increase_sets_one_year_follow_up(self):
+        r = tirads.score("solid", "hypo", "wider", "smooth", size_mm=12, prior_level="TR3")
+        self.assertTrue(r["level_increased"])
+        self.assertIn("next sonogram in 1 year", r["management"])
+        r = tirads.score("solid", "hypo", "wider", "smooth", size_mm=12, prior_level="TR4")
+        self.assertFalse(r["level_increased"])
+
+    def test_unknown_prior_level_raises(self):
+        with self.assertRaises(ValueError):
+            tirads.score("solid", "hypo", "wider", "smooth", prior_level="TR9")
+
 
 class TiradsApiTests(unittest.TestCase):
     @classmethod
@@ -114,6 +192,30 @@ class TiradsApiTests(unittest.TestCase):
         self.assertEqual(data["points"], 13)
         self.assertEqual(data["level"], "TR5")
         self.assertIn("Left lower pole thyroid nodule", data["report_line"])
+
+    def test_api_compares_with_a_prior_study(self):
+        resp = self.client.post(
+            "/api/tirads/score",
+            json={
+                "composition": "solid", "echogenicity": "hypo", "shape": "wider",
+                "margin": "smooth", "dims_mm": [14, 10, 9],
+                "prior_dims_mm": [11, 8, 7], "prior_level": "TR3",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertTrue(body["comparison"]["significant_enlargement"])
+        self.assertTrue(body["level_increased"])
+
+    def test_api_rejects_mismatched_prior_dimensions(self):
+        resp = self.client.post(
+            "/api/tirads/score",
+            json={
+                "composition": "solid", "echogenicity": "hypo", "shape": "wider",
+                "margin": "smooth", "dims_mm": [14, 10, 9], "prior_dims_mm": [11],
+            },
+        )
+        self.assertEqual(resp.status_code, 400)
 
     def test_api_rejects_unknown_option(self):
         resp = self.client.post(

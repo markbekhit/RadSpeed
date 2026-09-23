@@ -663,7 +663,7 @@ def llms_txt():
 - [Radiology reporting software](https://radspeed.com.au/radiology-reporting-software): Practical selection guide and RadSpeed workflow for AU/NZ reporting rooms.
 - [PowerScribe companion](https://radspeed.com.au/powerscribe-companion): Windows companion workflow for drafting and pasting an impression beside an existing reporting system.
 - [Impressions](https://radspeed.com.au/impressions): Free radiology impression drafting tool. It is assistive software, not a diagnostic device.
-- [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds and a paste-ready report line. Decision support, not a diagnostic device.
+- [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds, a prior-study growth check against the ACR enlargement rule, and a paste-ready report line. Decision support, not a diagnostic device.
 - [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules. Averages the long and short axis into the guideline mean diameter with whole-millimetre rounding, compares the prior study against the 2 mm diameter and 25% volume growth thresholds, and returns a paste-ready report line. Decision support, not a diagnostic device.
 - [Adrenal washout calculator](https://radspeed.com.au/adrenal-washout-calculator): Free adrenal CT washout calculator for an incidental adrenal nodule — computes absolute and relative percentage washout from the unenhanced, portal-venous and delayed attenuation, with a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
@@ -925,6 +925,9 @@ class TiradsRequest(BaseModel):
     foci: list[str] = []
     size_mm: Optional[float] = None
     location: Optional[str] = None
+    dims_mm: list[Optional[float]] = []
+    prior_dims_mm: list[Optional[float]] = []
+    prior_level: Optional[str] = None
 
 
 @app.post("/api/tirads/score")
@@ -945,6 +948,9 @@ def api_tirads_score(req: TiradsRequest):
             foci=req.foci,
             size_mm=req.size_mm,
             location=location,
+            dims_mm=req.dims_mm,
+            prior_dims_mm=req.prior_dims_mm,
+            prior_level=req.prior_level or None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
