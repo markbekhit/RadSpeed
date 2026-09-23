@@ -49,7 +49,7 @@
     },
     {
       "name": "TI-RADS calculator depth upgrade",
-      "status": "verify-first",
+      "status": "completed",
       "target_url": "https://radspeed.com.au/ti-rads-calculator",
       "evidence": "The TI-RADS calculator drew 19 impressions and 0 clicks across 12 queries, but every position sits between 58 and 92 ('tirads calculator' 5 impressions at 81.4, 'tirad score' 3 at 79.3, 'ti-rad' 2 at 62.0). Demand is the highest of any RadSpeed tool, but no query is near page one, so a gain needs materially more depth, not a small edit.",
       "next_action": "Compare the live page against the top-ranking ACR TI-RADS calculators, then decide whether follow-up interval guidance and a worked example close the gap. Confirm the ACR source version first.",
@@ -63,11 +63,12 @@
         "link_potential": 3,
         "shareability": 3
       },
-      "disposition": "upgrade existing tool"
+      "disposition": "upgrade existing tool",
+      "completed_note": "2026-09-24: verified ACR TI-RADS 2017 is current and the page lacked chart-note scoring and a growth check. Shipped spongiform override, cannot-be-determined options, three-dimension entry, prior-study ACR enlargement check, TR-increase 1-year follow-up, worked example and visible FAQ (commit c5a7211). Measurement 94775c525d33020c due 2026-10-27."
     },
     {
       "name": "Impressions drafting tool conversion upgrade",
-      "status": "verify-first",
+      "status": "blocked",
       "target_url": "https://radspeed.com.au/impressions",
       "evidence": "'impression generator' drew 2 impressions at position 8.0 and 'impressions generator' 1 at position 8.0, with 'rad ai impressions' and 'rad text' far back at 76 and 81. Measured demand is only 5 impressions, so the page ranks well on a small term. The evidence supports a conversion and clarity change, not a ranking push.",
       "next_action": "Measure the account activation path from the tool before changing it. Do not add features on 5 impressions of evidence.",
@@ -81,11 +82,12 @@
         "link_potential": 3,
         "shareability": 4
       },
-      "disposition": "upgrade existing tool"
+      "disposition": "upgrade existing tool",
+      "completed_note": "2026-09-24: blocked pending an owner decision. The TGA scoping statement places the public impression generator in medical-device territory, so a conversion push is unsafe until its public future is settled."
     },
     {
       "name": "Adrenal washout calculator visibility repair",
-      "status": "verify-first",
+      "status": "completed",
       "target_url": "https://radspeed.com.au/adrenal-washout-calculator",
       "evidence": "The adrenal calculator drew 6 impressions and 0 clicks across five queries, all at positions 54 to 76 ('adrenal washout radiology' 2 at 69.5, 'adrenal washout' 1 at 54.0, 'adenoma calculator' 1 at 76.0). The arithmetic is already correct, so the gap is discovery and internal linking rather than function.",
       "next_action": "Check its internal links from the CT abdomen templates and the calculator hub before any change to the tool itself.",
@@ -99,7 +101,8 @@
         "link_potential": 3,
         "shareability": 2
       },
-      "disposition": "upgrade existing tool"
+      "disposition": "upgrade existing tool",
+      "completed_note": "2026-09-24: verified commit 0766921 already links it from every calculator hub, the template library and the CT abdomen-pelvis, CT KUB and MRI liver templates."
     }
   ]
 }
