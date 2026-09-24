@@ -535,12 +535,14 @@ def test_one_step_worksheet_draft_shows_notes_and_report(page, base_url):
           );
         }"""
     )
+    page.evaluate("state.reportCopied = true")
     page.locator("#btn-worksheet-one-pass").click()
     expect(page.locator("#transcription")).to_have_value(re.compile("WORKSHEET SOURCE NOTES.*Left kidney", re.DOTALL))
     expect(page.locator("#report-rendered")).to_contain_text("Mild left pelvicaliectasis")
     expect(page.locator("#status")).to_contain_text("One-step draft ready")
     assert draft_requests and b'name="reasoning_effort"' in draft_requests[-1]
     assert b"low" in draft_requests[-1]
+    assert page.evaluate("state.reportCopied") is False
 
 
 def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: str):

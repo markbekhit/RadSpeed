@@ -1760,6 +1760,9 @@ async function generateFromWorksheet(onePass = false) {
       $("report-raw").value = report;
       $("report-rendered").innerHTML = renderMarkdown(report);
       state.reportLlmOutput = report;
+      state.reportCopied = false;
+      _qaCheckedReport = "";
+      _setReportEditMode(false);
       _signedReportId = null;
       if (typeof _setReportStatus === "function") _setReportStatus("preliminary");
       if (typeof _clearQaPanel === "function") _clearQaPanel();
