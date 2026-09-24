@@ -1,0 +1,177 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>RadSpeed worksheet speed comparison</title><style>
+:root{--ink:#152538;--muted:#5e6e7e;--line:#d7e1e9;--blue:#066e8b;--light:#f5f9fb;--green:#e5f4ec}*{box-sizing:border-box}body{margin:0;background:#edf3f7;color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1300px;margin:auto;padding:32px 24px 80px}.hero{background:#163349;color:white;border-radius:18px;padding:36px 42px}.hero p{max-width:800px;color:#d9e9ef}h1{font-size:36px;line-height:1.15;margin:8px 0}h2{font-size:25px;margin:3px 0}h3{margin:0 0 12px}h4{font-size:21px;margin:0}h5{font-size:15px;margin:18px 0 8px}.eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:750;color:#83d8e7}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.stat,.card,.case{background:white;border:1px solid var(--line);border-radius:14px;padding:22px}.stat strong{font-size:29px;display:block;color:#086a79}.stat span{color:var(--muted);font-size:14px}.card{margin:18px 0}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left}thead th{background:var(--light)}.table-wrap{overflow-x:auto}.case{margin-top:22px}.casehead{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}a{color:#046787;font-weight:650}.reports{display:grid;grid-template-columns:1fr 1fr;gap:20px}.report{border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0}.sub,.note{color:var(--muted);font-size:14px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--light);padding:16px;border-radius:8px;margin:8px 0}details{margin-top:15px}summary{cursor:pointer;color:#046787;font-weight:650}ul{margin:8px 0;padding-left:22px}li{margin:6px 0}.flag{background:#fff5e7;border-left:4px solid #d9932b;padding:10px 14px;margin:10px 0}@media(max-width:850px){.summary,.reports{grid-template-columns:1fr}.casehead{align-items:flex-start;flex-direction:column}main{padding:16px}.hero{padding:25px}}</style></head><body><main><header class="hero"><span class="eyebrow">RadSpeed · 24 September 2026</span><h1>Worksheet speed comparison</h1><p>Two synthetic sonographer worksheets were processed on the live RadSpeed site with each model. The same screenshots and report template flow were used. Times include the browser request and server response.</p></header><div class="summary"><div class="stat"><strong>26% faster</strong><span>Luna average total time across these two cases</span></div><div class="stat"><strong>4–5 s</strong><span>Luna screenshot reading time</span></div><div class="stat"><strong>7–8 s</strong><span>Sol screenshot reading time</span></div></div><section class="card"><h3>Measured times</h3><div class="table-wrap"><table><thead><tr><th>Worksheet</th><th>Luna read</th><th>Sol read</th><th>Luna report</th><th>Sol report</th><th>Luna total</th><th>Sol total</th></tr></thead><tbody><tr><th>Renal ultrasound</th><td>5.0 s</td><td>7.6 s</td><td>6.8 s</td><td>11.2 s</td><td><strong>11.8 s</strong></td><td>18.7 s</td></tr><tr><th>Second trimester ultrasound</th><td>4.4 s</td><td>7.4 s</td><td>10.9 s</td><td>10.2 s</td><td><strong>15.3 s</strong></td><td>17.6 s</td></tr></tbody></table></div><p class="note">One run per worksheet and model. Luna used low reasoning for screenshot reading and high for report writing. Sol used its default reasoning setting. These times show the actual configured workflows, not a controlled model-only test.</p></section><section class="card"><h3>What affects the wait</h3><ul><li>RadSpeed sends the screenshot to a vision model to read marks, table positions and measurements. This took 4–8 seconds here.</li><li>RadSpeed then sends those source notes to a report model. This took another 7–11 seconds. The calls run in sequence.</li><li>The separate “Transcribe indication” button uses local text recognition in the browser. A clear synthetic indication took about 0.3 seconds after the browser loaded its worker. This is a different path.</li></ul><div class="flag"><strong>Accuracy matters:</strong> Luna read “BPD” as “BP” in the obstetric worksheet. Sol missed the note “Repeat imaging recommended.” Both draft reports need clinical review.</div><h3>Faster routes to test</h3><ul><li><strong>One vision call:</strong> ask Luna to read the screenshot and draft the report together. This removes the separate reading call, but the source notes would no longer be independently available for review.</li><li><strong>Local text reading plus one report call:</strong> this could avoid the vision request on simple typed notes. On these clear worksheet images, the current local reader missed renal measurements and flattened selected and unselected boxes. It also lost obstetric biometry. It is not safe as the only reader for these forms.</li><li><strong>Structured local reading plus one report call:</strong> use positions and box detection with local text reading, then send structured findings to Luna. This needs a layout-specific quality check before use.</li><li><strong>Keep two calls but use a faster reading model:</strong> Luna low already reduced the reading step to 4–5 seconds. Any further model change needs accuracy tests against laterality, measurements and marked choices.</li></ul><p class="note">Recommended next experiment: compare a one-call Luna report with the current two-call workflow on a wider synthetic worksheet set. Keep the faster route only if it preserves every marked finding and measurement.</p></section><section class="case" id="renal"><div class="casehead"><div><span class="eyebrow">Synthetic worksheet</span><h2>Renal ultrasound</h2></div><a href="renal.png" target="_blank">View test screenshot ↗</a></div><div class="reports"><article class="report"><h4>GPT-6 Luna</h4><p class="sub">Screenshot reading 5.0 s · Report writing 6.8 s</p><details><summary>Source notes read from screenshot</summary><pre>WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:
+History: Chronic renal insufficiency
+Study: Renal tract ultrasound
+Kidney length / right: 10.8 cm
+Kidney length / left: 10.2 cm
+Cortical thickness / right: 14 mm
+Cortical thickness / left: 12 mm
+Pelviectasis / right: No
+Pelviectasis / left: Mild
+Pelviectasis / left: Left renal pelvis 9 mm AP
+Calculus / right: None seen
+Calculus / left: Present; 6 mm lower-pole calculus on LEFT
+Renal cyst / right: Present; right upper-pole simple cyst 2.1 × 1.7 × 1.5 cm
+Renal cyst / left: None
+Ureteric jet / right: Present
+Ureteric jet / left: Present
+Bladder pre-void volume: 318 mL
+Post-void residual: 24 mL
+Bladder wall: 3 mm
+Prostate volume: 36 mL
+Comments / bladder: No focal bladder wall lesion. Incidental mild prostatomegaly.</pre></details><h5>Generated draft report</h5><pre>**EXAMINATION:**
+Renal tract ultrasound
+
+**CLINICAL DETAILS:**
+Chronic renal insufficiency
+
+**FINDINGS:**
+Right kidney length 10.8 cm. Cortical thickness 14 mm. No pelvicaliectasis. No calculus seen. Right upper-pole simple cyst measuring 2.1 × 1.7 × 1.5 cm.
+
+Left kidney length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis; left renal pelvis measures 9 mm AP. Present: 6 mm lower-pole calculus. No renal cyst.
+
+Ureteric jets are present bilaterally.
+
+Bladder pre-void volume 318 mL. Post-void residual 24 mL. Bladder wall thickness 3 mm. No focal bladder wall lesion.
+
+Prostate volume 36 mL. Incidental mild prostatomegaly.
+
+**IMPRESSION:**
+1. Mild left pelvicaliectasis and 6 mm left lower-pole renal calculus.
+2. Right upper-pole simple renal cyst.
+3. Mild prostatomegaly.</pre></article><article class="report"><h4>GPT-5.6 Sol</h4><p class="sub">Screenshot reading 7.6 s · Report writing 11.2 s</p><details><summary>Source notes read from screenshot</summary><pre>WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:
+History: Chronic renal impairment
+History: Chronic renal insufficiency
+Kidney length / right: 10.8 cm
+Kidney length / left: 10.2 cm
+Cortical thickness / right: 14 mm
+Cortical thickness / left: 12 mm
+Pelvicaliectasis / right: No
+Pelvicaliectasis / left: Mild
+Renal pelvis / left: 9 mm AP
+Calculus / right: None seen
+Calculus / left: Present
+Calculus / left lower pole: 6 mm
+Renal cyst / right: Present
+Renal cyst / left: None
+Renal cyst / right upper pole: simple cyst 2.1 × 1.7 × 1.5 cm
+Ureteric jet / right: Present
+Ureteric jet / left: Present
+Bladder / pre-void volume: 318 mL
+Bladder / post-void residual: 24 mL
+Bladder wall: 3 mm
+Prostate volume: 36 mL
+Comments / bladder wall: No focal bladder wall lesion
+Comments / prostate: Incidental mild prostatomegaly</pre></details><h5>Generated draft report</h5><pre>**EXAMINATION:**
+Ultrasound
+
+**CLINICAL DETAILS:**
+Chronic renal impairment/insufficiency.
+
+**FINDINGS:**
+Right kidney: Length 10.8 cm. Cortical thickness 14 mm. No pelvicaliectasis. No calculus seen. Upper pole simple cyst measuring 2.1 × 1.7 × 1.5 cm.
+
+Left kidney: Length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. Left lower pole calculus measuring 6 mm. No renal cyst.
+
+Ureteric jets: Present bilaterally.
+
+Bladder: Pre-void volume 318 mL. Post-void residual 24 mL. Bladder wall measures 3 mm. No focal bladder wall lesion.
+
+Prostate: Volume 36 mL. Incidental mild prostatomegaly.
+
+**IMPRESSION:**
+1. Mild left pelvicaliectasis and a 6 mm left lower pole renal calculus.
+2. Simple right upper pole renal cyst.
+3. Mild prostatomegaly with a small post-void residual.</pre></article></div></section><section class="case" id="obstetric"><div class="casehead"><div><span class="eyebrow">Synthetic worksheet</span><h2>Second trimester ultrasound</h2></div><a href="obstetric.png" target="_blank">View test screenshot ↗</a></div><div class="reports"><article class="report"><h4>GPT-6 Luna</h4><p class="sub">Screenshot reading 4.4 s · Report writing 10.9 s</p><details><summary>Source notes read from screenshot</summary><pre>WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:
+Pregnancy / gestational age: 21 weeks 3 days
+Pregnancy / number of fetuses: Singleton
+Pregnancy / presentation: Cephalic
+Pregnancy / fetal heart rate: 148 bpm
+Placenta: Anterior, clear of internal os
+Cervix: 3.6 cm, closed
+Biometry / BP: 52 mm; 55th centile
+Biometry / HC: 190 mm; 48th centile
+Biometry / AC: 166 mm; 57th centile
+Biometry / FL: 35 mm; 42nd centile
+Biometry / estimated fetal weight: 432 g; 51st centile
+Fetal anatomy / cranium / intracranial anatomy: Normal
+Fetal anatomy / four-chamber heart: Normal
+Fetal anatomy / RVOT: Not well seen; comment: Fetal position
+Fetal anatomy / LVOT: Normal
+Fetal anatomy / kidneys: Abnormal; comment: LEFT renal pelvis 6.2 mm
+Fetal anatomy / spine: Normal
+Fetal anatomy / face / upper lip: Not well seen; comment: Repeat imaging recommended
+Comments / fetal pyelectasis: Mild LEFT fetal pyelectasis.
+Comments / RVOT and upper lip: Not adequately visualised due to fetal position.</pre></details><h5>Generated draft report</h5><pre>**EXAMINATION:**
+Ultrasound
+
+**CLINICAL DETAILS:**
+21 weeks 3 days gestation.
+
+**FINDINGS:**
+Singleton pregnancy. Cephalic presentation. Fetal heart rate 148 bpm.
+
+Anterior placenta, clear of the internal os. Cervix measures 3.6 cm and is closed.
+
+Biparietal diameter (BP): 52 mm; 55th centile. Head circumference (HC): 190 mm; 48th centile. Abdominal circumference (AC): 166 mm; 57th centile. Femur length (FL): 35 mm; 42nd centile. Estimated fetal weight: 432 g; 51st centile.
+
+Intracranial anatomy: Normal. Four-chamber heart: Normal. LVOT: Normal. Spine: Normal.
+
+RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.
+
+Kidneys: Mild left fetal pyelectasis; left renal pelvis measures 6.2 mm.
+
+**IMPRESSION:**
+- Mild left fetal pyelectasis.
+- RVOT and upper lip are not adequately visualised due to fetal position; repeat imaging recommended.</pre></article><article class="report"><h4>GPT-5.6 Sol</h4><p class="sub">Screenshot reading 7.4 s · Report writing 10.2 s</p><details><summary>Source notes read from screenshot</summary><pre>WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:
+Pregnancy / gestational age: 21 weeks 3 days
+Pregnancy / number of fetuses: Singleton
+Fetus / presentation: Cephalic
+Fetus / FHR: 148 bpm
+Placenta: Anterior, clear of internal os
+Cervix: 3.6 cm, closed
+Biometry / BPD: 52 mm; 55th centile
+Biometry / HC: 190 mm; 48th centile
+Biometry / AC: 166 mm; 57th centile
+Biometry / FL: 35 mm; 42nd centile
+Biometry / estimated fetal weight: 432 g; 51st centile
+Fetal anatomy / cranium / intracranial anatomy: Normal
+Fetal anatomy / four-chamber heart: Normal
+Fetal anatomy / RVOT: Not well seen; fetal position
+Fetal anatomy / LVOT: Normal
+Fetal anatomy / kidneys: Abnormal; LEFT renal pelvis 6.2 mm
+Fetal anatomy / spine: Normal
+Fetal anatomy / face / upper lip: Not well seen
+Comments / fetal kidneys / left: Mild LEFT fetal pyelectasis
+Comments / RVOT and upper lip: Not adequately visualised due to fetal position</pre></details><h5>Generated draft report</h5><pre>**EXAMINATION:**
+Ultrasound
+
+**CLINICAL DETAILS:**
+Not provided on worksheet.
+
+**FINDINGS:**
+Pregnancy: Singleton pregnancy at 21 weeks 3 days. Cephalic presentation. Fetal heart rate 148 bpm.
+
+Placenta: Anterior, clear of the internal os.
+
+Cervix: 3.6 cm, closed.
+
+Biometry:
+- Biparietal diameter: 52 mm; 55th centile.
+- Head circumference: 190 mm; 48th centile.
+- Abdominal circumference: 166 mm; 57th centile.
+- Femur length: 35 mm; 42nd centile.
+- Estimated fetal weight: 432 g; 51st centile.
+
+Fetal anatomy:
+- Cranium and intracranial anatomy: Normal.
+- Four-chamber heart: Normal.
+- RVOT: Not adequately visualised due to fetal position.
+- LVOT: Normal.
+- Kidneys: Abnormal; left renal pelvis 6.2 mm, consistent with mild left fetal pyelectasis.
+- Spine: Normal.
+- Upper lip: Not adequately visualised due to fetal position.
+
+**IMPRESSION:**
+- Mild left fetal pyelectasis, with the left renal pelvis measuring 6.2 mm.
+- RVOT and upper lip not adequately visualised due to fetal position.</pre></article></div></section><p class="note">All images and reports on this page are synthetic. No patient information was used. These drafts were not signed off. <a href="results.json">Download the measured data and reports</a>.</p></main></body></html>
