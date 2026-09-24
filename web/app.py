@@ -36,7 +36,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from openai import AuthenticationError, OpenAI
+from openai import APIConnectionError, APIStatusError, APITimeoutError, AuthenticationError, OpenAI
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -2639,15 +2639,29 @@ async def extract_worksheet(
             status_code=503,
             detail="Text/vision model API key was rejected. Update it in Settings.",
         ) from exc
+    except APIStatusError as exc:
+        # Provider error text can repeat image content. Expose only stable,
+        # non-clinical status fields so failures can be diagnosed safely.
+        code = getattr(exc, "code", None)
+        safe_code = code if isinstance(code, str) and re.fullmatch(r"[a-zA-Z0-9_.-]{1,80}", code) else "unknown"
+        logger.error("Worksheet model request failed: HTTP %d, code %s.", exc.status_code, safe_code)
+        raise HTTPException(
+            status_code=503,
+            detail=f"Worksheet model request failed (provider HTTP {exc.status_code}, code {safe_code}).",
+        ) from exc
+    except APITimeoutError as exc:
+        logger.error("Worksheet model request timed out.")
+        raise HTTPException(status_code=504, detail="Worksheet reading timed out. Try again.") from exc
+    except APIConnectionError as exc:
+        logger.error("Worksheet model connection failed.")
+        raise HTTPException(status_code=503, detail="Worksheet model connection failed. Try again.") from exc
     except Exception as exc:
         # Do not log provider error text: some providers may echo part of the
         # request, and worksheet screenshots can contain health information.
-        logger.error(
-            "Worksheet extraction failed (%s).", type(exc).__name__, exc_info=True
-        )
+        logger.error("Worksheet extraction failed (%s).", type(exc).__name__)
         raise HTTPException(
             status_code=503,
-            detail="Could not read the worksheet screenshots. Try a clearer or tighter snip.",
+            detail=f"Worksheet reading failed ({type(exc).__name__}).",
         ) from exc
 
     if findings == "NO_EXTRACTABLE_FINDINGS":
