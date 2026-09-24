@@ -344,10 +344,8 @@ class StructuredReportRenderingTests(unittest.TestCase):
     def test_stream_format_falls_back_when_no_template_can_be_selected(self):
         with patch.object(fmt, "_keyword_select_template", return_value=None), \
              patch.object(fmt, "_select_template", return_value=None):
-            self.assertEqual(
-                list(fmt.stream_format_text("unclassified dictation", template_content="")),
-                ["Formatted Report:\n\nunclassified dictation"],
-            )
+            with self.assertRaisesRegex(fmt.TextModelUnavailableError, "Choose a template"):
+                list(fmt.stream_format_text("unclassified dictation", template_content=""))
 
 
 if __name__ == "__main__":

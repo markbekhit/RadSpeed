@@ -17,7 +17,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 import httpx
-from openai import AuthenticationError
+from openai import AuthenticationError, RateLimitError
 
 
 # ---------------------------------------------------------------------------
@@ -92,6 +92,12 @@ def _auth_error():
     return AuthenticationError("Invalid API key", response=response, body=None)
 
 
+def _credit_error():
+    request = httpx.Request("POST", "http://test/v1/chat/completions")
+    response = httpx.Response(429, request=request, json={"error": {"code": "credit_balance_exhausted"}})
+    return RateLimitError("No credit", response=response, body={"code": "credit_balance_exhausted"})
+
+
 # ---------------------------------------------------------------------------
 # 1. Mic permission / silent input
 # ---------------------------------------------------------------------------
@@ -163,6 +169,22 @@ class TestSilentRecordingDetection(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 class TestTextModelAuthErrors(unittest.TestCase):
+    def test_exhausted_credit_stops_template_retries_and_never_returns_raw_report(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = _credit_error()
+        with patch.object(fmt, "OpenAI", return_value=client), \
+             patch.object(fmt, "_get_templates", return_value=["CT_Head.txt"]), \
+             patch.object(fmt, "_keyword_select_template", return_value=None):
+            with self.assertRaisesRegex(fmt.TextModelUnavailableError, "credit is exhausted"):
+                list(fmt.stream_format_text("unknown study", template_content=""))
+        self.assertEqual(client.chat.completions.create.call_count, 1)
+
+    def test_exhausted_credit_stops_selected_template_stream(self):
+        client = MagicMock()
+        client.chat.completions.create.side_effect = _credit_error()
+        with patch.object(fmt, "OpenAI", return_value=client):
+            with self.assertRaisesRegex(fmt.TextModelUnavailableError, "credit is exhausted"):
+                list(fmt.stream_format_text("findings", template_content="template"))
     def test_create_structured_report_surfaces_rejected_key(self):
         messages = []
         client = MagicMock()

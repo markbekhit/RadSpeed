@@ -48,6 +48,8 @@ from llm.fhir_export import save_fhir_report
 from llm.hl7_export import save_hl7_report
 from llm.hl7_import import archive_order, list_inbox
 from llm.format import (
+    TextModelAuthError,
+    TextModelUnavailableError,
     apply_report_feedback,
     reinsert_identifiers,
     format_text,
@@ -2645,9 +2647,14 @@ async def extract_worksheet(
         code = getattr(exc, "code", None)
         safe_code = code if isinstance(code, str) and re.fullmatch(r"[a-zA-Z0-9_.-]{1,80}", code) else "unknown"
         logger.error("Worksheet model request failed: HTTP %d, code %s.", exc.status_code, safe_code)
+        detail = (
+            "OpenAI API credit is exhausted. Add credit in OpenAI billing and try again."
+            if safe_code in {"credit_balance_exhausted", "insufficient_quota"}
+            else f"Worksheet model request failed (provider HTTP {exc.status_code}, code {safe_code})."
+        )
         raise HTTPException(
             status_code=503,
-            detail=f"Worksheet model request failed (provider HTTP {exc.status_code}, code {safe_code}).",
+            detail=detail,
         ) from exc
     except APITimeoutError as exc:
         logger.error("Worksheet model request timed out.")
@@ -2832,9 +2839,13 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
                 if chunk:
                     full_report += chunk
                     yield f'data: {json.dumps({"token": chunk})}\n\n'
-        except Exception as e:
-            logger.error("Streaming format error: %s", e, exc_info=True)
-            yield f'data: {json.dumps({"error": str(e)})}\n\n'
+        except (TextModelAuthError, TextModelUnavailableError) as exc:
+            logger.error("Streaming format failed (%s).", type(exc).__name__)
+            yield f'data: {json.dumps({"error": str(exc)})}\n\n'
+            return
+        except Exception as exc:
+            logger.error("Streaming format failed (%s).", type(exc).__name__)
+            yield 'data: {"error": "Report generation failed. Try again."}\n\n'
             return
 
         # Apply post-processing (capitalise after colons) to the full report.
