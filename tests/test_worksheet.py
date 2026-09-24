@@ -71,6 +71,7 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
         self.assertEqual(request["response_format"], {"type": "json_object"})
         self.assertEqual(request["messages"][1]["content"][1]["image_url"]["detail"], "high")
         self.assertIn("Blank fields are unknown", request["messages"][0]["content"])
+        self.assertIn("never shorten BPD to BP", request["messages"][0]["content"])
 
     def test_one_pass_rejects_incomplete_result(self):
         client = MagicMock()
@@ -123,6 +124,7 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
         self.assertIn("column", system)
         self.assertIn("Exclude patient names", system)
         self.assertIn('unchecked option as "not selected"', system)
+        self.assertIn("never shorten BPD to BP", system)
         self.assertEqual(user_content[1]["image_url"]["detail"], "high")
         self.assertEqual(user_content[2]["image_url"]["detail"], "high")
         self.assertTrue(

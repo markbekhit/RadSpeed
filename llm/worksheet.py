@@ -103,6 +103,8 @@ Accuracy rules:
    row or swap right and left columns.
 4. Preserve exact anatomy, laterality, negation, measurements, units, dates and
    qualifiers. Do not convert units or round values in this extraction pass.
+   In obstetric biometry, check the full row label. BPD means biparietal
+   diameter; preserve its final D and never shorten BPD to BP.
 5. For Normal / Abnormal / Not well seen / Not assessed matrices, state only
    the visibly selected status for each structure. Do not list unselected
    choices.
@@ -218,6 +220,8 @@ Source reading rules:
 - Bind each value to its row, column, section, anatomy and laterality. Preserve
   exact numbers, decimal precision, units, dimensional order, negation and
   qualifiers. Deduplicate overlap between screenshots.
+- In obstetric biometry, check the first row label. BPD is biparietal diameter;
+  preserve its final D and never shorten BPD to BP.
 - Include every marked abnormality, selected negative, technical limitation,
   clinical history and recommendation. If uncertain, retain the location and
   write [UNCERTAIN: ...] rather than guessing.
