@@ -11,6 +11,7 @@ from llm import format as report_format
 from llm.worksheet import (
     MAX_WORKSHEET_IMAGE_BYTES,
     WorksheetImageError,
+    draft_worksheet_report,
     extract_worksheet_findings,
     validate_worksheet_images,
 )
@@ -47,6 +48,40 @@ class WorksheetImageValidationTests(unittest.TestCase):
 
 
 class WorksheetExtractionPromptTests(unittest.TestCase):
+    def test_one_pass_returns_source_notes_and_report_with_luna_high(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            '{"source_notes":"Left renal pelvis: 9 mm.","report":"**FINDINGS:**\\nLeft renal pelvis: 9 mm.\\n\\n**IMPRESSION:**\\nMild left pelvicaliectasis."}'
+        )
+        image = validate_worksheet_images([b"\x89PNG\r\n\x1a\nsynthetic"])
+        old_model = config.SELECTED_MODEL
+        config.SELECTED_MODEL = "gpt-6-luna"
+        try:
+            with patch("llm.worksheet.OpenAI", return_value=client):
+                draft = draft_worksheet_report(
+                    image, template_content="**FINDINGS:**\n**IMPRESSION:**",
+                    modality="US", body_part="Renal tract",
+                )
+        finally:
+            config.SELECTED_MODEL = old_model
+        self.assertIn("9 mm", draft.source_notes)
+        self.assertIn("pelvicaliectasis", draft.report)
+        request = client.chat.completions.create.call_args.kwargs
+        self.assertEqual(request["reasoning_effort"], "high")
+        self.assertEqual(request["response_format"], {"type": "json_object"})
+        self.assertEqual(request["messages"][1]["content"][1]["image_url"]["detail"], "high")
+        self.assertIn("Blank fields are unknown", request["messages"][0]["content"])
+
+    def test_one_pass_rejects_incomplete_result(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            '{"source_notes":"Left kidney: 10.2 cm","report":""}'
+        )
+        image = validate_worksheet_images([b"\x89PNG\r\n\x1a\nsynthetic"])
+        with patch("llm.worksheet.OpenAI", return_value=client):
+            with self.assertRaisesRegex(RuntimeError, "incomplete"):
+                draft_worksheet_report(image, template_content="**FINDINGS:**")
+
     def test_multiple_images_use_high_detail_and_table_safety_rules(self):
         client = MagicMock()
         client.chat.completions.create.return_value = _completion(

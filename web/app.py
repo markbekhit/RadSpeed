@@ -81,6 +81,7 @@ from llm.worksheet import (
     MAX_WORKSHEET_IMAGE_BYTES,
     MAX_WORKSHEET_IMAGES,
     WorksheetImageError,
+    draft_worksheet_report,
     extract_worksheet_findings,
     validate_worksheet_images,
 )
@@ -2686,6 +2687,65 @@ async def extract_worksheet(
         metadata={"image_count": len(validated), "chars": len(findings)},
     )
     return {"findings": findings, "image_count": len(validated)}
+
+
+@app.post("/api/worksheet/draft")
+async def draft_worksheet(
+    images: list[UploadFile] = File(...),
+    modality: Optional[str] = Form(None),
+    body_part: Optional[str] = Form(None),
+    user: dict = Depends(_verify_auth),
+):
+    """Experimental one-request worksheet reading and report drafting."""
+    if not images or len(images) > MAX_WORKSHEET_IMAGES:
+        raise HTTPException(status_code=400, detail=f"Use between 1 and {MAX_WORKSHEET_IMAGES} worksheet screenshots.")
+    if not _MOCK_MODE and not config.TEXT_API_KEY:
+        raise HTTPException(status_code=503, detail="Text/vision model API key not loaded on server.")
+    payloads: list[bytes] = []
+    try:
+        for image in images:
+            payloads.append(await image.read(MAX_WORKSHEET_IMAGE_BYTES + 1))
+    finally:
+        for image in images:
+            await image.close()
+    try:
+        validated = validate_worksheet_images(payloads)
+        if _MOCK_MODE:
+            notes = "Right kidney: 10.8 cm.\nLeft kidney: 10.2 cm; mild pelvicaliectasis."
+            report = "**FINDINGS:**\nRight kidney: 10.8 cm. Left kidney: 10.2 cm; mild pelvicaliectasis.\n\n**IMPRESSION:**\nMild left pelvicaliectasis."
+        else:
+            draft = draft_worksheet_report(
+                validated,
+                template_content=_load_template_content("Ultrasound_Worksheet.txt"),
+                modality=modality,
+                body_part=body_part,
+                style=_user_style(user),
+            )
+            notes, report = draft.source_notes, draft.report
+    except WorksheetImageError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except AuthenticationError as exc:
+        logger.error("Text model API key rejected during worksheet draft.")
+        raise HTTPException(status_code=503, detail="Text/vision model API key was rejected. Update it in Settings.") from exc
+    except APIStatusError as exc:
+        code = getattr(exc, "code", None)
+        safe_code = code if isinstance(code, str) and re.fullmatch(r"[a-zA-Z0-9_.-]{1,80}", code) else "unknown"
+        logger.error("Worksheet draft model request failed: HTTP %d, code %s.", exc.status_code, safe_code)
+        detail = "OpenAI API credit is exhausted. Add credit in OpenAI billing and try again." if safe_code in {"credit_balance_exhausted", "insufficient_quota"} else f"Worksheet model request failed (provider HTTP {exc.status_code}, code {safe_code})."
+        raise HTTPException(status_code=503, detail=detail) from exc
+    except APITimeoutError as exc:
+        logger.error("Worksheet draft model request timed out.")
+        raise HTTPException(status_code=504, detail="Worksheet reading timed out. Try again.") from exc
+    except APIConnectionError as exc:
+        logger.error("Worksheet draft model connection failed.")
+        raise HTTPException(status_code=503, detail="Worksheet model connection failed. Try again.") from exc
+    except Exception as exc:
+        logger.error("Worksheet draft failed (%s).", type(exc).__name__)
+        raise HTTPException(status_code=503, detail=f"Worksheet reading failed ({type(exc).__name__}).") from exc
+    if notes == "NO_EXTRACTABLE_FINDINGS":
+        raise HTTPException(status_code=422, detail="No entered worksheet findings were detected.")
+    log_event(user_id=user.get("id"), event_type="worksheet_draft", metadata={"image_count": len(validated), "chars": len(report)})
+    return {"findings": notes, "report": report, "image_count": len(validated)}
 
 
 @app.post("/format")

@@ -1648,6 +1648,7 @@ function _renderWorksheetPreviews() {
   $("btn-worksheet-clear").disabled = !hasImages || busy;
   $("btn-indication-transcribe").disabled = !hasImages || busy;
   $("btn-worksheet-generate").disabled = !hasImages || busy;
+  $("btn-worksheet-one-pass").disabled = !hasImages || busy;
 }
 
 function clearWorksheetImages() {
@@ -1690,7 +1691,7 @@ function addWorksheetImages(files) {
   }
 }
 
-async function generateFromWorksheet() {
+async function generateFromWorksheet(onePass = false) {
   if (_worksheetBusy || !_worksheetImages.length) return;
   if (state.isRecording) {
     setStatus("Stop the current recording before generating from a worksheet.", "error");
@@ -1726,7 +1727,7 @@ async function generateFromWorksheet() {
   if (bodyPart) form.append("body_part", bodyPart);
 
   try {
-    const response = await fetch("/api/worksheet/extract", {
+    const response = await fetch(onePass ? "/api/worksheet/draft" : "/api/worksheet/extract", {
       method: "POST",
       body: form,
     });
@@ -1752,9 +1753,25 @@ async function generateFromWorksheet() {
     state.sessionId = null;
     clearWorksheetImages();
 
-    setUI("transcribed");
-    setStatus("Worksheet read. Generating the structured report…", "active");
-    await formatReport();
+    if (onePass) {
+      const report = String(data.report || "").trim();
+      if (!report) throw new Error("No worksheet report was returned.");
+      $("report-raw").value = report;
+      $("report-rendered").innerHTML = renderMarkdown(report);
+      state.reportLlmOutput = report;
+      _signedReportId = null;
+      if (typeof _setReportStatus === "function") _setReportStatus("preliminary");
+      if (typeof _clearQaPanel === "function") _clearQaPanel();
+      setUI("done");
+      setStatus("One-step draft ready for review.", "success");
+      runQaCheck({ quiet: true });
+      refreshFollowupSuggestions(report);
+      $("report-rendered").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      setUI("transcribed");
+      setStatus("Worksheet read. Generating the structured report…", "active");
+      await formatReport();
+    }
   } catch (error) {
     setUI(_inferUIMode());
     setStatus(`Worksheet error: ${error.message}`, "error");
@@ -3677,7 +3694,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       "click",
       () => transcribeIndicationImages(_worksheetImages.map((item) => item.file)),
     );
-    $("btn-worksheet-generate").addEventListener("click", generateFromWorksheet);
+    $("btn-worksheet-generate").addEventListener("click", () => generateFromWorksheet(false));
+    $("btn-worksheet-one-pass").addEventListener("click", () => generateFromWorksheet(true));
     $("btn-indication-copy").addEventListener("click", copyIndication);
     $("indication-text").addEventListener("input", () => {
       $("btn-indication-copy").disabled = !$("indication-text").value.trim();

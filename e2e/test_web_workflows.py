@@ -475,6 +475,7 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     assert format_payloads and format_payloads[-1]["source_kind"] == "worksheet"
     assert format_payloads[-1]["template_name"] == "Ultrasound_Worksheet.txt"
 
+
     # Copy must preserve clinical line structure without exporting the browser's
     # paragraph/list spacing. PowerScribe prefers text/html when both clipboard
     # flavours are present, so assert both representations are compact.
@@ -516,6 +517,26 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     assert "<li" not in clipboard["text/html"].lower()
     assert "<br>" in clipboard["text/html"].lower()
     assert errors == []
+
+
+def test_one_step_worksheet_draft_shows_notes_and_report(page, base_url):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZJfQAAAAASUVORK5CYII=";
+          const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+          const file = new File([bytes], "renal-worksheet.png", { type: "image/png" });
+          const data = new DataTransfer();
+          data.items.add(file);
+          document.getElementById("worksheet-drop-zone").dispatchEvent(
+            new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true })
+          );
+        }"""
+    )
+    page.locator("#btn-worksheet-one-pass").click()
+    expect(page.locator("#transcription")).to_have_value(re.compile("WORKSHEET SOURCE NOTES.*Left kidney", re.DOTALL))
+    expect(page.locator("#report-rendered")).to_contain_text("Mild left pelvicaliectasis")
+    expect(page.locator("#status")).to_contain_text("One-step draft ready")
 
 
 def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: str):
