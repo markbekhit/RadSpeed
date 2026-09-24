@@ -245,6 +245,7 @@ def draft_worksheet_report(
     modality: Optional[str] = None,
     body_part: Optional[str] = None,
     style: Optional[dict] = None,
+    reasoning_effort: str = "high",
 ) -> WorksheetDraft:
     """Read source observations and draft a report with one vision request."""
     from llm.format import _build_style_preamble, _template_for_llm, postprocess_report
@@ -252,6 +253,8 @@ def draft_worksheet_report(
     images = list(images)
     if not images:
         raise WorksheetImageError("No worksheet screenshots were supplied.")
+    if reasoning_effort not in {"low", "high"}:
+        raise ValueError("Unsupported worksheet reasoning effort.")
     context = ", ".join(
         part for part in (
             f"modality={modality.strip()[:80]}" if modality and modality.strip() else "",
@@ -282,7 +285,7 @@ def draft_worksheet_report(
             config.SELECTED_MODEL,
             temperature=0.0,
             max_tokens=7000,
-            reasoning_effort="high" if (config.SELECTED_MODEL or "").lower() == "gpt-6-luna" else None,
+            reasoning_effort=reasoning_effort if (config.SELECTED_MODEL or "").lower() == "gpt-6-luna" else None,
         ),
     )
     raw = response.choices[0].message.content if response.choices else None

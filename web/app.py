@@ -2694,11 +2694,14 @@ async def draft_worksheet(
     images: list[UploadFile] = File(...),
     modality: Optional[str] = Form(None),
     body_part: Optional[str] = Form(None),
+    reasoning_effort: str = Form("high"),
     user: dict = Depends(_verify_auth),
 ):
     """Experimental one-request worksheet reading and report drafting."""
     if not images or len(images) > MAX_WORKSHEET_IMAGES:
         raise HTTPException(status_code=400, detail=f"Use between 1 and {MAX_WORKSHEET_IMAGES} worksheet screenshots.")
+    if reasoning_effort not in {"low", "high"}:
+        raise HTTPException(status_code=400, detail="Choose low or high worksheet reasoning.")
     if not _MOCK_MODE and not config.TEXT_API_KEY:
         raise HTTPException(status_code=503, detail="Text/vision model API key not loaded on server.")
     payloads: list[bytes] = []
@@ -2720,6 +2723,7 @@ async def draft_worksheet(
                 modality=modality,
                 body_part=body_part,
                 style=_user_style(user),
+                reasoning_effort=reasoning_effort,
             )
             notes, report = draft.source_notes, draft.report
     except WorksheetImageError as exc:

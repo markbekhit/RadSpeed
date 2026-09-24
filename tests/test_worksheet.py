@@ -82,6 +82,21 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "incomplete"):
                 draft_worksheet_report(image, template_content="**FINDINGS:**")
 
+    def test_one_pass_can_use_luna_low_for_speed_comparison(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion(
+            '{"source_notes":"Left kidney: 10.2 cm","report":"**FINDINGS:** Left kidney 10.2 cm."}'
+        )
+        image = validate_worksheet_images([b"\x89PNG\r\n\x1a\nsynthetic"])
+        old_model = config.SELECTED_MODEL
+        config.SELECTED_MODEL = "gpt-6-luna"
+        try:
+            with patch("llm.worksheet.OpenAI", return_value=client):
+                draft_worksheet_report(image, template_content="**FINDINGS:**", reasoning_effort="low")
+        finally:
+            config.SELECTED_MODEL = old_model
+        self.assertEqual(client.chat.completions.create.call_args.kwargs["reasoning_effort"], "low")
+
     def test_multiple_images_use_high_detail_and_table_safety_rules(self):
         client = MagicMock()
         client.chat.completions.create.return_value = _completion(
