@@ -26,6 +26,7 @@ def completion_options(
     *,
     temperature: Optional[float] = None,
     max_tokens: Optional[int] = None,
+    reasoning_effort: Optional[str] = None,
     **options: Any,
 ) -> dict[str, Any]:
     """Build provider-compatible keyword arguments for chat completions.
@@ -36,7 +37,7 @@ def completion_options(
     """
     result = dict(options)
     if uses_modern_completion_contract(model):
-        effort = reasoning_effort_for_model(model)
+        effort = reasoning_effort or reasoning_effort_for_model(model)
         if effort:
             result["reasoning_effort"] = effort
         if max_tokens is not None:

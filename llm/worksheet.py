@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import logging
+import time
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
@@ -164,6 +165,7 @@ def extract_worksheet_findings(
         )
 
     client = get_text_client(OpenAI)
+    started_at = time.monotonic()
     response = client.chat.completions.create(
         model=config.SELECTED_MODEL,
         messages=[
@@ -175,6 +177,9 @@ def extract_worksheet_findings(
             config.SELECTED_MODEL,
             temperature=0.0,
             max_tokens=3000,
+            reasoning_effort=(
+                "low" if (config.SELECTED_MODEL or "").strip().lower() == "gpt-6-luna" else None
+            ),
         ),
     )
     if not response.choices or not response.choices[0].message.content:
@@ -186,8 +191,9 @@ def extract_worksheet_findings(
         if findings.lower().startswith("text\n"):
             findings = findings[5:].lstrip()
     logger.info(
-        "Worksheet extraction complete (%d images, %d source-note characters).",
+        "Worksheet extraction complete (%d images, %d source-note characters, %.1fs).",
         len(images),
         len(findings),
+        time.monotonic() - started_at,
     )
     return findings

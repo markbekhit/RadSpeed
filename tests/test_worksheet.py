@@ -112,6 +112,23 @@ class WorksheetExtractionPromptTests(unittest.TestCase):
         self.assertNotIn("max_tokens", request)
         self.assertEqual(request["max_completion_tokens"], 3000)
 
+    def test_luna_worksheet_uses_low_effort_and_keeps_high_image_detail(self):
+        client = MagicMock()
+        client.chat.completions.create.return_value = _completion("Right kidney: 10.8 cm.")
+        image = validate_worksheet_images([b"\x89PNG\r\n\x1a\nsynthetic"])
+        old_model = config.SELECTED_MODEL
+        config.SELECTED_MODEL = "gpt-6-luna"
+        try:
+            with patch("llm.worksheet.OpenAI", return_value=client):
+                extract_worksheet_findings(image)
+        finally:
+            config.SELECTED_MODEL = old_model
+
+        request = client.chat.completions.create.call_args.kwargs
+        self.assertEqual(request["reasoning_effort"], "low")
+        self.assertEqual(request["max_completion_tokens"], 3000)
+        self.assertEqual(request["messages"][1]["content"][1]["image_url"]["detail"], "high")
+
 
 class WorksheetFormattingSafetyTests(unittest.TestCase):
     def test_worksheet_mode_preserves_findings_and_requires_clinical_impression(self):
