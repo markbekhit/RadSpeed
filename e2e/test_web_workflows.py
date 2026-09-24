@@ -520,6 +520,8 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
 
 
 def test_one_step_worksheet_draft_shows_notes_and_report(page, base_url):
+    draft_requests = []
+    page.on("request", lambda request: draft_requests.append(request.post_data_buffer or b"") if request.url.endswith("/api/worksheet/draft") else None)
     page.goto(f"{base_url}/app")
     page.evaluate(
         """() => {
@@ -537,6 +539,8 @@ def test_one_step_worksheet_draft_shows_notes_and_report(page, base_url):
     expect(page.locator("#transcription")).to_have_value(re.compile("WORKSHEET SOURCE NOTES.*Left kidney", re.DOTALL))
     expect(page.locator("#report-rendered")).to_contain_text("Mild left pelvicaliectasis")
     expect(page.locator("#status")).to_contain_text("One-step draft ready")
+    assert draft_requests and b'name="reasoning_effort"' in draft_requests[-1]
+    assert b"low" in draft_requests[-1]
 
 
 def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: str):

@@ -1725,6 +1725,7 @@ async function generateFromWorksheet(onePass = false) {
   const bodyPart = ($("body-part")?.value || "").trim();
   if (modality) form.append("modality", modality);
   if (bodyPart) form.append("body_part", bodyPart);
+  if (onePass) form.append("reasoning_effort", "low");
 
   try {
     const response = await fetch(onePass ? "/api/worksheet/draft" : "/api/worksheet/extract", {
