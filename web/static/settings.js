@@ -76,6 +76,7 @@ async function loadSettings() {
     if ($("transcription_model"))    $("transcription_model").value    = data.transcription_model    || "";
     if ($("text_base_url"))          $("text_base_url").value          = data.text_base_url          || "";
     if ($("text_model"))             $("text_model").value             = data.text_model             || "";
+    if ($("text-effort"))            $("text-effort").textContent        = data.text_reasoning_effort || "model default";
     if ($("fhir_export_enabled"))    $("fhir_export_enabled").checked  = !!data.fhir_export_enabled;
 
     // Shared provider/model settings are read-only for non-administrators.

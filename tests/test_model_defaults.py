@@ -14,7 +14,7 @@ from config.model_defaults import (
     DEFAULT_TEXT_MODEL,
     DEFAULT_TRANSCRIPTION_MODEL,
 )
-from llm.model_compat import completion_options
+from llm.model_compat import completion_options, supports_chat_tool_calls
 from web.stt_providers.assemblyai import AssemblyAIProvider
 from web.stt_providers.deepgram import DeepgramProvider
 
@@ -23,6 +23,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 class ModelCompletionCompatibilityTests(unittest.TestCase):
+    def test_gpt6_luna_uses_high_effort_without_unsupported_temperature_or_tools(self):
+        options = completion_options("gpt-6-luna", temperature=0.1, max_tokens=100)
+        self.assertEqual(options["reasoning_effort"], "high")
+        self.assertEqual(options["max_completion_tokens"], 2048)
+        self.assertNotIn("temperature", options)
+        self.assertNotIn("max_tokens", options)
+        self.assertFalse(supports_chat_tool_calls("gpt-6-luna"))
+
     def test_gpt5_uses_modern_budget_and_default_temperature(self):
         options = completion_options(
             "gpt-5.6-sol",
@@ -48,7 +56,7 @@ class ModelCompletionCompatibilityTests(unittest.TestCase):
 
 class ModelDefaultDurabilityTests(unittest.TestCase):
     def test_current_model_manifest(self):
-        self.assertEqual(DEFAULT_TEXT_MODEL, "gpt-5.6-sol")
+        self.assertEqual(DEFAULT_TEXT_MODEL, "gpt-6-luna")
         self.assertEqual(DEFAULT_TRANSCRIPTION_MODEL, "whisper-large-v3-turbo")
         self.assertEqual(ASSEMBLYAI_STREAMING_MODEL, "u3-rt-pro")
         self.assertEqual(DEEPGRAM_STREAMING_MODEL, "nova-3-medical")

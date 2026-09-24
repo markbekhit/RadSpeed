@@ -84,6 +84,25 @@ GUIDELINES = ["BIRADS_MAMMOGRAPHY.md", "TIRADS.md"]
 
 class TestSelectTemplate(unittest.TestCase):
 
+    def test_gpt6_luna_high_uses_json_without_chat_tool_call(self):
+        previous = config_stub.SELECTED_MODEL
+        config_stub.SELECTED_MODEL = "gpt-6-luna"
+        try:
+            with self._patch(), patch("llm.format.OpenAI") as mock_openai:
+                client = MagicMock()
+                client.chat.completions.create.return_value = _json_response(
+                    '{"template": "CT_Head.txt"}'
+                )
+                mock_openai.return_value = client
+                result = fmt._select_template("CT head dictation")
+            self.assertEqual(result, "CT_Head.txt")
+            request = client.chat.completions.create.call_args.kwargs
+            self.assertEqual(request["reasoning_effort"], "high")
+            self.assertNotIn("tools", request)
+            self.assertEqual(client.chat.completions.create.call_count, 1)
+        finally:
+            config_stub.SELECTED_MODEL = previous
+
     def _patch(self, templates=None):
         """Return a context-manager that patches file-list lookup and OpenAI."""
         if templates is None:

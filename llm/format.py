@@ -4,7 +4,7 @@ from openai import OpenAI
 from llm.text_client import get_text_client
 from ui.utils import update_status
 from config.config import config
-from llm.model_compat import completion_options
+from llm.model_compat import completion_options, supports_chat_tool_calls
 import os
 import json
 import re
@@ -185,7 +185,7 @@ def _select_template(transcript: str, attempt: int = 1) -> Optional[str]:
         logger.error("Max attempts reached for template selection.")
         return None
 
-    use_tool_call = True # Variable to decide whether tool call should happen
+    use_tool_call = supports_chat_tool_calls(config.SELECTED_MODEL)
 
     if attempt > 1: # Only tool call on first attempt
        use_tool_call = False # If not first attempt, use json fallback logic
@@ -733,7 +733,7 @@ def _analyze_recommendation_needs(structured_report: str, attempt: int = 1) -> T
         }
     }]
 
-    use_tool_call = True # Variable to decide whether tool call should happen
+    use_tool_call = supports_chat_tool_calls(config.SELECTED_MODEL)
 
     if attempt > 1: # Only tool call on first attempt
        use_tool_call = False # If not first attempt, use json fallback logic

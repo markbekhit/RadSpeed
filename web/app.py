@@ -74,7 +74,7 @@ from llm.fracture_locator import (
 )
 from llm.strong_fracture_model import score_strong_fracture_images
 from llm.impressions import extract_findings, replace_impression, stream_impression
-from llm.model_compat import completion_options
+from llm.model_compat import completion_options, reasoning_effort_for_model
 from llm.text_client import get_text_client
 from config import practice
 from llm.worksheet import (
@@ -3783,6 +3783,7 @@ def api_get_settings(user: dict = Depends(_verify_auth)):
         "transcription_model":    config.SELECTED_TRANSCRIPTION_MODEL or "",
         "text_base_url":          config.BASE_URL or "",
         "text_model":             config.SELECTED_MODEL or "",
+        "text_reasoning_effort":  reasoning_effort_for_model(config.SELECTED_MODEL) or "model default",
         "fhir_export_enabled":    style.get("fhir_export_enabled", config.fhir_export_enabled),
         "style":                  {k: v for k, v in style.items() if k != "fhir_export_enabled"},
         "oauth_mode":             oauth_enabled(),
