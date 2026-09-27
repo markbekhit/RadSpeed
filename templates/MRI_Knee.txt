@@ -89,4 +89,5 @@ Multiplanar multisequence non-contrast MRI of the knee.
 **Instructions:**
 - Concise bullet-point summary of key findings.
 - Include only clinically relevant findings. Minor incidental findings that are fully described in the body do not need to be restated here.
+- Keep isolated low-grade meniscal free-edge fraying, degenerative signal and intrasubstance signal in the Findings only when there is no definite tear. Include a definite meniscal tear, displaced fragment, root injury, extrusion or parameniscal cyst. Preserve minor fraying only if the radiologist explicitly dictates that it is clinically important.
 - For a normal/negative study, include a closing statement where appropriate, e.g. 'No cause for the patient's symptoms identified on this examination.'

@@ -7,6 +7,7 @@ services:
     environment:
       VOXRAD_WORKING_DIR: /data/working
       VOXRAD_DB_PATH: /data/users.db
+      VOXRAD_TEXT_MODEL: gpt-6-sol
     volumes:
       - /opt/radspeed/data:/data
     networks:
@@ -41,4 +42,3 @@ services:
 
 networks:
   private:
-

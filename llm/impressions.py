@@ -287,6 +287,11 @@ them or what the indication is:
 
 OMIT UNLESS INDICATION-RELEVANT — these are noise by default but become
 relevant if the clinical question makes them so:
+- Knee MRI: isolated low-grade meniscal free-edge fraying, degenerative signal
+  or intrasubstance signal without a definite tear. Include a definite tear,
+  displaced fragment, root injury, extrusion or parameniscal cyst. Preserve
+  minor fraying only when the radiologist explicitly states that it is
+  clinically important.
 - Normal organ size, shape, position, or signal/echogenicity.
 - Simple ovarian cyst <5 cm in a premenopausal patient.
 - Age-typical degenerative change.

@@ -2283,8 +2283,11 @@ async function copyReport(options = {}) {
       throw new Error("Clipboard API unavailable");
     }
     state.reportCopied = true;
-    const nativeSuffix = fmt === "rich" && nativeInvoke ? " (PowerScribe RTF)" : labelSuffix;
-    setStatus(`Report copied${scopeSuffix} to clipboard${nativeSuffix}. Press Alt+N for next case.`, "success");
+    const nativeSuffix = fmt === "rich" && nativeInvoke ? " (PowerScribe rich text)" : labelSuffix;
+    const browserWarning = fmt === "rich" && !nativeInvoke
+      ? " PowerScribe may remove browser formatting; use the RadSpeed Windows app for native rich text."
+      : "";
+    setStatus(`Report copied${scopeSuffix} to clipboard${nativeSuffix}.${browserWarning} Press Alt+N for next case.`, "success");
     _trackReportEdit(fullMarkdown);
     return;
   } catch {
@@ -2313,7 +2316,10 @@ async function copyReport(options = {}) {
       const ok = document.execCommand("copy");
       if (ok) {
         state.reportCopied = true;
-        setStatus(`Report copied${scopeSuffix} to clipboard${labelSuffix}. Press Alt+N for next case.`, "success");
+        const fallbackWarning = fmt === "rich"
+          ? " Native rich copy was unavailable, so PowerScribe formatting may be removed."
+          : "";
+        setStatus(`Report copied${scopeSuffix} to clipboard${labelSuffix}.${fallbackWarning} Press Alt+N for next case.`, "success");
       } else {
         setStatus("Copy failed — select and copy manually.", "error");
       }

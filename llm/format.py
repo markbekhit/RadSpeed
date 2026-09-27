@@ -321,6 +321,15 @@ from typical local practice or from the findings.
 
 6. **No invented pathology:** Do not add pathological findings not present in the transcript. Normal descriptors for unmentioned structures are required and expected — this is not inventing pathology.
 
+6c. **Knee Impression/Conclusion — omit minor meniscal degeneration:** Keep
+isolated low-grade meniscal free-edge fraying, degenerative signal and
+intrasubstance signal in the Findings only. Do not include them in the
+Impression/Conclusion when there is no definite meniscal tear. Include a
+meniscal abnormality in the Impression/Conclusion when the Findings document a
+definite tear, displaced fragment, root injury, extrusion or parameniscal cyst.
+If the radiologist explicitly dictates that minor fraying is clinically
+important, preserve that conclusion.
+
 6a. **Clinical relevance in Impression/Conclusion — foraminal stenosis:** Do not merely repeat a foraminal-stenosis grade in the Impression or Conclusion. When the Findings document **moderate foraminal stenosis**, use the wording **"with potential irritation of the anatomically relevant exiting nerve root"**. When the Findings document **marked or severe foraminal stenosis**, use the wording **"with likely compression of the anatomically relevant exiting nerve root"**. Include the documented side and name the root when the level permits (for example, right C5/6 foraminal stenosis affects the exiting right C6 root; left L4/5 foraminal stenosis affects the exiting left L4 root). Apply this only to foraminal stenosis, not canal or subarticular stenosis. Mild foraminal stenosis does not imply nerve irritation. If the dictated Findings explicitly state a different nerve-root relationship, preserve that wording rather than contradicting it. Keep this clinical interpretation in the Impression/Conclusion; do not alter the source-faithful Findings wording.
 
 6b. **Clinical relevance in Impression/Conclusion — Modic type 1:** When a

@@ -218,6 +218,73 @@ fn push_rtf_text(rtf: &mut String, text: &str) {
     }
 }
 
+fn push_html_text(html: &mut String, text: &str) {
+    for ch in text.chars() {
+        match ch {
+            '&' => html.push_str("&amp;"),
+            '<' => html.push_str("&lt;"),
+            '>' => html.push_str("&gt;"),
+            '"' => html.push_str("&quot;"),
+            '\'' => html.push_str("&#39;"),
+            '\t' => html.push_str("&emsp;"),
+            _ => html.push(ch),
+        }
+    }
+}
+
+fn report_html_fragment(text: &str, bold_lines: &[String]) -> String {
+    let bold: HashSet<&str> = bold_lines.iter().map(|line| line.trim()).collect();
+    let normalised = text.replace("\r\n", "\n").replace('\r', "\n");
+    let mut html = String::from(r#"<span style="font-family:Arial,sans-serif;font-size:10pt">"#);
+    for (index, line) in normalised.split('\n').enumerate() {
+        if index > 0 {
+            html.push_str("<br>");
+        }
+        let trimmed = line.trim();
+        let is_bold = !trimmed.is_empty() && bold.contains(trimmed);
+        if is_bold {
+            html.push_str("<b>");
+        }
+        push_html_text(&mut html, line);
+        if is_bold {
+            html.push_str("</b>");
+        }
+    }
+    html.push_str("</span>");
+    html
+}
+
+/// Build the Windows CF_HTML payload used by Office-style rich-text editors.
+/// Byte offsets are required because reports can contain non-ASCII characters.
+fn report_cf_html(text: &str, bold_lines: &[String]) -> Vec<u8> {
+    const START_MARKER: &str = "<!--StartFragment-->";
+    const END_MARKER: &str = "<!--EndFragment-->";
+    const HEADER_TEMPLATE: &str = concat!(
+        "Version:0.9\r\n",
+        "StartHTML:0000000000\r\n",
+        "EndHTML:0000000000\r\n",
+        "StartFragment:0000000000\r\n",
+        "EndFragment:0000000000\r\n",
+    );
+
+    let fragment = report_html_fragment(text, bold_lines);
+    let document = format!(
+        "<html><body>{START_MARKER}{fragment}{END_MARKER}</body></html>"
+    );
+    let start_html = HEADER_TEMPLATE.len();
+    let start_fragment = start_html + document.find(START_MARKER).unwrap() + START_MARKER.len();
+    let end_fragment = start_html + document.find(END_MARKER).unwrap();
+    let end_html = start_html + document.len();
+    let header = format!(
+        "Version:0.9\r\nStartHTML:{start_html:010}\r\nEndHTML:{end_html:010}\r\nStartFragment:{start_fragment:010}\r\nEndFragment:{end_fragment:010}\r\n"
+    );
+    debug_assert_eq!(header.len(), HEADER_TEMPLATE.len());
+
+    let mut payload = format!("{header}{document}").into_bytes();
+    payload.push(0);
+    payload
+}
+
 fn push_rtf_list_tables(rtf: &mut String, runs: &[ReportListRun]) {
     if runs.is_empty() {
         return;
@@ -309,21 +376,25 @@ fn report_rtf(text: &str, bold_lines: &[String]) -> Vec<u8> {
     rtf.into_bytes()
 }
 
-/// Put both Unicode text and native RTF on the Windows clipboard. This gives
-/// PowerScribe its preferred rich-text format while preserving a plain-text
-/// fallback for every other target.
+/// Put Unicode text plus both native RTF and CF_HTML on the Windows clipboard.
+/// PowerScribe versions differ in which rich format they accept, so matching
+/// the formats offered by Office gives each version a compatible choice.
 #[cfg(target_os = "windows")]
 pub fn set_report_clipboard_rtf(text: &str, bold_lines: &[String]) -> Result<(), String> {
     use clipboard_win::{formats, raw, Clipboard as WindowsClipboard, Setter};
 
     let rtf_format = raw::register_format("Rich Text Format")
         .ok_or_else(|| "Windows did not register the RTF clipboard format".to_string())?;
+    let html_format = raw::register_format("HTML Format")
+        .ok_or_else(|| "Windows did not register the HTML clipboard format".to_string())?;
     let _clipboard =
         WindowsClipboard::new_attempts(10).map_err(|e| format!("clipboard open: {e}"))?;
     raw::empty().map_err(|e| format!("clipboard clear: {e}"))?;
     formats::Unicode
         .write_clipboard(&text)
         .map_err(|e| format!("clipboard text set: {e}"))?;
+    raw::set_without_clear(html_format.get(), &report_cf_html(text, bold_lines))
+        .map_err(|e| format!("clipboard HTML set: {e}"))?;
     raw::set_without_clear(rtf_format.get(), &report_rtf(text, bold_lines))
         .map_err(|e| format!("clipboard RTF set: {e}"))
 }
@@ -402,7 +473,7 @@ pub fn paste_block(_payload: &str) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use super::report_rtf;
+    use super::{report_cf_html, report_rtf};
 
     #[test]
     fn report_rtf_bolds_only_named_lines_and_keeps_compact_breaks() {
@@ -460,5 +531,35 @@ mod tests {
         assert!(value.contains(r"\listid1001"));
         assert!(value.contains(r"\ls1\ilvl0"));
         assert!(value.contains(r"\ls2\ilvl0"));
+    }
+
+    #[test]
+    fn report_cf_html_has_valid_byte_offsets_and_bold_headings() {
+        let bytes = report_cf_html(
+            "FINDINGS:\nMenisci\nCafé intact.\n\nIMPRESSION:\nNo tear.",
+            &["FINDINGS:".into(), "Menisci".into(), "IMPRESSION:".into()],
+        );
+        let value = String::from_utf8(bytes[..bytes.len() - 1].to_vec()).unwrap();
+        let offset = |name: &str| -> usize {
+            value
+                .lines()
+                .find(|line| line.starts_with(name))
+                .unwrap()
+                .split_once(':')
+                .unwrap()
+                .1
+                .parse()
+                .unwrap()
+        };
+
+        let start_html = offset("StartHTML");
+        let end_html = offset("EndHTML");
+        let start_fragment = offset("StartFragment");
+        let end_fragment = offset("EndFragment");
+        assert_eq!(&value.as_bytes()[start_html..start_html + 6], b"<html>");
+        assert_eq!(&value.as_bytes()[end_html - 7..end_html], b"</html>");
+        let fragment = std::str::from_utf8(&value.as_bytes()[start_fragment..end_fragment]).unwrap();
+        assert!(fragment.contains("<b>FINDINGS:</b><br><b>Menisci</b>"));
+        assert!(fragment.contains("Café intact.<br><br><b>IMPRESSION:</b>"));
     }
 }

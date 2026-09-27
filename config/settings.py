@@ -3,7 +3,11 @@ import logging
 import os
 import configparser
 from config.config import config
-from config.model_defaults import DEFAULT_TEXT_MODEL, DEFAULT_TRANSCRIPTION_MODEL
+from config.model_defaults import (
+    DEFAULT_TEXT_MODEL,
+    DEFAULT_TRANSCRIPTION_MODEL,
+    LEGACY_TEXT_MODEL_DEFAULTS,
+)
 from utils.encryption import get_password_from_user, load_transcription_key, load_text_key, load_mm_key
 from ui.utils import update_status
 
@@ -74,7 +78,17 @@ def load_settings(web_mode: bool = False):
         config.TRANSCRIPTION_BASE_URL = config_parser["DEFAULT"].get("TranscriptionBaseURL", "https://api.groq.com/openai/v1")
         config.SELECTED_TRANSCRIPTION_MODEL = config_parser["DEFAULT"].get("SelectedTranscriptionModel", DEFAULT_TRANSCRIPTION_MODEL)
         config.BASE_URL = config_parser["DEFAULT"].get("TextBaseURL", "https://api.openai.com/v1")
-        config.SELECTED_MODEL = config_parser["DEFAULT"].get("SelectedModel", DEFAULT_TEXT_MODEL)
+        saved_text_model = config_parser["DEFAULT"].get("SelectedModel", DEFAULT_TEXT_MODEL).strip()
+        deployment_text_model = os.environ.get("VOXRAD_TEXT_MODEL", DEFAULT_TEXT_MODEL).strip()
+        if saved_text_model in LEGACY_TEXT_MODEL_DEFAULTS and deployment_text_model != saved_text_model:
+            config.SELECTED_MODEL = deployment_text_model
+            logger.info(
+                "Migrating legacy default text model %s to %s.",
+                saved_text_model,
+                deployment_text_model,
+            )
+        else:
+            config.SELECTED_MODEL = saved_text_model
         config.multimodal_pref = config_parser["DEFAULT"].getboolean("MultimodalPref", False)
         config.multimodal_model = config_parser["DEFAULT"].get("MultimodalModel", None)
         config.audio_device = config_parser['DEFAULT'].get('AudioDevice', config.audio_device)

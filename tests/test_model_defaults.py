@@ -13,6 +13,7 @@ from config.model_defaults import (
     DEEPGRAM_STREAMING_MODEL,
     DEFAULT_TEXT_MODEL,
     DEFAULT_TRANSCRIPTION_MODEL,
+    LEGACY_TEXT_MODEL_DEFAULTS,
 )
 from llm.model_compat import completion_options, supports_chat_tool_calls
 from web.stt_providers.assemblyai import AssemblyAIProvider
@@ -30,6 +31,14 @@ class ModelCompletionCompatibilityTests(unittest.TestCase):
         self.assertNotIn("temperature", options)
         self.assertNotIn("max_tokens", options)
         self.assertFalse(supports_chat_tool_calls("gpt-6-luna"))
+
+    def test_gpt6_sol_uses_high_effort_without_unsupported_temperature_or_tools(self):
+        options = completion_options("gpt-6-sol", temperature=0.1, max_tokens=100)
+        self.assertEqual(options["reasoning_effort"], "high")
+        self.assertEqual(options["max_completion_tokens"], 2048)
+        self.assertNotIn("temperature", options)
+        self.assertNotIn("max_tokens", options)
+        self.assertFalse(supports_chat_tool_calls("gpt-6-sol"))
 
     def test_gpt5_uses_modern_budget_and_default_temperature(self):
         options = completion_options(
@@ -56,7 +65,8 @@ class ModelCompletionCompatibilityTests(unittest.TestCase):
 
 class ModelDefaultDurabilityTests(unittest.TestCase):
     def test_current_model_manifest(self):
-        self.assertEqual(DEFAULT_TEXT_MODEL, "gpt-6-luna")
+        self.assertEqual(DEFAULT_TEXT_MODEL, "gpt-6-sol")
+        self.assertIn("gpt-6-luna", LEGACY_TEXT_MODEL_DEFAULTS)
         self.assertEqual(DEFAULT_TRANSCRIPTION_MODEL, "whisper-large-v3-turbo")
         self.assertEqual(ASSEMBLYAI_STREAMING_MODEL, "u3-rt-pro")
         self.assertEqual(DEEPGRAM_STREAMING_MODEL, "nova-3-medical")
@@ -197,6 +207,23 @@ with tempfile.TemporaryDirectory() as directory:
     database = Path(directory) / "users.db"
     with patch.dict("os.environ", {"VOXRAD_DB_PATH": str(database)}, clear=False):
         assert Path(get_default_config_path()) == Path(directory) / "settings.ini"
+""")
+
+    def test_legacy_luna_default_migrates_to_deployment_sol_model(self):
+        self._run_isolated("""
+import os
+import tempfile
+from pathlib import Path
+from config.config import config
+from config.settings import load_settings
+
+with tempfile.TemporaryDirectory() as directory:
+    settings_path = Path(directory) / "settings.ini"
+    settings_path.write_text("[DEFAULT]\\nSelectedModel = gpt-6-luna\\n")
+    os.environ["VOXRAD_SETTINGS_PATH"] = str(settings_path)
+    os.environ["VOXRAD_TEXT_MODEL"] = "gpt-6-sol"
+    load_settings(web_mode=True)
+    assert config.SELECTED_MODEL == "gpt-6-sol", config.SELECTED_MODEL
 """)
 
 

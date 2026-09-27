@@ -688,7 +688,7 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
         "Menisci",
         "IMPRESSION:",
     ]
-    expect(page.locator("#status")).to_contain_text("PowerScribe RTF")
+    expect(page.locator("#status")).to_contain_text("PowerScribe rich text")
 
 
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):

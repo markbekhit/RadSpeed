@@ -37,7 +37,7 @@ These are confirmed in code on `main` as of this update — not aspirations.
 
 ### Radiologist workstation (web)
 
-- **Current production models** — GPT-5.6 Sol for report generation and
+- **Current production models** — GPT-6 Sol with high reasoning effort for report generation and
   worksheet vision; Deepgram Nova-3 Medical or AssemblyAI Universal-3 Pro
   Medical Mode for streaming STT; Groq Whisper Large V3 Turbo as the segment
   fallback. Provider model IDs are centralised and routine deployments
@@ -302,10 +302,12 @@ practice rather than a tinkerer.
 
 - **Shipped:** native Tauri 2 tray companion, global hotkey, clipboard capture,
   PowerScribe jump-key paste modes, embedded RadSpeed web view, local settings,
-  signed updater artifacts and automatic updates. Version 0.2.29 adds native
+  signed updater artifacts and automatic updates. Version 0.2.29 added native
   Windows RTF lists, so numbered and bulleted conclusions remain editable lists
-  in PowerScribe and renumber after changes. Bold report headings also survive
-  paste. The companion includes the focus-free status HUD and production web app.
+  in compatible PowerScribe versions. Version 0.2.30 adds native Windows CF_HTML
+  beside RTF because PowerScribe versions can select different rich clipboard
+  formats. Browser-only copy now states that PowerScribe can remove its formatting.
+  The companion includes the focus-free status HUD and production web app.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

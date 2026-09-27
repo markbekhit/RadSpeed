@@ -201,6 +201,18 @@ class StructuredReportRenderingTests(unittest.TestCase):
         self.assertIn("likely compression", prompt)
         self.assertIn("Mild foraminal stenosis does not imply nerve irritation", prompt)
 
+    def test_full_report_and_impression_prompts_omit_minor_meniscal_fraying(self):
+        report_prompt = fmt._report_system_message(
+            fmt._get_template_content("MRI_Knee.txt")
+        )
+        standalone_prompt = impression_generator._IMPRESSION_SYSTEM_PROMPT
+        for prompt in (report_prompt, standalone_prompt):
+            with self.subTest(prompt=prompt[:30]):
+                self.assertIn("meniscal free-edge fraying", prompt)
+                self.assertIn("definite tear", prompt)
+                self.assertIn("root injury", prompt)
+                self.assertIn("parameniscal cyst", prompt)
+
     def test_three_impression_bullets_are_numbered_for_reliable_paste(self):
         report = (
             "**Findings:**\n- Finding detail one.\n- Finding detail two.\n- Finding detail three.\n\n"
