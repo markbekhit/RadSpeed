@@ -164,6 +164,11 @@ class ReportTemplateLibraryTests(unittest.TestCase):
 
     def test_related_templates_prioritise_clinically_useful_links(self):
         expected_pairs = {
+            "ct-head-brain": "mri-brain",
+            "mri-brain": "ct-head-brain",
+            "ultrasound-thyroid": "ct-neck",
+            "ultrasound-carotid-doppler": "ct-neck",
+            "ultrasound-doppler-venous": "ct-pulmonary-angiogram",
             "mrcp": "mri-abdomen-liver",
             "mri-abdomen-liver": "mrcp",
             "mri-breast": "ultrasound-breast",

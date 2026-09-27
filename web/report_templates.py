@@ -1095,6 +1095,12 @@ def get_entry(slug: str) -> Optional[dict]:
 
 
 _RELATED_OVERRIDES: dict[str, list[str]] = {
+    # Companion anatomy and VTE formats should precede generic modality links.
+    "ct-head-brain": ["mri-brain", "ct-sinuses", "ct-neck"],
+    "mri-brain": ["ct-head-brain", "mri-spine-cervical"],
+    "ultrasound-thyroid": ["ct-neck", "ultrasound-carotid-doppler"],
+    "ultrasound-carotid-doppler": ["ct-neck", "ultrasound-thyroid"],
+    "ultrasound-doppler-venous": ["ct-pulmonary-angiogram"],
     # Limb templates are otherwise displaced by the first six MRI entries.
     "mri-ankle": ["mri-knee", "mri-hip", "mri-wrist", "mri-shoulder"],
     "mri-hip": ["mri-knee", "mri-ankle", "mri-pelvis", "mri-shoulder", "mri-wrist"],
