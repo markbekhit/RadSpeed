@@ -2189,6 +2189,30 @@ function _clipboardBoldLines(html) {
     .filter((text) => text && !text.includes("\n")));
 }
 
+function _clipboardSubheadingPrefix(line, explicitBold = new Set()) {
+  const text = String(line || "").trimStart();
+  if (!text || text.length > 500) return "";
+
+  const explicit = Array.from(explicitBold)
+    .filter((fragment) => fragment.endsWith(":") && text.startsWith(fragment) && text !== fragment)
+    .sort((left, right) => right.length - left.length)[0];
+  if (explicit) return explicit;
+
+  const colon = text.indexOf(":");
+  if (colon < 1 || colon > 60 || colon === text.length - 1) return "";
+  const label = text.slice(0, colon + 1);
+  const words = label.slice(0, -1).trim().split(/\s+/);
+  if (words.length > 4 || /^(?:there|this|no|a|an|the)$/i.test(words[0])) return "";
+  return /^[A-Za-z0-9][A-Za-z0-9 /&()+,.'’\-]*:$/.test(label) ? label : "";
+}
+
+function _clipboardBoldPrefixes(plain, html) {
+  const explicitBold = _clipboardBoldLines(html);
+  return Array.from(new Set(plain.split("\n")
+    .map((line) => _clipboardSubheadingPrefix(line, explicitBold))
+    .filter(Boolean)));
+}
+
 function _clipboardRtfBoldLines(plain, html) {
   const explicitBold = _clipboardBoldLines(html);
   const seen = new Set();
@@ -2209,9 +2233,15 @@ function _clipboardRichHtml(plain, html) {
   const boldLines = _clipboardBoldLines(html);
   const lines = plain.split("\n").map((line) => {
     const escaped = _escapeClipboardHtml(line);
-    return _isClipboardHeading(line) || boldLines.has(line.trim())
-      ? `<strong>${escaped}</strong>`
-      : escaped;
+    if (_isClipboardHeading(line) || boldLines.has(line.trim())) {
+      return `<strong>${escaped}</strong>`;
+    }
+    const prefix = _clipboardSubheadingPrefix(line, boldLines);
+    if (!prefix) return escaped;
+    const start = line.indexOf(prefix);
+    return `${_escapeClipboardHtml(line.slice(0, start))}` +
+      `<strong>${_escapeClipboardHtml(prefix)}</strong>` +
+      `${_escapeClipboardHtml(line.slice(start + prefix.length))}`;
   });
   return `<span>${lines.join("<br>")}</span>`;
 }
@@ -2305,6 +2335,7 @@ async function copyReport(options = {}) {
         body: {
           text: payload.plain,
           boldLines: _clipboardRtfBoldLines(plain, html),
+          boldPrefixes: _clipboardBoldPrefixes(plain, html),
         },
       });
     } else if (payload.html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {

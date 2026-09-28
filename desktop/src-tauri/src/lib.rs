@@ -36,12 +36,15 @@ struct SaveBody {
 struct CopyReportRtfBody {
     text: String,
     bold_lines: Vec<String>,
+    #[serde(default)]
+    bold_prefixes: Vec<String>,
 }
 
 #[tauri::command]
 fn cmd_copy_report_rtf(body: CopyReportRtfBody) -> Result<(), String> {
     const MAX_REPORT_CHARS: usize = 200_000;
     const MAX_BOLD_LINES: usize = 500;
+    const MAX_BOLD_PREFIXES: usize = 500;
     const MAX_BOLD_LINE_CHARS: usize = 500;
 
     if body.text.chars().count() > MAX_REPORT_CHARS {
@@ -55,7 +58,15 @@ fn cmd_copy_report_rtf(body: CopyReportRtfBody) -> Result<(), String> {
     {
         return Err("Report has too many formatted headings".to_string());
     }
-    keyboard::set_report_clipboard_rtf(&body.text, &body.bold_lines)
+    if body.bold_prefixes.len() > MAX_BOLD_PREFIXES
+        || body
+            .bold_prefixes
+            .iter()
+            .any(|prefix| prefix.chars().count() > MAX_BOLD_LINE_CHARS)
+    {
+        return Err("Report has too many formatted subheadings".to_string());
+    }
+    keyboard::set_report_clipboard_rtf(&body.text, &body.bold_lines, &body.bold_prefixes)
 }
 
 #[tauri::command]

@@ -232,7 +232,29 @@ fn push_html_text(html: &mut String, text: &str) {
     }
 }
 
-fn report_html_fragment(text: &str, bold_lines: &[String]) -> String {
+fn matching_bold_prefix<'a>(line: &str, bold_prefixes: &'a [String]) -> Option<&'a str> {
+    let trimmed = line.trim_start();
+    bold_prefixes
+        .iter()
+        .map(|prefix| prefix.trim())
+        .filter(|prefix| !prefix.is_empty() && trimmed.starts_with(prefix) && trimmed != *prefix)
+        .max_by_key(|prefix| prefix.len())
+}
+
+fn push_html_line(html: &mut String, line: &str, bold_prefixes: &[String]) {
+    let Some(prefix) = matching_bold_prefix(line, bold_prefixes) else {
+        push_html_text(html, line);
+        return;
+    };
+    let start = line.len() - line.trim_start().len();
+    push_html_text(html, &line[..start]);
+    html.push_str("<b>");
+    push_html_text(html, prefix);
+    html.push_str("</b>");
+    push_html_text(html, &line[start + prefix.len()..]);
+}
+
+fn report_html_fragment(text: &str, bold_lines: &[String], bold_prefixes: &[String]) -> String {
     let bold: HashSet<&str> = bold_lines.iter().map(|line| line.trim()).collect();
     let normalised = text.replace("\r\n", "\n").replace('\r', "\n");
     let mut html = String::from(r#"<span style="font-family:Arial,sans-serif;font-size:10pt">"#);
@@ -245,7 +267,11 @@ fn report_html_fragment(text: &str, bold_lines: &[String]) -> String {
         if is_bold {
             html.push_str("<b>");
         }
-        push_html_text(&mut html, line);
+        if is_bold {
+            push_html_text(&mut html, line);
+        } else {
+            push_html_line(&mut html, line, bold_prefixes);
+        }
         if is_bold {
             html.push_str("</b>");
         }
@@ -256,7 +282,7 @@ fn report_html_fragment(text: &str, bold_lines: &[String]) -> String {
 
 /// Build the Windows CF_HTML payload used by Office-style rich-text editors.
 /// Byte offsets are required because reports can contain non-ASCII characters.
-fn report_cf_html(text: &str, bold_lines: &[String]) -> Vec<u8> {
+fn report_cf_html(text: &str, bold_lines: &[String], bold_prefixes: &[String]) -> Vec<u8> {
     const START_MARKER: &str = "<!--StartFragment-->";
     const END_MARKER: &str = "<!--EndFragment-->";
     const HEADER_TEMPLATE: &str = concat!(
@@ -267,7 +293,7 @@ fn report_cf_html(text: &str, bold_lines: &[String]) -> Vec<u8> {
         "EndFragment:0000000000\r\n",
     );
 
-    let fragment = report_html_fragment(text, bold_lines);
+    let fragment = report_html_fragment(text, bold_lines, bold_prefixes);
     let document = format!(
         "<html><body>{START_MARKER}{fragment}{END_MARKER}</body></html>"
     );
@@ -336,7 +362,20 @@ fn push_rtf_list_tables(rtf: &mut String, runs: &[ReportListRun]) {
 /// PowerScribe reads this format but ignores Chromium's text/html clipboard
 /// flavour. Markdown-style list lines become native Rich Edit list paragraphs,
 /// so adding or removing an item keeps PowerScribe's numbering correct.
-fn report_rtf(text: &str, bold_lines: &[String]) -> Vec<u8> {
+fn push_rtf_line(rtf: &mut String, line: &str, bold_prefixes: &[String]) {
+    let Some(prefix) = matching_bold_prefix(line, bold_prefixes) else {
+        push_rtf_text(rtf, line);
+        return;
+    };
+    let start = line.len() - line.trim_start().len();
+    push_rtf_text(rtf, &line[..start]);
+    rtf.push_str(r"\b ");
+    push_rtf_text(rtf, prefix);
+    rtf.push_str(r"\b0 ");
+    push_rtf_text(rtf, &line[start + prefix.len()..]);
+}
+
+fn report_rtf(text: &str, bold_lines: &[String], bold_prefixes: &[String]) -> Vec<u8> {
     let bold: HashSet<&str> = bold_lines.iter().map(|line| line.trim()).collect();
     let (lines, list_runs) = parse_rtf_lines(text);
     let mut rtf = String::from(r#"{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}\viewkind4\uc1"#);
@@ -366,7 +405,11 @@ fn report_rtf(text: &str, bold_lines: &[String]) -> Vec<u8> {
         if is_bold {
             rtf.push_str(r"\b ");
         }
-        push_rtf_text(&mut rtf, &line.content);
+        if is_bold {
+            push_rtf_text(&mut rtf, &line.content);
+        } else {
+            push_rtf_line(&mut rtf, &line.content, bold_prefixes);
+        }
         if is_bold {
             rtf.push_str(r"\b0 ");
         }
@@ -380,7 +423,11 @@ fn report_rtf(text: &str, bold_lines: &[String]) -> Vec<u8> {
 /// PowerScribe versions differ in which rich format they accept, so matching
 /// the formats offered by Office gives each version a compatible choice.
 #[cfg(target_os = "windows")]
-pub fn set_report_clipboard_rtf(text: &str, bold_lines: &[String]) -> Result<(), String> {
+pub fn set_report_clipboard_rtf(
+    text: &str,
+    bold_lines: &[String],
+    bold_prefixes: &[String],
+) -> Result<(), String> {
     use clipboard_win::{formats, raw, Clipboard as WindowsClipboard, Setter};
 
     let rtf_format = raw::register_format("Rich Text Format")
@@ -393,14 +440,24 @@ pub fn set_report_clipboard_rtf(text: &str, bold_lines: &[String]) -> Result<(),
     formats::Unicode
         .write_clipboard(&text)
         .map_err(|e| format!("clipboard text set: {e}"))?;
-    raw::set_without_clear(html_format.get(), &report_cf_html(text, bold_lines))
+    raw::set_without_clear(
+        html_format.get(),
+        &report_cf_html(text, bold_lines, bold_prefixes),
+    )
         .map_err(|e| format!("clipboard HTML set: {e}"))?;
-    raw::set_without_clear(rtf_format.get(), &report_rtf(text, bold_lines))
+    raw::set_without_clear(
+        rtf_format.get(),
+        &report_rtf(text, bold_lines, bold_prefixes),
+    )
         .map_err(|e| format!("clipboard RTF set: {e}"))
 }
 
 #[cfg(not(target_os = "windows"))]
-pub fn set_report_clipboard_rtf(_text: &str, _bold_lines: &[String]) -> Result<(), String> {
+pub fn set_report_clipboard_rtf(
+    _text: &str,
+    _bold_lines: &[String],
+    _bold_prefixes: &[String],
+) -> Result<(), String> {
     Err("PowerScribe RTF copy is available on Windows only".to_string())
 }
 
@@ -480,19 +537,20 @@ mod tests {
         let rtf = report_rtf(
             "FINDINGS:\nMenisci\nMedial meniscus: Tear.\n\nIMPRESSION:\n1. Tear.",
             &["FINDINGS:".into(), "Menisci".into(), "IMPRESSION:".into()],
+            &["Medial meniscus:".into()],
         );
         let value = String::from_utf8(rtf).unwrap();
 
-        assert!(value.contains(r"\b FINDINGS:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \b Menisci\b0 \par \pard\plain\sa0\sb0\f0\fs20 Medial meniscus: Tear."));
+        assert!(value.contains(r"\b FINDINGS:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \b Menisci\b0"));
+        assert!(value.contains(r"\b Medial meniscus:\b0  Tear."));
         assert!(value.contains(r"\par \pard\plain\sa0\sb0\f0\fs20 \par \pard\plain\sa0\sb0\f0\fs20 \b IMPRESSION:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \ls1\ilvl0"));
         assert!(value.contains(r"{\listtext\pard\plain\f0\fs20 1.\tab} Tear."));
-        assert!(!value.contains(r"\b Medial meniscus"));
         assert!(value.ends_with("}\0"));
     }
 
     #[test]
     fn report_rtf_escapes_control_characters_and_unicode() {
-        let value = String::from_utf8(report_rtf("A \\ {test} café", &[])).unwrap();
+        let value = String::from_utf8(report_rtf("A \\ {test} café", &[], &[])).unwrap();
 
         assert!(value.contains(r"A \\ \{test\} caf\u233?"));
     }
@@ -502,6 +560,7 @@ mod tests {
         let value = String::from_utf8(report_rtf(
             "IMPRESSION:\n1. First finding.\n2. Second finding.\n\nNOTES:\n- First note.\n- Second note.",
             &["IMPRESSION:".into(), "NOTES:".into()],
+            &[],
         ))
         .unwrap();
 
@@ -524,6 +583,7 @@ mod tests {
         let value = String::from_utf8(report_rtf(
             "1. First.\n2. Second.\n\n1. New first.\n2. New second.",
             &[],
+            &[],
         ))
         .unwrap();
 
@@ -538,6 +598,7 @@ mod tests {
         let bytes = report_cf_html(
             "FINDINGS:\nMenisci\nCafé intact.\n\nIMPRESSION:\nNo tear.",
             &["FINDINGS:".into(), "Menisci".into(), "IMPRESSION:".into()],
+            &[],
         );
         let value = String::from_utf8(bytes[..bytes.len() - 1].to_vec()).unwrap();
         let offset = |name: &str| -> usize {
@@ -561,5 +622,25 @@ mod tests {
         let fragment = std::str::from_utf8(&value.as_bytes()[start_fragment..end_fragment]).unwrap();
         assert!(fragment.contains("<b>FINDINGS:</b><br><b>Menisci</b>"));
         assert!(fragment.contains("Café intact.<br><br><b>IMPRESSION:</b>"));
+    }
+
+    #[test]
+    fn report_formats_inline_subheading_prefixes_without_bolding_findings() {
+        let text = "FINDINGS:\nMedial meniscus: Oblique tear.\nACL and PCL: Intact.";
+        let prefixes = &["Medial meniscus:".into(), "ACL and PCL:".into()];
+        let rtf = String::from_utf8(report_rtf(
+            text,
+            &["FINDINGS:".into()],
+            prefixes,
+        ))
+        .unwrap();
+        let html_bytes = report_cf_html(text, &["FINDINGS:".into()], prefixes);
+        let html = String::from_utf8(html_bytes[..html_bytes.len() - 1].to_vec()).unwrap();
+
+        assert!(rtf.contains(r"\b Medial meniscus:\b0  Oblique tear."));
+        assert!(rtf.contains(r"\b ACL and PCL:\b0  Intact."));
+        assert!(!rtf.contains(r"\b Oblique tear"));
+        assert!(html.contains("<b>Medial meniscus:</b> Oblique tear."));
+        assert!(html.contains("<b>ACL and PCL:</b> Intact."));
     }
 }

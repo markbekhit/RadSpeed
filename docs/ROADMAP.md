@@ -313,6 +313,8 @@ practice rather than a tinkerer.
   settings remain available without covering the reporting setup by default.
   Version 0.2.32 starts automatically after Windows sign-in. Closing a window
   hides it to the system tray, so the controller and hotkey remain available.
+  Version 0.2.33 preserves bold inline anatomical subheadings through native
+  RTF and HTML report copy, while keeping the finding text normal weight.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

@@ -163,6 +163,8 @@ class StructuredReportRenderingTests(unittest.TestCase):
         self.assertIn("top-level report section header in UPPERCASE", prompt)
         self.assertIn("**FINDINGS:**", prompt)
         self.assertIn("**IMPRESSION:**", prompt)
+        self.assertIn("Bold each template-defined anatomical group subheading", prompt)
+        self.assertIn("bold only the label and colon", prompt)
 
     def test_full_report_prompt_synthesises_foraminal_nerve_root_relevance(self):
         prompt = fmt._report_system_message("### Impression:")

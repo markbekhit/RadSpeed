@@ -36,6 +36,9 @@ Closing either RadSpeed window hides it to the system tray, so recording control
 and the global hotkey remain available. Use **Quit RadSpeed** in the tray menu to
 stop it fully.
 
+Rich copy keeps both report headings and inline anatomical subheadings bold in
+PowerScribe. Only the subheading label is bold; the finding text stays normal.
+
 1. In PowerScribe One (or any RIS), type or dictate your findings.
 2. Select the findings text.
 3. Press your configured hotkey (default **Ctrl+I**).

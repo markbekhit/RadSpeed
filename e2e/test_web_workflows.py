@@ -625,10 +625,10 @@ def test_copy_preserves_knee_group_headings_without_gaps_between_findings(
           setReport(
             "**FINDINGS:**\\n\\n" +
             "**Menisci**\\n\\n" +
-            "Medial meniscus: Oblique undersurface tear.\\n\\n" +
-            "Lateral meniscus: Small incomplete radial tear.\\n\\n" +
+            "**Medial meniscus:** Oblique undersurface tear.\\n\\n" +
+            "**Lateral meniscus:** Small incomplete radial tear.\\n\\n" +
             "**Cruciate Ligaments**\\n\\n" +
-            "ACL and PCL: Intact.\\n\\n" +
+            "**ACL and PCL:** Intact.\\n\\n" +
             "**IMPRESSION:**\\n\\n" +
             "1. Medial and lateral meniscal tears.\\n" +
             "2. Intact cruciate ligaments."
@@ -665,7 +665,10 @@ def test_copy_preserves_knee_group_headings_without_gaps_between_findings(
         "2. Intact cruciate ligaments."
     )
     assert "<strong>Menisci</strong><br>" in clipboard["text/html"]
+    assert "<strong>Medial meniscus:</strong> Oblique undersurface tear." in clipboard["text/html"]
+    assert "<strong>Lateral meniscus:</strong> Small incomplete radial tear." in clipboard["text/html"]
     assert "<strong>Cruciate Ligaments</strong><br>" in clipboard["text/html"]
+    assert "<strong>ACL and PCL:</strong> Intact." in clipboard["text/html"]
 
 
 def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
@@ -677,7 +680,7 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
           setReport(
             "FINDINGS:\\n\\n" +
             "**Menisci**\\n\\n" +
-            "Medial meniscus: Oblique undersurface tear.\\n\\n" +
+            "**Medial meniscus:** Oblique undersurface tear.\\n\\n" +
             "**IMPRESSION:**\\n\\n" +
             "1. Medial meniscal tear."
           );
@@ -717,6 +720,7 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
         "Menisci",
         "IMPRESSION:",
     ]
+    assert native_copy["args"]["body"]["boldPrefixes"] == ["Medial meniscus:"]
     expect(page.locator("#status")).to_contain_text("PowerScribe rich text")
 
 
