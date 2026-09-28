@@ -4,32 +4,10 @@ Unit tests for llm/format.py — template selection and recommendation analysis.
 These tests mock the OpenAI client so no real API calls are made.
 """
 import json
-import types
 import unittest
 from unittest.mock import MagicMock, patch, call
 
-
-# ---------------------------------------------------------------------------
-# Minimal stubs so importing llm.format doesn't require the full app stack
-# ---------------------------------------------------------------------------
-
-# Stub config
-import sys
-
-config_stub = types.SimpleNamespace(
-    TEXT_API_KEY="test-key",
-    BASE_URL="http://localhost:11434/v1",
-    SELECTED_MODEL="test-model",
-    save_directory="/tmp",
-)
-
-# Patch config and ui.utils before importing the module under test
-sys.modules.setdefault("config", types.ModuleType("config"))
-sys.modules["config.config"] = types.SimpleNamespace(config=config_stub)
-sys.modules.setdefault("ui", types.ModuleType("ui"))
-sys.modules["ui.utils"] = types.SimpleNamespace(update_status=lambda _: None)
-
-import llm.format as fmt  # noqa: E402  (imported after stubs)
+import llm.format as fmt
 
 
 # ---------------------------------------------------------------------------
@@ -85,8 +63,8 @@ GUIDELINES = ["BIRADS_MAMMOGRAPHY.md", "TIRADS.md"]
 class TestSelectTemplate(unittest.TestCase):
 
     def test_gpt6_luna_high_uses_json_without_chat_tool_call(self):
-        previous = config_stub.SELECTED_MODEL
-        config_stub.SELECTED_MODEL = "gpt-6-luna"
+        previous = fmt.config.SELECTED_MODEL
+        fmt.config.SELECTED_MODEL = "gpt-6-luna"
         try:
             with self._patch(), patch("llm.format.OpenAI") as mock_openai:
                 client = MagicMock()
@@ -101,7 +79,7 @@ class TestSelectTemplate(unittest.TestCase):
             self.assertNotIn("tools", request)
             self.assertEqual(client.chat.completions.create.call_count, 1)
         finally:
-            config_stub.SELECTED_MODEL = previous
+            fmt.config.SELECTED_MODEL = previous
 
     def _patch(self, templates=None):
         """Return a context-manager that patches file-list lookup and OpenAI."""
