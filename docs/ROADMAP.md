@@ -37,7 +37,7 @@ These are confirmed in code on `main` as of this update — not aspirations.
 
 ### Radiologist workstation (web)
 
-- **Current production models** — GPT-6 Sol with high reasoning effort for report generation and
+- **Current production models** — GPT-6 Sol with low reasoning effort for report generation and
   worksheet vision; Deepgram Nova-3 Medical or AssemblyAI Universal-3 Pro
   Medical Mode for streaming STT; Groq Whisper Large V3 Turbo as the segment
   fallback. Provider model IDs are centralised and routine deployments

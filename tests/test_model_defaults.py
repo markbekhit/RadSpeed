@@ -32,10 +32,10 @@ class ModelCompletionCompatibilityTests(unittest.TestCase):
         self.assertNotIn("max_tokens", options)
         self.assertFalse(supports_chat_tool_calls("gpt-6-luna"))
 
-    def test_gpt6_sol_uses_high_effort_without_unsupported_temperature_or_tools(self):
+    def test_gpt6_sol_uses_low_effort_without_unsupported_temperature_or_tools(self):
         options = completion_options("gpt-6-sol", temperature=0.1, max_tokens=100)
-        self.assertEqual(options["reasoning_effort"], "high")
-        self.assertEqual(options["max_completion_tokens"], 2048)
+        self.assertEqual(options["reasoning_effort"], "low")
+        self.assertEqual(options["max_completion_tokens"], 256)
         self.assertNotIn("temperature", options)
         self.assertNotIn("max_tokens", options)
         self.assertFalse(supports_chat_tool_calls("gpt-6-sol"))

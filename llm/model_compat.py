@@ -12,15 +12,17 @@ def uses_modern_completion_contract(model: Optional[str]) -> bool:
 
 
 def reasoning_effort_for_model(model: Optional[str]) -> Optional[str]:
-    """Use high reasoning effort for the production GPT-6 report routes."""
-    return "high" if (model or "").strip().lower() in {
-        "gpt-6-luna",
-        "gpt-6-sol",
-    } else None
+    """Return the owner-selected reasoning effort for GPT-6 report routes."""
+    normalised = (model or "").strip().lower()
+    if normalised == "gpt-6-luna":
+        return "high"
+    if normalised == "gpt-6-sol":
+        return "low"
+    return None
 
 
 def supports_chat_tool_calls(model: Optional[str]) -> bool:
-    """GPT-6 models with high effort need Responses for function calling."""
+    """Configured GPT-6 reasoning routes use JSON rather than chat tools."""
     return reasoning_effort_for_model(model) is None
 
 
