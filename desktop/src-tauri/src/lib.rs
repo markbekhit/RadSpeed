@@ -14,6 +14,7 @@ pub(crate) mod updater;
 
 use serde::Deserialize;
 use tauri::{AppHandle, LogicalSize, Manager, PhysicalPosition, Position, Size};
+use tauri_plugin_autostart::ManagerExt as AutostartManagerExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 use crate::settings::Settings;
@@ -172,6 +173,18 @@ fn rebind_hotkey(app: &AppHandle, spec: &str) -> Result<(), String> {
     Ok(())
 }
 
+fn enable_start_with_windows(app: &AppHandle) {
+    let autostart = app.autolaunch();
+    match autostart.is_enabled() {
+        Ok(true) => log::info!("start with Windows is enabled"),
+        Ok(false) => match autostart.enable() {
+            Ok(()) => log::info!("enabled start with Windows"),
+            Err(error) => log::warn!("could not enable start with Windows: {error}"),
+        },
+        Err(error) => log::warn!("could not read start with Windows state: {error}"),
+    }
+}
+
 // ---------- Entry point ----------
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -185,6 +198,10 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_app_window(app);
         }))
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
@@ -205,6 +222,7 @@ pub fn run() {
         .setup(|app| {
             tray::build(app)?;
             feedback::build(app)?;
+            enable_start_with_windows(app.handle());
 
             // Prevent the settings window's close button from quitting the app.
             // Hide instead — tray menu is the canonical app exit path.
@@ -309,6 +327,15 @@ mod tests {
     #[test]
     fn configured_launch_opens_only_app() {
         assert_eq!(initial_window(false), InitialWindow::App);
+    }
+
+    #[test]
+    fn desktop_registers_start_with_windows() {
+        let source = include_str!("lib.rs");
+        assert!(source.contains("tauri_plugin_autostart::init"));
+        assert!(source.contains("enable_start_with_windows(app.handle())"));
+        assert!(source.contains("api.prevent_close()"));
+        assert!(source.contains("win.hide()"));
     }
 
     #[test]

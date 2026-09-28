@@ -1,10 +1,10 @@
 [package]
 name = "radspeed"
-version = "0.2.31"
+version = "0.2.32"
 description = "RadSpeed Windows desktop companion"
 authors = ["Mark Bekhit"]
 edition = "2021"
-rust-version = "1.77"
+rust-version = "1.77.2"
 
 [lib]
 name = "radspeed_lib"
@@ -21,6 +21,7 @@ tauri-plugin-opener = "2.0"
 tauri-plugin-dialog = "2.0"
 tauri-plugin-updater = "2.0"
 tauri-plugin-single-instance = "2.0"
+tauri-plugin-autostart = "2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

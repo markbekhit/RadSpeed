@@ -12,6 +12,7 @@ Built with [Tauri 2](https://tauri.app/) (Rust + WebView2).
 2. Download `RadSpeed_x.x.x_x64-setup.exe` (NSIS) or `RadSpeed_x.x.x_x64_en-US.msi` (MSI — use this for group-policy/silent installs).
 3. Run the installer. Windows SmartScreen may warn "Unknown publisher" — click **More info → Run anyway**. (Code signing removes this warning; see [Phase 3.1](#phase-31-code-signing) below.)
 4. RadSpeed appears as a small, always-on-top reporting control beside the system tray.
+5. RadSpeed starts automatically when you sign in to Windows.
 
 ### First run
 
@@ -31,6 +32,9 @@ Click **Save**, then **Test connection** to verify the server is reachable.
 RadSpeed starts in a compact overlay. It keeps Record, Pause, Stop, Copy report,
 and Next case within reach while PowerScribe and the PACS remain visible. Use
 the expand button for the full workstation. Settings stay in their own window.
+Closing either RadSpeed window hides it to the system tray, so recording controls
+and the global hotkey remain available. Use **Quit RadSpeed** in the tray menu to
+stop it fully.
 
 1. In PowerScribe One (or any RIS), type or dictate your findings.
 2. Select the findings text.

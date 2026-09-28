@@ -49,6 +49,15 @@ class DesktopOverlayTests(unittest.TestCase):
         self.assertIn('"allow-app-window-commands"', capability)
         self.assertIn('commands.allow = ["cmd_set_compact_mode", "cmd_show_settings"]', permissions)
 
+    def test_desktop_starts_with_windows_and_close_keeps_it_running(self):
+        source = (ROOT / "desktop/src-tauri/src/lib.rs").read_text()
+        cargo = (ROOT / "desktop/src-tauri/Cargo.toml").read_text()
+        self.assertIn('tauri-plugin-autostart = "2.0"', cargo)
+        self.assertIn("tauri_plugin_autostart::init", source)
+        self.assertIn("enable_start_with_windows(app.handle())", source)
+        self.assertIn("api.prevent_close()", source)
+        self.assertIn("win.hide()", source)
+
 
 if __name__ == "__main__":
     unittest.main()
