@@ -215,6 +215,8 @@ function setUI(mode) {
   $("btn-stop").disabled        = !["recording", "paused"].includes(mode);
   $("btn-format").disabled      = !["transcribed", "done"].includes(mode);
   $("btn-copy").disabled        = mode !== "done";
+  const overlayCopy = $("btn-overlay-copy");
+  if (overlayCopy) overlayCopy.disabled = mode !== "done";
   const btnCopyFromComparison = $("btn-copy-from-comparison");
   if (btnCopyFromComparison) btnCopyFromComparison.disabled = mode !== "done";
   $("btn-edit-toggle").disabled = mode !== "done";
@@ -246,6 +248,40 @@ function setUI(mode) {
     const s = $("spinner-tmp");
     if (s) s.remove();
   }
+}
+
+// ---------------------------------------------------------------------------
+// Windows desktop compact overlay
+// ---------------------------------------------------------------------------
+function desktopInvoke(command, args = {}) {
+  const invoke = window.__TAURI__?.core?.invoke;
+  if (!invoke) return Promise.resolve(false);
+  return invoke(command, args).then(() => true);
+}
+
+async function setDesktopCompactMode(compact) {
+  document.body.classList.toggle("desktop-overlay", compact);
+  try {
+    await desktopInvoke("cmd_set_compact_mode", { compact });
+  } catch (err) {
+    console.warn("desktop window resize failed:", err);
+  }
+  window.setTimeout(initCanvasResize, 120);
+}
+
+function initDesktopOverlay() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("desktop") !== "overlay") return;
+
+  document.body.classList.add("desktop-host", "desktop-overlay");
+  $("btn-desktop-expand")?.addEventListener("click", () => setDesktopCompactMode(false));
+  $("btn-desktop-collapse")?.addEventListener("click", () => setDesktopCompactMode(true));
+  $("btn-desktop-settings")?.addEventListener("click", async () => {
+    try { await desktopInvoke("cmd_show_settings"); }
+    catch (err) { console.warn("desktop settings failed:", err); }
+  });
+  $("btn-overlay-copy")?.addEventListener("click", () => $("btn-copy")?.click());
+  $("btn-overlay-next")?.addEventListener("click", () => $("btn-next-case")?.click());
 }
 
 // ---------------------------------------------------------------------------
@@ -3485,6 +3521,7 @@ function _tmplSyncDropdown() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  initDesktopOverlay();
   initCanvasResize();
   setUI("idle");
   setStatus("Press Record to start dictating.");

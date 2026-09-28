@@ -308,6 +308,9 @@ practice rather than a tinkerer.
   beside RTF because PowerScribe versions can select different rich clipboard
   formats. Browser-only copy now states that PowerScribe can remove its formatting.
   The companion includes the focus-free status HUD and production web app.
+  Version 0.2.31 starts as a compact, always-on-top reporting controller with
+  Record, Pause, Stop, Copy and Next Case actions. The full workstation and
+  settings remain available without covering the reporting setup by default.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

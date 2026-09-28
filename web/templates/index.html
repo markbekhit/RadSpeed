@@ -10,6 +10,17 @@
 </head>
 <body data-ws-token="{{ ws_token }}" data-paste-format="{{ paste_format }}" data-oauth-mode="{{ 'true' if oauth_mode else 'false' }}">
 
+<div id="desktop-overlay-head" aria-label="RadSpeed compact controls">
+  <div class="desktop-overlay-brand">
+    <span class="desktop-overlay-mark" aria-hidden="true">R</span>
+    <span>RadSpeed</span>
+  </div>
+  <div class="desktop-overlay-window-actions">
+    <button id="btn-desktop-settings" class="desktop-icon-btn" type="button" title="Desktop settings" aria-label="Desktop settings">&#9881;</button>
+    <button id="btn-desktop-expand" class="desktop-icon-btn" type="button" title="Open full workstation" aria-label="Open full workstation">&#8599;</button>
+  </div>
+</div>
+
 <header>
   <div>
     <h1>RadSpeed</h1>
@@ -21,6 +32,7 @@
     <button id="btn-followups" class="btn btn-ghost btn-sm" type="button" title="Open your follow-up register">Follow-ups <span id="followup-count" class="header-count" style="display:none;"></span></button>
     <a href="/fracture-workbench" class="btn btn-ghost btn-sm" title="Open the experimental public-data fracture benchmark">Fracture Lab</a>
     <a href="/settings" class="btn btn-ghost btn-sm" title="Settings">&#9881; Settings</a>
+    <button id="btn-desktop-collapse" class="btn btn-ghost btn-sm" type="button" title="Return to the compact reporting controls">Compact view</button>
     {% if oauth_mode %}<a href="/logout" class="btn btn-ghost btn-sm" title="Sign out">&#10005; Sign out</a>{% endif %}
   </div>
 </header>
@@ -174,7 +186,7 @@
   </div>
 
   <!-- ── Recording ── -->
-  <div class="card">
+  <div class="card" id="recording-card">
     <div class="card-title">Dictation</div>
 
     <div class="record-row">
@@ -200,6 +212,11 @@
 
   <!-- ── Status ── -->
   <div id="status"></div>
+
+  <div id="desktop-overlay-actions" aria-label="Report actions">
+    <button id="btn-overlay-copy" class="btn btn-ghost" type="button" disabled>&#128203; Copy report</button>
+    <button id="btn-overlay-next" class="btn btn-ghost" type="button">&#10227; Next case</button>
+  </div>
 
   <!-- ── Vocabulary correction suggestion (shown after a voice edit that looks like a spelling fix) ── -->
   <div id="vocab-suggest" class="vocab-suggest" style="display:none;">

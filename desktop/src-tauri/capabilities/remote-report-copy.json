@@ -7,5 +7,5 @@
     "urls": ["https://radspeed.com.au/*"]
   },
   "platforms": ["windows"],
-  "permissions": ["allow-copy-report-rtf"]
+  "permissions": ["allow-copy-report-rtf", "allow-app-window-commands"]
 }

@@ -4,6 +4,11 @@ description = "Allows the trusted RadSpeed web app to copy one report as Windows
 commands.allow = ["cmd_copy_report_rtf"]
 
 [[permission]]
+identifier = "allow-app-window-commands"
+description = "Allows the trusted RadSpeed web app to switch between compact and full desktop views."
+commands.allow = ["cmd_set_compact_mode", "cmd_show_settings"]
+
+[[permission]]
 identifier = "allow-settings-commands"
 description = "Allows the local RadSpeed settings window to read and save desktop settings."
 commands.allow = [
@@ -13,5 +18,7 @@ commands.allow = [
   "cmd_hide_settings",
   "cmd_trigger_now",
   "cmd_show_app",
+  "cmd_show_settings",
+  "cmd_set_compact_mode",
   "cmd_get_version",
 ]

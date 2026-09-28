@@ -110,6 +110,35 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
+def test_desktop_overlay_keeps_reporting_controls_compact(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.set_viewport_size({"width": 520, "height": 200})
+    page.goto(f"{base_url}/app?desktop=overlay")
+
+    expect(page.locator("body")).to_have_class(re.compile("desktop-overlay"))
+    expect(page.locator("#desktop-overlay-head")).to_be_visible()
+    expect(page.locator("#btn-record")).to_be_visible()
+    expect(page.locator("#btn-stop")).to_be_visible()
+    expect(page.locator("#btn-overlay-copy")).to_be_visible()
+    expect(page.locator("#btn-overlay-next")).to_be_visible()
+    expect(page.locator("body > header")).to_be_hidden()
+    assert page.evaluate("document.documentElement.scrollWidth") <= 520
+    assert page.evaluate("document.documentElement.scrollHeight") <= 200
+
+    page.evaluate('setUI("recording")')
+    expect(page.locator("#btn-record")).to_contain_text("Pause")
+    expect(page.locator("#btn-stop")).to_be_enabled()
+
+    page.evaluate('setUI("done")')
+    expect(page.locator("#btn-overlay-copy")).to_be_enabled()
+
+    page.locator("#btn-desktop-expand").click()
+    expect(page.locator("body")).not_to_have_class(re.compile("desktop-overlay"))
+    expect(page.locator("body > header")).to_be_visible()
+    expect(page.locator("#btn-desktop-collapse")).to_be_visible()
+    assert errors == []
+
+
 def test_authenticated_impression_action_preserves_the_report(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")

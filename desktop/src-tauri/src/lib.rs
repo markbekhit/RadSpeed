@@ -13,7 +13,7 @@ mod tray;
 pub(crate) mod updater;
 
 use serde::Deserialize;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, LogicalSize, Manager, PhysicalPosition, Position, Size};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
 use crate::settings::Settings;
@@ -87,11 +87,53 @@ fn cmd_show_app(app: AppHandle) {
     show_app_window(&app);
 }
 
+#[tauri::command]
+fn cmd_show_settings(app: AppHandle) {
+    if let Some(window) = app.get_webview_window("settings") {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+#[tauri::command]
+fn cmd_set_compact_mode(app: AppHandle, compact: bool) {
+    let Some(window) = app.get_webview_window("app") else {
+        return;
+    };
+    if compact {
+        let _ = window.set_resizable(false);
+        let _ = window.set_size(Size::Logical(LogicalSize::new(520.0, 200.0)));
+        let _ = window.set_always_on_top(true);
+        position_app_overlay(&window);
+    } else {
+        let _ = window.set_always_on_top(false);
+        let _ = window.set_resizable(true);
+        let _ = window.set_size(Size::Logical(LogicalSize::new(1400.0, 900.0)));
+        let _ = window.center();
+    }
+}
+
 pub(crate) fn show_app_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("app") {
         let _ = window.show();
         let _ = window.set_focus();
     }
+}
+
+fn position_app_overlay(window: &tauri::WebviewWindow) {
+    let monitor = window
+        .cursor_position()
+        .ok()
+        .and_then(|cursor| window.monitor_from_point(cursor.x, cursor.y).ok().flatten())
+        .or_else(|| window.primary_monitor().ok().flatten());
+    let Some(monitor) = monitor else { return; };
+    let monitor_size = monitor.size();
+    let monitor_origin = monitor.position();
+    let window_size = window.outer_size().ok();
+    let width = window_size.map(|size| size.width).unwrap_or(520);
+    let x = monitor_origin.x + monitor_size.width.saturating_sub(width + 24) as i32;
+    let y = monitor_origin.y + (56.0 * monitor.scale_factor()) as i32;
+    let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -155,6 +197,8 @@ pub fn run() {
             cmd_hide_settings,
             cmd_trigger_now,
             cmd_show_app,
+            cmd_show_settings,
+            cmd_set_compact_mode,
             cmd_get_version,
             cmd_copy_report_rtf,
         ])
@@ -180,15 +224,16 @@ pub fn run() {
             let mut app_url = url::Url::parse(&api_base)
                 .unwrap_or_else(|_| url::Url::parse("https://radspeed.com.au").unwrap());
             app_url.set_path("/app");
+            app_url.set_query(Some("desktop=overlay"));
             let app_window = tauri::WebviewWindowBuilder::new(
                 app,
                 "app",
                 tauri::WebviewUrl::External(app_url),
             )
             .title("RadSpeed")
-            .inner_size(1400.0, 900.0)
-            .min_inner_size(900.0, 600.0)
-            .center()
+            .inner_size(520.0, 200.0)
+            .resizable(false)
+            .always_on_top(true)
             .visible(false)
             .build()?;
 
@@ -200,6 +245,7 @@ pub fn run() {
                     let _ = win.hide();
                 }
             });
+            position_app_overlay(&app_window);
 
             // Register the configured hotkey at boot.
             let cfg = settings::load(app.handle());
@@ -277,6 +323,8 @@ mod tests {
             "cmd_hide_settings",
             "cmd_trigger_now",
             "cmd_show_app",
+            "cmd_show_settings",
+            "cmd_set_compact_mode",
             "cmd_get_version",
         ] {
             assert!(
