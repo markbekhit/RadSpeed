@@ -268,6 +268,24 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn("not a dedicated CT angiogram", body)
         self.assertIn('href="/report-templates/ultrasound-thyroid"', body)
 
+    def test_mri_hip_blank_scaffold_has_scope_and_no_preset_results(self):
+        entry = rt.get_entry("mri-hip")
+        scaffold = "\n".join(entry["report_format"])
+        for prompt in [
+            "Acetabular labrum:",
+            "Articular cartilage and subchondral bone:",
+            "Femoral head and neck:",
+            "Tendons and muscles:",
+            "IMPRESSION:",
+        ]:
+            self.assertIn(prompt, scaffold)
+        for preset in ["labral tear.", "No marrow oedema", "Cam-type morphology"]:
+            self.assertNotIn(preset, scaffold)
+        body = self.client.get("/report-templates/mri-hip").text
+        self.assertIn("Copyable MRI hip report format", body)
+        self.assertIn('href="https://pubmed.ncbi.nlm.nih.gov/34861713/"', body)
+        self.assertIn("not an MR arthrogram", body)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -259,6 +259,43 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "MRI_Hip": {
+        "meta_description": (
+            "MRI hip report template for non-contrast studies. Copy a blank format "
+            "for the labrum, cartilage, bone marrow, tendons and extra-articular tissues."
+        ),
+        "lead": (
+            "Copy a blank MRI hip report into your reporting system and replace each "
+            "prompt with the observed findings. The format keeps joint and extra-articular "
+            "structures in view while you report."
+        ),
+        "scope_note": (
+            "This scaffold is for a routine non-contrast MRI of one hip. It is not an "
+            "MR arthrogram or a dedicated pelvis or bilateral hip template. Adapt the "
+            "sections to the clinical question, images and local protocol."
+        ),
+        "report_format_heading": "Copyable MRI hip report format",
+        "report_format_reference": {
+            "url": "https://pubmed.ncbi.nlm.nih.gov/34861713/",
+            "label": "How to Report: Hip MRI review",
+        },
+        "report_format": [
+            "EXAM: MRI [RIGHT/LEFT] HIP WITHOUT CONTRAST",
+            "CLINICAL DETAILS: [Indication and relevant history]",
+            "COMPARISON: [Prior study and date, or no comparison available]",
+            "TECHNIQUE: [Sequences, coverage and any limitations]",
+            "",
+            "FINDINGS:",
+            "Acetabular labrum: [Location and extent of any abnormality]",
+            "Articular cartilage and subchondral bone: [Location and extent of findings]",
+            "Femoral head and neck: [Marrow, morphology and other relevant findings]",
+            "Joint and capsule: [Effusion, synovium and capsular findings]",
+            "Tendons and muscles: [Gluteal, iliopsoas, hamstring and other relevant structures]",
+            "Bursae and extra-articular soft tissues: [Findings]",
+            "Visualised pelvis and sacroiliac region: [Relevant findings within coverage]",
+            "",
+            "IMPRESSION:",
+            "[Summarise findings relevant to the clinical question]",
+        ],
         "indications": "Hip or groin pain, suspected labral tear, impingement or occult fracture.",
         "sections": [
             "Acetabular labrum",
