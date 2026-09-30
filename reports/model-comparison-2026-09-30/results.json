@@ -1,0 +1,3286 @@
+{
+  "baseline": "gpt-6-sol",
+  "candidate": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "service_tier": "default",
+  "repeats": 3,
+  "method": "Serial paired AB/BA calls; same prompts, templates, processing tier and server",
+  "scope": "Synthetic cases only; timings exclude audio transcription, browser and clipboard",
+  "production_settings_changed": false,
+  "rows": [
+    {
+      "task": "availability",
+      "case_id": "probe",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "OK.",
+      "seconds": 2.7861570566892624,
+      "first_text_seconds": null
+    },
+    {
+      "task": "availability",
+      "case_id": "probe",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "OK",
+      "seconds": 1.2805588049814105,
+      "first_text_seconds": null
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci are unremarkable.\n\n**Extra-Axial Spaces**\nNo extra-axial collection.\n\n**Skull and Calvarium**\nNo calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage or territorial infarct. No mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.205598299391568,
+      "first_text_seconds": 2.1616679932922125
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of subdural, extradural or subarachnoid haemorrhage. No evidence of extra-axial collection.\n\n**Skull and Calvarium**\nNo calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.7735729813575745,
+      "first_text_seconds": 2.0642112735658884
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.954063532873988,
+      "first_text_seconds": 2.026486595161259
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:** CT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:** CT pulmonary angiogram.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**  \nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**  \nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**  \nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**  \nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**  \nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**  \nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**  \nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**  \nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**  \nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**  \nBony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**  \nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.789506108500063,
+      "first_text_seconds": 2.3404769813641906
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.2617597235366702,
+      "first_text_seconds": 1.0479745138436556
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "- Acute segmental pulmonary embolus in the right lower lobe, without CT evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 0.980431062169373,
+      "first_text_seconds": 0.7802758663892746
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures are intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons are intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa are unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.641028914600611,
+      "first_text_seconds": 2.7454835465177894
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.9565177280455828,
+      "first_text_seconds": 1.2503000469878316
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small knee joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": false,
+        "score": 0.8571428571428571,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": false,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.3784875078126788,
+      "first_text_seconds": 1.1213258830830455
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.521479814313352,
+      "first_text_seconds": 1.2245730319991708
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n**Left ureter and kidney:** There is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. Left renal size, cortical thickness and parenchymal density are unremarkable. No evidence of left renal calculi.\n\n**Right kidney and ureter:** No right renal calculus or hydronephrosis. Right renal size, cortical thickness and parenchymal density are unremarkable. The right ureter is unremarkable throughout its course.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** Unremarkable.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No evidence of fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No right renal calculus or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.432845766656101,
+      "first_text_seconds": 1.3358934903517365
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:** CT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:** Non-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Left urinary tract:** There is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. No other left renal or ureteric calculi.\n\n**Right urinary tract:** No right renal calculus or hydronephrosis. No right ureteric calculus or hydroureter.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** No perinephric abnormality.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. Calculus density was not provided.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.609489471651614,
+      "first_text_seconds": 2.4167962577193975
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo abnormal T2/FLAIR signal in the cerebral hemispheres. No focal parenchymal lesion. No mass effect.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm. Basal ganglia unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo haemorrhagic transformation.\n\n**Ventricular System**\nVentricles normal in size and configuration. No hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No sulcal effacement.\n\n**Extra-Axial Spaces**\nNo subdural or extradural collection. No subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm. No haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.818575142882764,
+      "first_text_seconds": 2.057209617458284
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres:**\nNo abnormal T2/FLAIR signal in the cerebral hemispheres. No evidence of focal parenchymal lesion.\n\n**Posterior Fossa:**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami:**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No mass effect or hydrocephalus. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging:**\nDiffusion restriction within the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging:**\nNo haemorrhagic transformation.\n\n**Ventricular System:**\nVentricles normal in size and configuration.\n\n**Sulci and Cisterns:**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces:**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures:**\nCorpus callosum intact. No evidence of midline shift.\n\n**Pituitary Gland and Sella:**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles:**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium:**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues:**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No haemorrhagic transformation. No mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 6.561387442052364,
+      "first_text_seconds": 1.4405133621767163
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "- Small acute left thalamic infarct measuring 8 mm, without haemorrhagic transformation.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.1829398293048143,
+      "first_text_seconds": 0.8920985935255885
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.7600631536915898,
+      "first_text_seconds": 1.3568003997206688
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Trachea central. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of fracture or aggressive bony lesion.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.5476388623937964,
+      "first_text_seconds": 0.995057032443583
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of a suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm, without mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.2690353728830814,
+      "first_text_seconds": 1.7348830737173557
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo evidence of acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of extra-axial collection.\n\n**Skull and Calvarium**\nNo evidence of calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": false,
+        "score": 0.6,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.361751344054937,
+      "first_text_seconds": 1.8528994033113122
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**  \nNo acute intracranial haemorrhage, territorial infarct or mass effect. Brain parenchyma otherwise unremarkable.\n\n**White Matter**  \nWhite matter unremarkable. No focal low-density lesion.\n\n**Basal Ganglia and Thalami**  \nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**  \nCerebellum and brainstem unremarkable.\n\n**Ventricular System**  \nVentricles are normal. No hydrocephalus.\n\n**Sulci and Basal Cisterns**  \nBasal cisterns are normal. Sulci unremarkable.\n\n**Extra-Axial Spaces**  \nNo extra-axial collection.\n\n**Skull and Calvarium**  \nNo calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**  \nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**  \nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**  \nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No acute intracranial haemorrhage, territorial infarct or mass effect.\n- No acute intracranial abnormality identified.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.290008997544646,
+      "first_text_seconds": 2.7673250967636704
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:** CT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:** CT pulmonary angiogram.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**  \nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**  \nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**  \nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**  \nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**  \nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**  \nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**  \nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**  \nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**  \nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**  \nBony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**  \nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.044021287001669,
+      "first_text_seconds": 1.5041960133239627
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo right heart strain. RV to LV ratio normal. No septal bowing. No evidence of contrast reflux into the IVC or hepatic veins. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No significant mediastinal or hilar lymphadenopathy. No evidence of mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.335156089626253,
+      "first_text_seconds": 1.1852264972403646
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "- Acute segmental pulmonary embolus in the right lower lobe, without evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.5900427522137761,
+      "first_text_seconds": 1.40739022847265
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.301135128363967,
+      "first_text_seconds": 1.0728543438017368
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.9560205712914467,
+      "first_text_seconds": 1.1836301535367966
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:** MRI right knee.\n\n**TECHNIQUE:** Multiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**  \n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn.  \n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**  \nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**  \nMCL, LCL and posterolateral corner structures are intact.\n\n**Articular Cartilage**  \nArticular cartilage is intact, with no focal chondral defect.\n\n**Tendons**  \nQuadriceps and patellar tendons are intact.\n\n**Soft Tissues**  \nSmall joint effusion. Hoffa's fat pad and popliteal fossa are unremarkable. No Baker's cyst identified.\n\n**Bony Structures**  \nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.738475175574422,
+      "first_text_seconds": 1.873549067415297
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.7081109723076224,
+      "first_text_seconds": 1.3336318703368306
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.165189134888351,
+      "first_text_seconds": 0.8870982173830271
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:** CT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:** Non-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Left urinary tract:** There is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. No evidence of additional left renal or ureteric calculi.\n\n**Right urinary tract:** No right renal calculus or hydronephrosis. No evidence of right ureteric calculus or hydroureter.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** No perinephric inflammatory change.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.06033124960959,
+      "first_text_seconds": 1.5342002650722861
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n**Left kidney and ureter:** There is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. Left renal size, cortical thickness and parenchymal density are unremarkable. No evidence of left renal calculi.\n\n**Right kidney and ureter:** No right renal calculus or hydronephrosis. Right renal size, cortical thickness and parenchymal density are unremarkable. No evidence of right ureteric calculus or hydroureter.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** Unremarkable.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No evidence of fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No evidence of right urinary tract calculi or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 6.614017801359296,
+      "first_text_seconds": 2.4484103629365563
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo evidence of abnormal T2/FLAIR signal in the cerebral hemispheres or focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo haemorrhagic transformation. No evidence of haemorrhagic focus or abnormal susceptibility.\n\n**Ventricular System**\nVentricles normal in size and configuration. No mass effect or hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No evidence of midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No haemorrhagic transformation. No mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.922996351495385,
+      "first_text_seconds": 0.9543658550828695
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo abnormal T2/FLAIR signal in the cerebral hemispheres. No focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm. No mass effect. Basal ganglia unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo haemorrhagic transformation.\n\n**Ventricular System**\nNo hydrocephalus. Ventricles normal in size and configuration.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm, without haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.481365646235645,
+      "first_text_seconds": 1.7260203240439296
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.8870744919404387,
+      "first_text_seconds": 1.6456386484205723
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "- Small acute left thalamic infarct measuring 8 mm, without haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.811052491888404,
+      "first_text_seconds": 1.574857922270894
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "report": "**EXAM:** Chest X-Ray (CXR)\n\n**TECHNIQUE:** Portable AP chest radiograph.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**  \nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear.\n\n**Hila**  \nHila normal in size and density.\n\n**Cardiomediastinum**  \nHeart size is normal. No mediastinal shift.\n\n**Hemidiaphragms**  \nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**  \nNo evidence of suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**  \nSoft tissues unremarkable.\n\n**Visible Abdomen**  \nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 3.1465531596913934,
+      "first_text_seconds": 1.4248267402872443
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear. No evidence of confluent consolidation or pleural effusion.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of fracture or aggressive bony lesion.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.009744114242494,
+      "first_text_seconds": 1.401413013227284
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:** CT Head and Brain\n\n**TECHNIQUE:** Non-contrast CT of the brain.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\n\nNo acute intracranial haemorrhage, territorial infarct or mass effect. No evidence of a mass lesion.\n\n**White Matter**\n\nWhite matter unremarkable. No evidence of a focal low-density lesion.\n\n**Basal Ganglia and Thalami**\n\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\n\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\n\nVentricles are normal. No evidence of hydrocephalus.\n\n**Sulci and Basal Cisterns**\n\nBasal cisterns are normal. Sulci are unremarkable. No evidence of transtentorial herniation.\n\n**Extra-Axial Spaces**\n\nNo evidence of an extra-axial collection.\n\n**Skull and Calvarium**\n\nNo calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\n\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\n\nOrbits unremarkable to the extent visualised.\n\n**Soft Tissues**\n\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n\n- No acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.726081758737564,
+      "first_text_seconds": 2.14979459438473
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo evidence of acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of extra-axial collection.\n\n**Skull and Calvarium**\nNo evidence of calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": false,
+        "score": 0.6,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.796143086627126,
+      "first_text_seconds": 1.2558536380529404
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of a lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.6290178950876,
+      "first_text_seconds": 1.9236687328666449
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:** CT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:** CT pulmonary angiogram.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification:** Diagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries:** Acute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain:** No right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs:** Lungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura:** No pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila:** Mediastinum unremarkable. No significant mediastinal or hilar lymphadenopathy. No evidence of mediastinal mass.\n\n**Heart and Pericardium:** Heart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels:** Thoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues:** Chest wall and soft tissues unremarkable.\n\n**Bony Thorax:** Bony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen:** Visualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.913046562112868,
+      "first_text_seconds": 2.424346181564033
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.4176761489361525,
+      "first_text_seconds": 1.1870490899309516
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "- Acute segmental pulmonary embolus in the right lower lobe, without evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.1727563831955194,
+      "first_text_seconds": 0.9233857290819287
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nMRI Knee\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures are intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons are intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa are unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": false,
+        "score": 0.875,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": false,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.088866828940809,
+      "first_text_seconds": 2.3310636626556516
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.429365176707506,
+      "first_text_seconds": 1.762370690703392
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 0.9970590649172664,
+      "first_text_seconds": 0.7447934979572892
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.5423845779150724,
+      "first_text_seconds": 1.1412692088633776
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n**Left ureter:** There is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n\n**Kidneys:** No right renal calculus or hydronephrosis. Renal size, cortical thickness and parenchymal density are unremarkable bilaterally. No evidence of left renal calculi.\n\n**Right ureter:** No evidence of hydroureter or ureterolithiasis.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** Unremarkable.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No evidence of fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No right renal calculus or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 5.235829430632293,
+      "first_text_seconds": 1.4236619463190436
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n**Left ureter and kidney:** A 4 mm calculus in the distal left ureter, 2 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. The left kidney otherwise appears normal.\n\n**Right kidney and ureter:** No evidence of right renal calculus or hydronephrosis. No evidence of right ureteric calculus or hydroureter.\n\n**Urinary bladder:** Unremarkable.\n\n**Perinephric fat and fascia:** Unremarkable.\n\n**Adrenal glands:** Unremarkable.\n\n**Aorta and IVC:** Unremarkable.\n\n**Lymph nodes:** No significant lymphadenopathy.\n\n**Bony pelvis and lumbar spine:** No fracture or aggressive bony lesion.\n\n**Visualised bowel:** Unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis. Stone density was not provided.\n- No evidence of right urinary tract calculus or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.343256823718548,
+      "first_text_seconds": 1.872308730147779
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:** MRI Brain\n\n**TECHNIQUE:** Multiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**  \nNo abnormal T2/FLAIR signal in the cerebral hemispheres. No focal parenchymal lesion.\n\n**Posterior Fossa**  \nCerebellum and brainstem unremarkable. No posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**  \nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No mass effect. Basal ganglia unremarkable.\n\n**Diffusion-Weighted Imaging**  \nDiffusion restriction in the left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**  \nNo haemorrhagic transformation.\n\n**Ventricular System**  \nVentricles normal in size and configuration. No hydrocephalus.\n\n**Sulci and Cisterns**  \nSulci and basal cisterns patent. No sulcal effacement.\n\n**Extra-Axial Spaces**  \nNo subdural or extradural collection. No subarachnoid haemorrhage.\n\n**Midline Structures**  \nCorpus callosum intact. No midline shift.\n\n**Pituitary Gland and Sella**  \nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**  \nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**  \nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**  \nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm, without haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.678081011399627,
+      "first_text_seconds": 1.7548886369913816
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo evidence of abnormal T2/FLAIR signal in the cerebral hemispheres. No evidence of focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo evidence of haemorrhagic transformation. No evidence of abnormal susceptibility.\n\n**Ventricular System**\nVentricles normal in size and configuration. No evidence of hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection. No evidence of subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No evidence of mass effect or midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.875,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 6.0304025346413255,
+      "first_text_seconds": 1.0662797531113029
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "- Small acute left thalamic infarct measuring 8 mm, without haemorrhagic transformation.\n- No evidence of mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.1807885486632586,
+      "first_text_seconds": 0.819222436286509
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 1.45266558136791,
+      "first_text_seconds": 1.0678595593199134
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear. No evidence of confluent consolidation or pleural effusion.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Trachea central. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 4.200542186386883,
+      "first_text_seconds": 1.2717618513852358
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "report": "**EXAM:** Chest X-Ray (CXR)\n\n**TECHNIQUE:** Portable AP chest radiograph.\n\n**CLINICAL DETAILS:** No clinical details provided.\n\n**COMPARISON:** No prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces:** Small right apical pneumothorax measuring 1.2 cm. Left lung is clear.\n\n**Hila:** Hila normal in size and density.\n\n**Cardiomediastinum:** Heart size is normal. No mediastinal shift.\n\n**Hemidiaphragms:** Hemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones:** No fracture or aggressive bony lesion.\n\n**Soft Tissues:** Soft tissues unremarkable.\n\n**Visible Abdomen:** No free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "seconds": 2.868721221573651,
+      "first_text_seconds": 1.394998449832201
+    }
+  ],
+  "summary": {
+    "availability:gpt-6-sol": {
+      "n": 1,
+      "completed": 1,
+      "median_seconds": 2.7861570566892624,
+      "max_seconds": 2.7861570566892624,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "availability:gpt-6.1-sol": {
+      "n": 1,
+      "completed": 1,
+      "median_seconds": 1.2805588049814105,
+      "max_seconds": 1.2805588049814105,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "report:gpt-6-sol": {
+      "n": 18,
+      "completed": 18,
+      "median_seconds": 4.412311234977096,
+      "max_seconds": 5.913046562112868,
+      "median_first_text_seconds": 1.9653793424367905,
+      "gate_passes": 17
+    },
+    "report:gpt-6.1-sol": {
+      "n": 18,
+      "completed": 18,
+      "median_seconds": 5.348453716840595,
+      "max_seconds": 6.614017801359296,
+      "median_first_text_seconds": 1.3686532517895103,
+      "gate_passes": 15
+    },
+    "impression:gpt-6.1-sol": {
+      "n": 9,
+      "completed": 9,
+      "median_seconds": 1.521479814313352,
+      "max_seconds": 1.8870744919404387,
+      "median_first_text_seconds": 1.1870490899309516,
+      "gate_passes": 3
+    },
+    "impression:gpt-6-sol": {
+      "n": 9,
+      "completed": 9,
+      "median_seconds": 1.1807885486632586,
+      "max_seconds": 1.811052491888404,
+      "median_first_text_seconds": 0.8920985935255885,
+      "gate_passes": 2
+    }
+  },
+  "candidate_faster_by_at_least_10_percent": false,
+  "worksheet_phase": "skipped: candidate did not meet reporting speed threshold"
+}
