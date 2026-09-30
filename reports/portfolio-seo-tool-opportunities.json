@@ -103,6 +103,44 @@
       },
       "disposition": "upgrade existing tool",
       "completed_note": "2026-09-24: verified commit 0766921 already links it from every calculator hub, the template library and the CT abdomen-pelvis, CT KUB and MRI liver templates."
+    },
+    {
+      "name": "Lung nodule volume doubling time calculator",
+      "status": "ready",
+      "target_url": "https://radspeed.com.au/volume-doubling-time-calculator",
+      "evidence": "2026-10-01 audit expansion (tool lane empty). /fleischner-calculator is the strongest RadSpeed tool: 'fleischner calculator' 33 impressions at position 8.8, 0 clicks (Search Console 2026-06-27 to 2026-09-24). Its prior-study comparison gives no growth rate, and Fleischner excludes screening. The Australian NLCSP (from July 2025) Nodule Management Protocol note 6 defines growth by volume change and a 600-day VDT, and BTS 2015 uses 400 and 600 days. A web search for 'lung nodule volume doubling time calculator' returned papers and no dedicated free calculator. No measured VDT query demand yet.",
+      "next_action": "Apply the saved patch, run the unit and browser suites, then send it to a fresh independent reviewer (new review cycle). Round-3 findings are already fixed in the patch but not yet re-reviewed. Patch: /Users/markbekhit/Library/Application Support/PortfolioSEO/radspeed/raw/vdt-calculator-2026-10-01/volume-doubling-time-calculator.patch",
+      "scores": {
+        "search_demand": 2,
+        "audience_fit": 5,
+        "uniqueness": 5,
+        "product_path": 4,
+        "feasibility": 5,
+        "low_maintenance": 5,
+        "link_potential": 4,
+        "shareability": 3
+      },
+      "disposition": "new tool adjacent to the Fleischner calculator",
+      "completed_note": "2026-10-01: built, tested (378 unit, 60 browser) and blocked after three independent REVISE rounds (6.0 capped each; raw 7.8, 8.2, 7.9). Round 1: float error at the 1.5 mm diameter boundary and rounded VDT beside a contradicting band. Round 2: a 24-month interval across 29 February read as slowly growing. Round 3: report line stated a VDT inside measurement error, BTS text called a decrease stable, exactly-25% contradiction, overflow 500 on extreme input. All fixed in the saved patch; not released."
+    },
+    {
+      "name": "NLCSP screening category and PanCan risk calculator",
+      "status": "blocked",
+      "target_url": "https://radspeed.com.au/",
+      "evidence": "Australian radiologists reporting NLCSP low-dose CT must apply the Nodule Management Protocol (health.gov.au, 2025), which uses the PanCan (Brock) model at baseline and a modified Lung-RADS at follow-up.",
+      "next_action": "Do not build on RadSpeed. The protocol attributions state it is for NLCSP use only and that any commercial use is strictly prohibited, and the Brock calculator and ILST are licensed for non-commercial use only. Revisit only with written permission from the licensors.",
+      "scores": {
+        "search_demand": 3,
+        "audience_fit": 5,
+        "uniqueness": 4,
+        "product_path": 4,
+        "feasibility": 1,
+        "low_maintenance": 3,
+        "link_potential": 3,
+        "shareability": 3
+      },
+      "disposition": "rejected new tool (licensing)",
+      "completed_note": "2026-10-01: blocked on licence terms verified in the protocol PDF attributions."
     }
   ]
 }
