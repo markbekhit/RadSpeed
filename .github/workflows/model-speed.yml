@@ -1,0 +1,71 @@
+name: Synthetic model speed comparison
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    concurrency: radspeed-aws-deploy
+    env:
+      AWS_REGION: ap-southeast-2
+      INSTANCE_NAME: radspeed-web
+      INSTANCE_HOST: ${{ vars.AWS_LIGHTSAIL_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-2
+      - name: Prepare temporary SSH access
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.AWS_LIGHTSAIL_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/radspeed-aws
+          chmod 600 ~/.ssh/radspeed-aws
+          RUNNER_IP="$(curl -fsSL https://checkip.amazonaws.com | tr -d '[:space:]')"
+          test -n "$RUNNER_IP"
+          echo "RUNNER_IP=$RUNNER_IP" >> "$GITHUB_ENV"
+          aws lightsail open-instance-public-ports --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
+          sleep 5
+          ssh-keyscan -H "$INSTANCE_HOST" >> ~/.ssh/known_hosts
+      - name: Compare synthetic cases without changing server settings
+        run: |
+          set -euo pipefail
+          REMOTE_DIR="/tmp/radspeed-model-speed-$GITHUB_RUN_ID"
+          echo "REMOTE_DIR=$REMOTE_DIR" >> "$GITHUB_ENV"
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" "mkdir -p '$REMOTE_DIR'"
+          scp -i ~/.ssh/radspeed-aws evals/model_speed.py "ubuntu@$INSTANCE_HOST:$REMOTE_DIR/benchmark.py"
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+            "set -eu; APP=\$(sudo docker ps --filter label=com.docker.compose.service=app --format '{{.ID}}'); \
+             test -n \"\$APP\"; sudo docker cp '$REMOTE_DIR/benchmark.py' \"\$APP:/tmp/model-speed.py\"; \
+             sudo docker exec \"\$APP\" python /tmp/model-speed.py --output /tmp/model-speed-results.json"
+      - name: Retrieve synthetic results
+        if: always() && env.REMOTE_DIR != ''
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
+            "APP=\$(sudo docker ps --filter label=com.docker.compose.service=app --format '{{.ID}}'); \
+             sudo docker cp \"\$APP:/tmp/model-speed-results.json\" '$REMOTE_DIR/results.json'; \
+             sudo chown ubuntu:ubuntu '$REMOTE_DIR/results.json'"
+          mkdir -p benchmark-results
+          scp -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST:$REMOTE_DIR/results.json" benchmark-results/results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-speed-results
+          path: benchmark-results/
+          retention-days: 14
+      - name: Close temporary SSH access
+        if: always() && env.RUNNER_IP != ''
+        run: |
+          aws lightsail close-instance-public-ports --instance-name "$INSTANCE_NAME" \
+            --port-info "fromPort=22,toPort=22,protocol=tcp,cidrs=$RUNNER_IP/32"
