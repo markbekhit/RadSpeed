@@ -286,6 +286,19 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn('href="https://pubmed.ncbi.nlm.nih.gov/34861713/"', body)
         self.assertIn("not an MR arthrogram", body)
 
+    def test_breast_ultrasound_keeps_normal_example_out_of_blank_format(self):
+        entry = rt.get_entry("ultrasound-breast")
+        scaffold = "\n".join(entry["report_format"])
+        for prompt in ["SCOPE AND TECHNIQUE:", "Correlation:", "ASSESSMENT:", "MANAGEMENT:"]:
+            self.assertIn(prompt, scaffold)
+        self.assertNotIn("BI-RADS 1", scaffold)
+        self.assertNotIn("No focal sonographic abnormality", scaffold)
+        body = self.client.get("/report-templates/ultrasound-breast").text
+        self.assertIn("Normal breast ultrasound example", body)
+        self.assertIn("Synthetic targeted left breast examination", body)
+        self.assertIn("Limit normal statements to that scope", body)
+        self.assertIn("ACR breast ultrasound reporting guidance", body)
+
 
 if __name__ == "__main__":
     unittest.main()

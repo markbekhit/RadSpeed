@@ -790,8 +790,52 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "Ultrasound_Breast": {
+        "page_title": "Breast Ultrasound",
+        "meta_description": (
+            "Breast ultrasound report template with a copyable blank format and a "
+            "synthetic normal example. Record scan scope, findings, correlation and assessment."
+        ),
+        "lead": (
+            "Copy a breast ultrasound report format into your reporting system. Record "
+            "the area examined, replace the prompts with your findings, then complete "
+            "the assessment and management plan. A normal example is shown below."
+        ),
+        "scope_note": (
+            "For diagnostic breast ultrasound. Specify targeted or survey imaging, "
+            "the side and the regions examined. Limit normal statements to that scope. "
+            "Complete the assessment and management using the clinical and other imaging findings."
+        ),
+        "report_format_heading": "Copyable breast ultrasound report format",
+        "report_format_reference": {
+            "url": "https://accreditationsupport.acr.org/support/solutions/articles/11000067043-reporting-breast-ultrasound",
+            "label": "ACR breast ultrasound reporting guidance",
+        },
+        "report_format": [
+            "EXAM: [RIGHT / LEFT / BILATERAL] BREAST ULTRASOUND",
+            "CLINICAL DETAILS: [Indication, site of concern and relevant history]",
+            "COMPARISON: [Prior imaging and date, or no comparison available]",
+            "SCOPE AND TECHNIQUE: [Targeted or survey; side, regions examined and limitations]",
+            "",
+            "FINDINGS:",
+            "Site of concern: [Sonographic findings at the specified clinical or imaging location]",
+            "Focal lesions: [Side, clock-face location, distance from nipple, size and morphology]",
+            "Other examined breast tissues: [Relevant findings within the scan scope]",
+            "Axilla, if examined: [Side and nodal findings]",
+            "Correlation: [Relationship to clinical, mammographic or MRI findings]",
+            "",
+            "IMPRESSION:",
+            "[Concise summary answering the clinical question]",
+            "ASSESSMENT: [BI-RADS category and wording after complete review]",
+            "MANAGEMENT: [Recommendation based on the final assessment and clinical context]",
+        ],
+        "impression_heading": "Normal breast ultrasound example",
+        "impression_note": (
+            "Synthetic targeted left breast examination with no sonographic abnormality. "
+            "Adapt the final assessment and management to the complete clinical and imaging context."
+        ),
         "indications": "Palpable lump, focal pain, or targeted assessment after mammography.",
         "sections": [
+            "Examination scope and site of concern",
             "Focal masses with morphology and orientation",
             "Cysts and ductal changes",
             "Skin and subcutaneous tissues",
@@ -799,9 +843,8 @@ LIBRARY: dict[str, dict] = {
             "Overall ultrasound BI-RADS assessment",
         ],
         "impression": [
-            "Well-defined oval hypoechoic mass, likely fibroadenoma — BI-RADS 3.",
-            "No suspicious axillary node.",
-            "Short-interval follow-up recommended.",
+            "No focal sonographic abnormality at the specified site of concern in the left breast.",
+            "BI-RADS 1 — Negative.",
         ],
     },
     "Ultrasound_Scrotum": {
@@ -1051,6 +1094,8 @@ def _entries() -> dict[str, dict]:
             "indications": curated["indications"],
             "sections": curated["sections"],
             "impression": curated["impression"],
+            "impression_heading": curated.get("impression_heading", "Sample impression"),
+            "impression_note": curated.get("impression_note", "Illustrative and synthetic — not a real case."),
             "search_text": _normalise_search_text(
                 " ".join(
                     [

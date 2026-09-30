@@ -85,8 +85,8 @@
       </section>
 
       <section class="detail-panel detail-panel-impression">
-        <h2>Sample impression</h2>
-        <p class="detail-panel-note">Illustrative and synthetic — not a real case.</p>
+        <h2>{{ t.impression_heading }}</h2>
+        <p class="detail-panel-note">{{ t.impression_note }}</p>
         <ul class="impression-sample">
           {% for line in t.impression %}<li>{{ line }}</li>{% endfor %}
         </ul>
