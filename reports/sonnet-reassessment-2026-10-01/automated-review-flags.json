@@ -1,0 +1,2331 @@
+[
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery is mildly enlarged at 2.9 cm, which may reflect underlying pulmonary hypertension; clinical correlation and echocardiography are suggested if clinically indicated."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery is mildly enlarged at 2.9 cm, which may reflect underlying pulmonary hypertension; clinical correlation and echocardiography are suggested if clinically indicated."
+    ],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery is mildly prominent at 2.9 cm; correlate clinically for pulmonary hypertension."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery is mildly prominent at 2.9 cm; correlate clinically for pulmonary hypertension."
+    ],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery is mildly enlarged at 2.9 cm, which may reflect underlying pulmonary arterial hypertension; consider clinical correlation and echocardiography if clinically indicated."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery is mildly enlarged at 2.9 cm, which may reflect underlying pulmonary arterial hypertension; consider clinical correlation and echocardiography if clinically indicated."
+    ],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "1.",
+      "2.",
+      "3.",
+      "Main pulmonary artery measures 2.9 cm, at the upper limit of normal calibre."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "2.9",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery is mildly dilated at 2.9 cm, which may reflect pulmonary arterial hypertension; clinical correlation and consideration of echocardiography are suggested if not otherwise explained."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery is mildly dilated at 2.9 cm, which may reflect pulmonary arterial hypertension; clinical correlation and consideration of echocardiography are suggested if not otherwise explained."
+    ],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery dilated at 2.9 cm, which may reflect underlying pulmonary arterial hypertension; consider clinical correlation and echocardiography if not already performed."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery dilated at 2.9 cm, which may reflect underlying pulmonary arterial hypertension; consider clinical correlation and echocardiography if not already performed."
+    ],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Main pulmonary artery is 29 mm in diameter, which is at the upper limit of normal to borderline enlarged; correlate clinically for pulmonary hypertension if clinically indicated."
+    ],
+    "interpretive_lines": [
+      "Main pulmonary artery is 29 mm in diameter, which is at the upper limit of normal to borderline enlarged; correlate clinically for pulmonary hypertension if clinically indicated."
+    ],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Small acute infarct in the left thalamus measuring 8 mm, with no evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Acute 8 mm left thalamic infarct with diffusion restriction.",
+      "No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "Otherwise unremarkable MRI brain."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Acute left thalamic infarct measuring 8 mm, with no haemorrhagic transformation, mass effect or hydrocephalus.",
+      "Otherwise unremarkable MRI brain."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Small acute left thalamic infarct measuring 8 mm, with no haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Small acute left thalamic infarct measuring 8 mm, with no haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Acute left thalamic infarct measuring 8 mm, with no evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "Otherwise unremarkable MRI brain."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Small acute infarct in the left thalamus measuring 8 mm, with no evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of fracture or marrow oedema; cruciate ligaments intact."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of fracture or marrow oedema; anterior and posterior cruciate ligaments intact."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Otherwise unremarkable right knee MRI with intact cruciate ligaments and no evidence of fracture or bone contusion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of fracture or marrow oedema; cruciate ligaments intact."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of cruciate ligament injury, fracture or marrow oedema."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Otherwise unremarkable right knee MRI, with intact cruciate ligaments and no evidence of fracture or marrow oedema."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Cruciate ligaments intact, with no evidence of fracture or marrow oedema."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "impression",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "No evidence of cruciate ligament injury, fracture or marrow oedema."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal.",
+      "Sulci patent."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_head_negative",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Ventricles are normal.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Left kidney:  Mild hydronephrosis as described above.",
+      "No other focal abnormality.",
+      "Right ureter:  No calculus or hydroureter.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable.",
+      "4 mm left distal ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, with mild proximal hydroureteronephrosis.",
+      "No calculi or hydronephrosis in the right urinary tract."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Left kidney:  Mild hydronephrosis as above.",
+      "Right ureter:  Unremarkable.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Normal size, cortical thickness and parenchymal density.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No other calculus identified.",
+      "Right ureter:  No calculus or hydroureter.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "No perinephric stranding.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No other focal renal abnormality.",
+      "Right ureter:  No calculus or hydroureter.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  No perinephric fat stranding or collection.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Parenchyma unremarkable.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No renal calculus.",
+      "Right ureter:  Unremarkable.",
+      "No calculus or hydroureter.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable.",
+      "No calculi or hydronephrosis in the right urinary tract."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Right ureter unremarkable, with no calculi identified.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No other renal calculus identified.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable.",
+      "No calculi or hydronephrosis in the right urinary tract."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Right ureter unremarkable, no ureteric calculus.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No renal calculus.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable.",
+      "Single 4 mm left distal ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, with mild proximal hydroureteronephrosis.",
+      "No calculi or hydronephrosis in the right urinary tract."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Right kidney is of normal size with no focal parenchymal abnormality.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No left renal calculus.",
+      "Right ureter:  Right ureter appears normal, with no calculus or hydroureter.",
+      "Urinary bladder:  Urinary bladder appears normal.",
+      "Perinephric fat and fascia:  Perinephric fat and fascia appear normal.",
+      "Adrenal glands:  Adrenal glands appear normal.",
+      "Aorta and IVC:  Aorta and IVC appear normal.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Visualised bowel appears normal.",
+      "Single 4 mm left distal ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, with mild proximal left hydroureteronephrosis.",
+      "No calculi or hydronephrosis in the right urinary tract."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ct_kub_left_ureteric_calculus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Normal size and cortical thickness, with unremarkable parenchymal density.",
+      "Left kidney:  Mild hydronephrosis as above.",
+      "No other renal calculus identified.",
+      "Right ureter:  Unremarkable, no calculus or hydroureter.",
+      "Urinary bladder:  Unremarkable.",
+      "Perinephric fat and fascia:  Unremarkable, no perinephric stranding.",
+      "Adrenal glands:  Unremarkable.",
+      "Aorta and IVC:  Unremarkable.",
+      "Lymph nodes:  No significant lymphadenopathy.",
+      "Bony pelvis and lumbar spine:  No fracture or aggressive bony lesion.",
+      "Visualised bowel:  Unremarkable.",
+      "Single 4 mm left distal ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, with mild proximal hydroureteronephrosis."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.0"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "No pneumothorax.",
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2.9"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "ctpa_right_lower_lobe_embolus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "No lytic or sclerotic lesion."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": []
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "cxr_right_pneumothorax",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1.2"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "No mass effect.",
+      "Diffusion restriction in the left thalamic infarct.",
+      "No evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect or midline shift.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No mass effect.",
+      "Diffusion restriction within the left thalamic infarct.",
+      "No evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "No mass effect.",
+      "Diffusion restriction in the left thalamic infarct.",
+      "No evidence of haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Basal ganglia unremarkable.",
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect or midline shift.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_brain_left_infarct",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Diffusion restriction in the left thalamic infarct.",
+      "No mass effect.",
+      "No haemorrhagic transformation, mass effect or hydrocephalus."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "2"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Anterior horn intact.",
+      "Hoffa's fat pad and popliteal fossa unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa: Unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 0,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa:  Unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 1,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa:  Unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa unremarkable",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa unremarkable.",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "report",
+    "case_id": "mri_knee_medial_meniscus",
+    "repeat": 2,
+    "sentences_not_in_dictation_or_template": [
+      "Hoffa's fat pad and popliteal fossa unremarkable",
+      "1.",
+      "2.",
+      "3."
+    ],
+    "interpretive_lines": [],
+    "numbers_not_dictated": [
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Spine: Normal.",
+      "Kidneys: Abnormal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis 6.2 mm.\n2. Incomplete anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus at 21 weeks 3 days with biometry centiles ranging from 42nd to 57th. Anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Right ventricular outflow tract and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with anterior placenta clear of the internal os."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Spine: Normal.",
+      "Kidneys: Abnormal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, left renal pelvis 6.2 mm.\n2. Incomplete anatomy assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis 6.2 mm.\n2. RVOT and upper lip not adequately assessed due to fetal position; repeat imaging recommended.\n3. Cephalic singleton fetus with biometry as above, anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis 6.2 mm.\n2. Incomplete anatomy assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry as documented, anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Spine: Normal.",
+      "Kidneys: Abnormal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, left renal pelvis 6.2 mm.\n2. Incomplete anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Fetal biometry at the 42nd to 57th centiles, with anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Spine: Normal.",
+      "Kidneys: Abnormal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, left renal pelvis 6.2 mm.\n2. Incomplete anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry as above, anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis 6.2 mm.\n2. Right ventricular outflow tract and upper lip not adequately assessed due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry centiles between the 42nd and 57th, and an anterior placenta clear of the internal os."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis 6.2 mm.\n2. Incomplete assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left 6 mm lower-pole renal calculus with mild left pelvicaliectasis (renal pelvis 9 mm AP).\n2. Right upper-pole simple renal cyst, 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n3. Incidental mild prostatomegaly. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,80}2\\.1|2\\.1[^.\\n]{0,80}right"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Mild left pelvicaliectasis with a 6 mm left lower-pole calculus.\n2. Right upper-pole simple cyst. No evidence of right pelvicaliectasis or right renal calculus.\n3. Incidental mild prostatomegaly. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure",
+      "haematuria",
+      "urinary tract infection"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left 6 mm lower-pole renal calculus with mild left pelvicaliectasis (left renal pelvis 9 mm AP). Ureteric jets present bilaterally.\n2. Right upper-pole simple renal cyst, 2.1 \u00d7 1.7 \u00d7 1.5 cm. No evidence of right renal calculus or right pelvicaliectasis.\n3. Incidental mild prostatomegaly. Post-void residual 24 mL. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,60}14 mm",
+      "left[^.\\n]{0,60}12 mm"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Mild left pelvicaliectasis (renal pelvis 9 mm AP) with a 6 mm left lower-pole calculus.\n2. Simple right upper-pole renal cyst measuring 2.1 x 1.7 x 1.5 cm.\n3. Incidental mild prostatomegaly. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,60}14 mm",
+      "left[^.\\n]{0,60}12 mm"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure",
+      "haematuria",
+      "urinary tract infection"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. 6 mm left lower-pole calculus with mild left pelvicaliectasis (left renal pelvis 9 mm AP). Ureteric jets present bilaterally.\n2. Right upper-pole simple renal cyst, 2.1 \u00d7 1.7 \u00d7 1.5 cm. No evidence of right pelvicaliectasis or calculus.\n3. Incidental mild prostatomegaly. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,60}14 mm",
+      "left[^.\\n]{0,60}12 mm"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure",
+      "haematuria",
+      "urinary tract infection"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left lower-pole calculus (6 mm) with mild left pelvicaliectasis. Ureteric jets present bilaterally.\n2. Right upper-pole simple renal cyst.\n3. Incidental mild prostatomegaly. No focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure",
+      "haematuria",
+      "urinary tract infection"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left lower-pole calculus, 6 mm, with mild left pelvicaliectasis (renal pelvis 9 mm AP). Left ureteric jet present.\n2. Right upper-pole simple renal cyst, 2.1 \u00d7 1.7 \u00d7 1.5 cm. No evidence of right pelvicaliectasis or calculus.\n3. Incidental mild prostatomegaly. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,60}14 mm",
+      "left[^.\\n]{0,60}12 mm"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. 6 mm lower-pole calculus in the left kidney with mild left pelvicaliectasis (renal pelvis 9 mm AP). Ureteric jets present bilaterally.\n2. Right upper-pole simple renal cyst measuring 2.1 x 1.7 x 1.5 cm.\n3. Incidental mild prostatomegaly (36 mL). Post-void residual 24 mL. No evidence of focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_one_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [
+      "right[^.\\n]{0,60}14 mm",
+      "left[^.\\n]{0,60}12 mm"
+    ],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [
+      "acute renal failure"
+    ],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left lower-pole renal calculus (6 mm) with mild left pelvicaliectasis (left renal pelvis 9 mm AP).\n2. Right upper-pole simple renal cyst (2.1 \u00d7 1.7 \u00d7 1.5 cm).\n3. Incidental mild prostatomegaly (36 mL). No focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal, left renal pelvis 6.2 mm.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "- Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n- Incomplete anatomical assessment, as the RVOT and upper lip were not adequately visualised due to fetal position. Repeat imaging recommended."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal.",
+      "Spine: Normal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis.\n2. Incomplete anatomy assessment, with the RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles, anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy:  Normal",
+      "Four chamber heart:  Normal",
+      "LVOT:  Normal",
+      "Kidneys:  Abnormal, left renal pelvis 6.2 mm",
+      "Spine:  Normal"
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Right ventricular outflow tract and upper lip not adequately visualised due to fetal position; repeat imaging recommended.\n3. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles, anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal",
+      "Spine: Normal",
+      "Four chamber heart: Normal",
+      "LVOT: Normal",
+      "Kidneys: Abnormal; left renal pelvis 6.2 mm"
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Incomplete anatomical assessment, with the RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles. Anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal, left renal pelvis 6.2 mm.",
+      "Spine: Normal.",
+      "Otherwise, the remaining documented fetal anatomy is normal, with biometry and estimated fetal weight at appropriate centiles for a singleton cephalic fetus and an anterior placenta clear of the internal os."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis (left renal pelvis 6.2 mm).\n2. Right ventricular outflow tract and upper lip not adequately assessed due to fetal position; repeat imaging recommended.\n3. Otherwise, the remaining documented fetal anatomy is normal, with biometry and estimated fetal weight at appropriate centiles for a singleton cephalic fetus and an anterior placenta clear of the internal os."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium/intracranial anatomy: Normal",
+      "Four chamber heart: Normal",
+      "LVOT: Normal",
+      "Kidneys: Abnormal.",
+      "Spine: Normal"
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Right ventricular outflow tract and upper lip not adequately assessed due to fetal position; repeat imaging recommended.\n3. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles. Anterior placenta clear of the internal os and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal.",
+      "Spine: Normal.",
+      "Four chamber heart: Normal.",
+      "LVOT: Normal.",
+      "Kidneys: Abnormal."
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Incomplete assessment of the RVOT and upper lip due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus at 21 weeks 3 days with biometry and estimated fetal weight at the 42nd to 57th centiles, anterior placenta clear of the internal os, and closed cervix."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy: Normal",
+      "Spine: Normal",
+      "Four chamber heart: Normal",
+      "LVOT: Normal",
+      "Kidneys: Abnormal; left renal pelvis 6.2 mm"
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles; anterior placenta clear of the internal os and closed cervix measuring 3.6 cm.\n3. Incomplete anatomical assessment, as the RVOT and upper lip were not adequately visualised due to fetal position; repeat imaging recommended."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "obstetric",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [
+      "Cranium / intracranial anatomy:  Normal",
+      "Four chamber heart:  Normal",
+      "LVOT:  Normal",
+      "Kidneys:  Abnormal.",
+      "Spine:  Normal"
+    ],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": true,
+      "repeat_imaging": true,
+      "rvot_limitation": true,
+      "lip_limitation": true
+    },
+    "impression": "1. Mild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n2. Incomplete anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n3. Singleton cephalic fetus with biometry and estimated fetal weight at the 42nd to 57th centiles, anterior placenta clear of the internal os, and closed cervix measuring 3.6 cm."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. 6 mm left lower-pole renal calculus with mild left pelvicaliectasis.\n2. Simple right upper-pole renal cyst.\n3. Incidental mild prostatomegaly, with no significant post-void residual."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left 6 mm lower-pole renal calculus with mild left pelvicaliectasis.\n2. Simple right upper-pole renal cyst.\n3. Incidental mild prostatomegaly, with a post-void residual of 24 mL."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 0,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left lower-pole renal calculus with mild left pelvicaliectasis; no right-sided calculus or pelvicaliectasis.\n2. Right upper-pole simple renal cyst.\n3. Incidental mild prostatomegaly, with a low post-void residual and no focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left lower-pole renal calculus (6 mm) with mild left pelvicaliectasis (renal pelvis 9 mm AP).\n2. Kidneys of preserved length and cortical thickness bilaterally, with no right pelvicaliectasis and bilateral ureteric jets present.\n3. Right upper-pole simple renal cyst.\n4. Incidental mild prostatomegaly, with a low post-void residual and no focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left 6 mm lower-pole renal calculus with mild left pelvicaliectasis (renal pelvis 9 mm AP); right ureteric jet and left ureteric jet both present.\n2. Right upper-pole simple renal cyst.\n3. Mild prostatomegaly with a post-void residual of 24 mL; no focal bladder wall lesion."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 1,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Left 6 mm lower-pole calculus with mild left pelvicaliectasis (renal pelvis 9 mm AP); ureteric jets present bilaterally.\n2. Right upper-pole simple renal cyst.\n3. Incidental mild prostatomegaly, with a low post-void residual (24 mL)."
+  },
+  {
+    "condition": "cli_default",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Mild left pelvicaliectasis with a 6 mm lower-pole left renal calculus.\n2. Simple right upper-pole renal cyst.\n3. Incidental mild prostatomegaly, with a low post-void residual."
+  },
+  {
+    "condition": "cli_lean",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Mild left pelvicaliectasis with a 6 mm left lower-pole calculus.\n2. Right upper-pole simple renal cyst.\n3. Incidental mild prostatomegaly, with a post-void residual of 24 mL."
+  },
+  {
+    "condition": "cli_lean_no_thinking",
+    "task": "worksheet_two_step",
+    "case_id": "renal",
+    "repeat": 2,
+    "missing_measurements_report": [],
+    "missing_measurements_notes": [],
+    "failed_side_bindings_report": [],
+    "failed_side_bindings_notes": [],
+    "unchecked_option_mentions_notes": [],
+    "unchecked_option_mentions_report": [],
+    "normal_or_unsupported_keyword_lines": [],
+    "pattern_hits_report": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "pattern_hits_notes": {
+      "bp_shortened": false,
+      "bpd_present": false,
+      "repeat_imaging": false,
+      "rvot_limitation": false,
+      "lip_limitation": false
+    },
+    "impression": "1. Mild left pelvicaliectasis with a 6 mm left lower-pole calculus.\n2. Right upper-pole simple renal cyst.\n3. Incidental mild prostatomegaly, with a low post-void residual and no focal bladder wall lesion."
+  }
+]
