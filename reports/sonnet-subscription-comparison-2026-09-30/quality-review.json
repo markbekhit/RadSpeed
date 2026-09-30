@@ -1,0 +1,308 @@
+{
+  "method": "Agent review of all 39 outputs against six synthetic dictations and the two rendered worksheet fixtures. No blinded clinical validation. Automatic phrase scores are preserved separately and do not define clinical accuracy.",
+  "rows": [
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Converts dictated 29 mm to equivalent 2.9 cm."
+      ]
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Adds mild pulmonary artery dilatation/enlargement from the measurement. Repeats 2 and 3 also add a pulmonary hypertension interpretation and echocardiography advice. These are interpretive additions, not dictated observations. No guideline citation is shown."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Adds otherwise unremarkable MRI brain, although the dictation does not describe the full examination as normal."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Converts 12 mm to equivalent 1.2 cm in the impression; findings retain 12 mm."
+      ]
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "The impression describes the post-void residual as low; this qualifier is not entered on the worksheet."
+      ]
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Source notes list unticked history options, contrary to the extraction rules. They do not appear as clinical negatives in the report."
+      ]
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "repeat": 0,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Converts dictated 29 mm to equivalent 2.9 cm."
+      ]
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Adds mild pulmonary artery dilatation/enlargement from the measurement. Repeats 2 and 3 also add a pulmonary hypertension interpretation and echocardiography advice. These are interpretive additions, not dictated observations. No guideline citation is shown."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Converts 12 mm to equivalent 1.2 cm in the impression; findings retain 12 mm."
+      ]
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Source notes list unticked history options, contrary to the extraction rules. They do not appear as clinical negatives in the report."
+      ]
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "repeat": 1,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "The impression adds that biometry is appropriate for 21 weeks 3 days. This assessment is not entered on the worksheet."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Adds mild pulmonary artery dilatation/enlargement from the measurement. Repeats 2 and 3 also add a pulmonary hypertension interpretation and echocardiography advice. These are interpretive additions, not dictated observations. No guideline citation is shown."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Adds otherwise unremarkable MRI brain, although the dictation does not describe the full examination as normal."
+      ]
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Converts 12 mm to equivalent 1.2 cm in the impression; findings retain 12 mm."
+      ]
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": [
+        "Source notes list unticked history options, contrary to the extraction rules. They do not appear as clinical negatives in the report."
+      ]
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "repeat": 2,
+      "key_findings_and_laterality_retained": true,
+      "issues": []
+    }
+  ]
+}
