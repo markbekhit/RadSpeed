@@ -1,0 +1,226 @@
+{
+  "method": "Agent review of all source notes and reports against the two rendered synthetic worksheets; no blinded clinical validation. Reference: tests/fixtures/synthetic_worksheet_examples.html. Exact measurements, side binding, selected statuses, limitations, recommendations and unsupported additions reviewed.",
+  "rows": [
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": [
+        "The extraction and report omit the entered repeat-imaging recommendation."
+      ]
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": []
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "key_measurements_and_laterality_retained": true,
+      "entered_abnormalities_and_view_limitations_retained": true,
+      "issues": [
+        "The extraction and report omit the entered repeat-imaging recommendation.",
+        "The impression adds that fetal biometry is appropriate for gestational age; this conclusion is not entered on the worksheet."
+      ]
+    }
+  ]
+}

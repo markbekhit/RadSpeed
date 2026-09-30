@@ -1,0 +1,1324 @@
+{
+  "baseline": "gpt-6-sol",
+  "candidate": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "service_tier": "default",
+  "repeats": 3,
+  "include_reports": false,
+  "method": "Serial paired AB/BA calls; same prompts, templates, processing tier and server",
+  "scope": "Synthetic cases only; timings exclude audio transcription, browser and clipboard",
+  "production_settings_changed": false,
+  "rows": [
+    {
+      "task": "availability",
+      "case_id": "probe",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "report": "OK.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 5,
+            "prompt_tokens": 10,
+            "total_tokens": 15,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 1.094873994588852
+        }
+      ],
+      "seconds": 1.094891450367868,
+      "first_text_seconds": null
+    },
+    {
+      "task": "availability",
+      "case_id": "probe",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "OK",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 4,
+            "prompt_tokens": 10,
+            "total_tokens": 14,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 1.1682864390313625
+        }
+      ],
+      "seconds": 1.1683024326339364,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment.\nChronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\nLeft kidney: Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis; renal pelvis 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nUreteric jets are present bilaterally.\n\nBladder: Pre-void volume 318 mL; post-void residual 24 mL. Bladder wall 3 mm. No evidence of focal bladder wall lesion.\n\nProstate: Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Left lower-pole 6 mm renal calculus with mild left pelvicaliectasis.\n- Right upper-pole simple renal cyst. Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 570,
+            "prompt_tokens": 2284,
+            "total_tokens": 2854,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 72,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 6.994043217971921
+        }
+      ],
+      "seconds": 6.994986289180815,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; Left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 x 1.7 x 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nComments: No focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm, cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 x 1.7 x 1.5 cm.\n\nLeft kidney: Length 10.2 cm, cortical thickness 12 mm. Mild pelvicaliectasis, with renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nBladder: Pre-void volume 318 mL and post-void residual 24 mL. Wall thickness 3 mm. No evidence of focal bladder wall lesion. Both ureteric jets are present.\n\nProstate: Volume 36 mL. Mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Right upper-pole simple renal cyst.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 483,
+            "prompt_tokens": 2284,
+            "total_tokens": 2767,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 7.7982808370143175
+        }
+      ],
+      "seconds": 7.7988286530599,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "source_notes": "History: Chronic renal impairment; chronic renal insufficiency selected.\nStudy: Renal tract ultrasound.\nKidney length / right: 10.8 cm.\nKidney length / left: 10.2 cm.\nCortical thickness / right: 14 mm.\nCortical thickness / left: 12 mm.\nPelvicaliectasis / right: No.\nPelvicaliectasis / left: Mild; left renal pelvis 9 mm AP.\nCalculus / right: None seen.\nCalculus / left: Present; 6 mm lower-pole calculus.\nRenal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nRenal cyst / left: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder wall: 3 mm; no focal bladder wall lesion.\nProstate / volume: 36 mL.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm; cortical thickness 14 mm. No pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis; renal pelvis 9 mm AP. Lower-pole calculus measuring 6 mm. No renal cyst.\n\n**Bladder:** Bilateral ureteric jets present. Pre-void volume 318 mL; post-void residual 24 mL. Bladder wall 3 mm, with no focal bladder wall lesion.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis with a 6 mm left lower-pole renal calculus.\n- Incidental mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 260,
+            "prompt_tokens": 1636,
+            "total_tokens": 1896,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 18,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 3.6618479937314987
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 2.958861105144024,
+          "usage": {
+            "completion_tokens": 225,
+            "prompt_tokens": 3425,
+            "total_tokens": 3650,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 3422,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.621832872740924,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "History: Chronic renal impairment.\nHistory: Chronic renal insufficiency.\nStudy: Renal tract ultrasound.\nKidney / length / right: 10.8 cm.\nKidney / length / left: 10.2 cm.\nKidney / cortical thickness / right: 14 mm.\nKidney / cortical thickness / left: 12 mm.\nKidney / pelvicaliectasis / right: No.\nKidney / pelvicaliectasis / left: Mild.\nKidney / renal pelvis / left: 9 mm AP.\nKidney / calculus / right: None seen.\nKidney / calculus / left: Present; 6 mm lower-pole calculus.\nKidney / renal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / renal cyst / left: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm. Cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. A 6 mm lower-pole calculus is present. No evidence of renal cyst.\n\n**Bladder:** Pre-void volume 318 mL. Post-void residual 24 mL. Wall thickness 3 mm. No evidence of a focal bladder wall lesion. Bilateral ureteric jets are present.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n1. Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n2. Simple right upper-pole renal cyst.\n3. Mild prostatomegaly, with a post-void residual of 24 mL.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 265,
+            "prompt_tokens": 1636,
+            "total_tokens": 1901,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.749516350217164
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.633977386169136,
+          "usage": {
+            "completion_tokens": 258,
+            "prompt_tokens": 3454,
+            "total_tokens": 3712,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 3451,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.384539620019495,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal selected.\nFour-chamber heart: Normal selected.\nRVOT: Not well seen; Fetal position.\nLVOT: Normal selected.\nKidneys: Abnormal selected; LEFT renal pelvis 6.2 mm.\nSpine: Normal selected.\nFace / upper lip: Not well seen; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nAnterior placenta, clear of the internal os. Cervix: 3.6 cm, closed.\n\nFetal biometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nCranium / intracranial anatomy, four-chamber heart, LVOT and spine are normal.\n\nMild left fetal pyelectasis, with the left renal pelvis measuring 6.2 mm.\n\nRVOT and face / upper lip are not well seen. RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete assessment of the RVOT and face / upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 522,
+            "prompt_tokens": 2704,
+            "total_tokens": 3226,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.301036281511188
+        }
+      ],
+      "seconds": 8.301569323055446,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "source_notes": "Title: Second Trimester Sonographer Worksheet\nGestational age: 21 weeks 3 days\nNumber of fetuses: Singleton\nPresentation: Cephalic\nFHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBPD: 52 mm; 55th centile\nHC: 190 mm; 48th centile\nAC: 166 mm; 57th centile\nFL: 35 mm; 42nd centile\nEstimated fetal weight: 432 g; 51st centile\nCranium / intracranial anatomy: Normal\nFour-chamber heart: Normal\nRVOT: Not well seen; fetal position\nLVOT: Normal\nKidneys: Abnormal; LEFT renal pelvis 6.2 mm\nSpine: Normal\nFace / upper lip: Not well seen; repeat imaging recommended\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\nSingleton fetus at 21 weeks 3 days, cephalic presentation. FHR 148 bpm. Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight 432 g (51st centile).\n\nCranium/intracranial anatomy, four-chamber heart, LVOT and spine marked normal. Left renal pelvis measures 6.2 mm; mild left fetal pyelectasis noted.\n\nRVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 513,
+            "prompt_tokens": 2704,
+            "total_tokens": 3217,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 27,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 5.71558031719178
+        }
+      ],
+      "seconds": 5.716265523806214,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nStudy / placenta: Anterior, clear of internal os\nStudy / cervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; comment: Fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal\nFetal anatomy / renal pelvis / LEFT: 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; comment: Repeat imaging recommended\nComments / fetal kidney / LEFT: Mild LEFT fetal pyelectasis.\nComments / RVOT and upper lip: Not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nObstetric ultrasound at 21 weeks 3 days.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\n**Pregnancy:** Singleton fetus in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\n**Fetal biometry:**\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\n\n**Fetal anatomy:** Cranium and intracranial anatomy normal. Four-chamber heart and LVOT normal. RVOT not adequately visualised due to fetal position. Spine normal. Upper lip not adequately visualised due to fetal position; repeat imaging recommended.\n\n**Fetal kidneys:** Abnormal, with mild left fetal pyelectasis. Left renal pelvis measures 6.2 mm.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 279,
+            "prompt_tokens": 2056,
+            "total_tokens": 2335,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 5.0683160508051515
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.063046609982848,
+          "usage": {
+            "completion_tokens": 270,
+            "prompt_tokens": 3468,
+            "total_tokens": 3738,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 306,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 10.141548008657992,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 0,
+      "source_notes": "Gestational age: 21 weeks 3 days\nNumber of fetuses: Singleton\nPresentation: Cephalic\nFHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; 55th centile\nBiometry / HC: 190 mm; 48th centile\nBiometry / AC: 166 mm; 57th centile\nBiometry / FL: 35 mm; 42nd centile\nBiometry / estimated fetal weight: 432 g; 51st centile\nFetal anatomy / cranium and intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys / left: Abnormal; renal pelvis 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face and upper lip: Not well seen; repeat imaging recommended\nComments / left fetal kidney: Mild pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\n**Fetus:** Singleton fetus in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Biometry:** Biparietal diameter 52 mm (55th centile); head circumference 190 mm (48th centile); abdominal circumference 166 mm (57th centile); femur length 35 mm (42nd centile). Estimated fetal weight 432 g (51st centile).\n\n**Fetal anatomy:** Cranium and intracranial anatomy, four-chamber heart, LVOT and spine normal. Left renal pelvis measures 6.2 mm, with mild pyelectasis. RVOT and face and upper lip not well seen due to fetal position; repeat imaging recommended.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix 3.6 cm and closed.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- RVOT and face and upper lip not adequately visualised due to fetal position.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 292,
+            "prompt_tokens": 2056,
+            "total_tokens": 2348,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 31,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.345920844934881
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 3.6747080264613032,
+          "usage": {
+            "completion_tokens": 287,
+            "prompt_tokens": 3444,
+            "total_tokens": 3731,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 41,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 282,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 8.036609581671655,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; Left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 x 1.7 x 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment. Chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm and cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 x 1.7 x 1.5 cm.\n\nLeft kidney: Length 10.2 cm and cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nBoth ureteric jets are present.\n\nBladder: Pre-void volume 318 mL and post-void residual 24 mL. Wall thickness 3 mm. No evidence of focal bladder wall lesion.\n\nProstate: Volume 36 mL. Mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and 6 mm left lower-pole renal calculus.\n- Right upper-pole simple renal cyst.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 483,
+            "prompt_tokens": 2284,
+            "total_tokens": 2767,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1920,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.247269741259515
+        }
+      ],
+      "seconds": 8.247881535440683,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nKidney length: RIGHT 10.8 cm; LEFT 10.2 cm.\nCortical thickness: RIGHT 14 mm; LEFT 12 mm.\nPelvicaliectasis: RIGHT No; LEFT Mild. Left renal pelvis 9 mm AP.\nCalculus: RIGHT None seen; LEFT Present. 6 mm lower-pole calculus on LEFT.\nRenal cyst: RIGHT Present; LEFT None. RIGHT upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nUreteric jet: RIGHT Present; LEFT Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney length 10.8 cm and cortical thickness 14 mm. No evidence of right pelvicaliectasis or calculus. Right upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\nLeft kidney length 10.2 cm and cortical thickness 12 mm. Mild left pelvicaliectasis; left renal pelvis 9 mm AP. Left lower-pole calculus measuring 6 mm. No evidence of left renal cyst.\n\nUreteric jets are present bilaterally. Bladder pre-void volume 318 mL, post-void residual 24 mL and bladder wall 3 mm. No evidence of a focal bladder wall lesion. Prostate volume 36 mL; incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis with a 6 mm left lower-pole renal calculus.\n- Right upper-pole simple renal cyst. Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 550,
+            "prompt_tokens": 2284,
+            "total_tokens": 2834,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 79,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1920,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 6.63863380253315
+        }
+      ],
+      "seconds": 6.639288807287812,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "History: Chronic renal impairment.\nHistory: Chronic renal insufficiency.\nStudy: Renal tract ultrasound.\nKidney / length / right: 10.8 cm.\nKidney / length / left: 10.2 cm.\nKidney / cortical thickness / right: 14 mm.\nKidney / cortical thickness / left: 12 mm.\nKidney / pelvicaliectasis / right: No.\nKidney / pelvicaliectasis / left: Mild; left renal pelvis 9 mm AP.\nKidney / calculus / right: None seen.\nKidney / calculus / left: Present; 6 mm lower-pole calculus.\nKidney / renal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / renal cyst / left: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder wall: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm. Cortical thickness 14 mm. No pelvicaliectasis. No calculus seen. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis; left renal pelvis measures 9 mm AP. A 6 mm lower-pole calculus is present. No renal cyst.\n\n**Bladder:** Pre-void volume 318 mL. Post-void residual 24 mL. Wall thickness 3 mm. No focal bladder wall lesion. Bilateral ureteric jets are present.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n1. Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n2. Simple right upper-pole renal cyst.\n3. Mild prostatomegaly, with a post-void residual of 24 mL.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 261,
+            "prompt_tokens": 1636,
+            "total_tokens": 1897,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1280,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.554653845727444
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.831172661855817,
+          "usage": {
+            "completion_tokens": 254,
+            "prompt_tokens": 3450,
+            "total_tokens": 3704,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 288,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.386842833831906,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "source_notes": "History: Chronic renal impairment; chronic renal insufficiency selected\nStudy: Renal tract ultrasound\nKidney length / right: 10.8 cm\nKidney length / left: 10.2 cm\nCortical thickness / right: 14 mm\nCortical thickness / left: 12 mm\nPelvicaliectasis / right: No\nPelvicaliectasis / left: Mild; left renal pelvis 9 mm AP\nCalculus / right: None seen\nCalculus / left: Present; 6 mm lower-pole calculus\nRenal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm\nRenal cyst / left: None\nUreteric jet / right: Present\nUreteric jet / left: Present\nBladder / pre-void volume: 318 mL\nBladder / post-void residual: 24 mL\nBladder wall: 3 mm; no focal bladder wall lesion\nProstate / volume: 36 mL\nComments / prostate: Incidental mild prostatomegaly",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\n**Kidneys:** Right kidney length 10.8 cm; cortical thickness 14 mm. No right pelvicaliectasis or calculus. Right upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\nLeft kidney length 10.2 cm; cortical thickness 12 mm. Mild left pelvicaliectasis; left renal pelvis 9 mm AP. Left lower-pole calculus measuring 6 mm. No left renal cyst.\n\n**Bladder:** Bilateral ureteric jets present. Pre-void volume 318 mL; post-void residual 24 mL. Bladder wall 3 mm; no focal bladder wall lesion.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis with a 6 mm left lower-pole renal calculus.\n- Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 235,
+            "prompt_tokens": 1636,
+            "total_tokens": 1871,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1280,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 3.0589458337053657
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 3.7111613219603896,
+          "usage": {
+            "completion_tokens": 228,
+            "prompt_tokens": 3424,
+            "total_tokens": 3652,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 262,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.771081798709929,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "source_notes": "Gestational age: 21 weeks 3 days\nNumber of fetuses: Singleton\nPresentation: Cephalic\nFHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBPD: 52 mm; 55th centile\nHC: 190 mm; 48th centile\nAC: 166 mm; 57th centile\nFL: 35 mm; 42nd centile\nEstimated fetal weight: 432 g; 51st centile\nCranium / intracranial anatomy: Normal\nFour-chamber heart: Normal\nRVOT: Not well seen; fetal position\nLVOT: Normal\nKidneys: Abnormal; LEFT renal pelvis 6.2 mm\nSpine: Normal\nFace / upper lip: Not well seen; repeat imaging recommended\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\nSingleton fetus at a documented gestational age of 21 weeks 3 days, in cephalic presentation. FHR 148 bpm. Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight 432 g (51st centile).\n\nCranium/intracranial anatomy, four-chamber heart, LVOT and spine: Normal. Mild left fetal pyelectasis; left renal pelvis 6.2 mm.\n\nRVOT and upper lip were not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis; renal pelvis 6.2 mm.\n- Incomplete assessment of the RVOT and upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 505,
+            "prompt_tokens": 2704,
+            "total_tokens": 3209,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 23,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 2304,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 6.239449540153146
+        }
+      ],
+      "seconds": 6.240001507103443,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal selected.\nFour-chamber heart: Normal selected.\nRVOT: Not well seen selected; Fetal position.\nLVOT: Normal selected.\nKidneys: Abnormal selected; LEFT renal pelvis 6.2 mm.\nSpine: Normal selected.\nFace / upper lip: Not well seen selected; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nAnterior placenta, clear of the internal os. Cervix: 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile), HC 190 mm (48th centile), AC 166 mm (57th centile), FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nCranium / intracranial anatomy, four-chamber heart, LVOT and spine are normal.\n\nMild left fetal pyelectasis, with the left renal pelvis measuring 6.2 mm.\n\nRVOT and face / upper lip are not well seen. RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip inadequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 525,
+            "prompt_tokens": 2704,
+            "total_tokens": 3229,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 2304,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.380657080560923
+        }
+      ],
+      "seconds": 8.381390316411853,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 1,
+      "source_notes": "Gestational age: 21 weeks 3 days\nNumber of fetuses: Singleton\nPresentation: Cephalic\nFHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; 55th centile\nBiometry / HC: 190 mm; 48th centile\nBiometry / AC: 166 mm; 57th centile\nBiometry / FL: 35 mm; 42nd centile\nBiometry / estimated fetal weight: 432 g; 51st centile\nFetal anatomy / cranium and intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys / left: Abnormal; renal pelvis 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face and upper lip: Not well seen\nComments / left fetal kidney: Mild pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\n**Biometry:** Biparietal diameter: 52 mm; 55th centile. Head circumference: 190 mm; 48th centile. Abdominal circumference: 166 mm; 57th centile. Femur length: 35 mm; 42nd centile. Estimated fetal weight: 432 g; 51st centile.\n\n**Fetal anatomy:** Cranium and intracranial anatomy, four-chamber heart, LVOT and spine are normal. Mild left fetal renal pyelectasis; renal pelvis 6.2 mm. RVOT and face and upper lip are not well seen; the RVOT and upper lip were not adequately visualised due to fetal position.\n\n**Placenta:** Anterior, clear of the internal os.\n\n**Cervix:** 3.6 cm, closed.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- RVOT and upper lip not adequately visualised due to fetal position.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 287,
+            "prompt_tokens": 2056,
+            "total_tokens": 2343,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 30,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1664,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 3.9431892428547144
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.912679301574826,
+          "usage": {
+            "completion_tokens": 294,
+            "prompt_tokens": 3440,
+            "total_tokens": 3734,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 33,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 278,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 8.857377194799483,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nStudy / placenta: Anterior, clear of internal os\nStudy / cervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; comment: Fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal\nFetal anatomy / renal pelvis / LEFT: 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; comment: Repeat imaging recommended\nComments / fetal kidney / LEFT: Mild LEFT fetal pyelectasis.\nComments / RVOT and upper lip: Not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\n**Pregnancy:** Singleton fetus in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\n**Fetal biometry:**\nBPD: 52 mm; 55th centile.\nHC: 190 mm; 48th centile.\nAC: 166 mm; 57th centile.\nFL: 35 mm; 42nd centile.\nEstimated fetal weight: 432 g; 51st centile.\n\n**Fetal anatomy:** Cranium and intracranial anatomy normal. Four-chamber heart and LVOT normal. RVOT not adequately visualised due to fetal position. Spine normal. Face/upper lip not adequately visualised due to fetal position; repeat imaging recommended.\n\n**Fetal kidneys:** Mild left fetal pyelectasis. Left renal pelvis measures 6.2 mm.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 279,
+            "prompt_tokens": 2056,
+            "total_tokens": 2335,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1664,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.842770745046437
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.108437662012875,
+          "usage": {
+            "completion_tokens": 271,
+            "prompt_tokens": 3468,
+            "total_tokens": 3739,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3465,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.963629880920053,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No selected.\nLeft pelvicaliectasis: Mild selected; Left renal pelvis 9 mm AP.\nRight calculus: None seen selected.\nLeft calculus: Present selected; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present selected; RIGHT upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nLeft renal cyst: None selected.\nRight ureteric jet: Present selected.\nLeft ureteric jet: Present selected.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm. Ureteric jet present.\n\nLeft kidney: Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis; renal pelvis 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst. Ureteric jet present.\n\nBladder: Pre-void volume 318 mL; post-void residual 24 mL. Wall thickness 3 mm. No evidence of focal bladder wall lesion.\n\nProstate: Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis with a 6 mm left lower-pole calculus.\n- Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 533,
+            "prompt_tokens": 2284,
+            "total_tokens": 2817,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 38,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 6.378162056207657
+        }
+      ],
+      "seconds": 6.378776714205742,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; Left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 x 1.7 x 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion. Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm and cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 x 1.7 x 1.5 cm.\n\nLeft kidney: Length 10.2 cm and cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nBladder: Pre-void volume 318 mL and post-void residual 24 mL. Bladder wall measures 3 mm. No evidence of focal bladder wall lesion. Both ureteric jets are present.\n\nProstate: Mild prostatomegaly, with a volume of 36 mL.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Right upper-pole simple renal cyst and incidental mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 494,
+            "prompt_tokens": 2284,
+            "total_tokens": 2778,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1920,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.175560307689011
+        }
+      ],
+      "seconds": 8.176144938915968,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "source_notes": "History: Chronic renal impairment; chronic renal insufficiency selected\nStudy: Renal tract ultrasound\nKidney length / right: 10.8 cm\nKidney length / left: 10.2 cm\nCortical thickness / right: 14 mm\nCortical thickness / left: 12 mm\nPelvicaliectasis / right: No\nPelvicaliectasis / left: Mild; left renal pelvis 9 mm AP\nCalculus / right: None seen\nCalculus / left: Present; 6 mm lower-pole calculus\nRenal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm\nRenal cyst / left: None\nUreteric jet / right: Present\nUreteric jet / left: Present\nBladder / pre-void volume: 318 mL\nBladder / post-void residual: 24 mL\nBladder wall: 3 mm; no focal bladder wall lesion\nProstate / volume: 36 mL\nComments / prostate: Incidental mild prostatomegaly",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\n\n**Kidneys:**\nRight kidney length 10.8 cm; cortical thickness 14 mm. No pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\nLeft kidney length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis, with the left renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No renal cyst.\n\n**Bladder:**\nBilateral ureteric jets present. Pre-void volume 318 mL; post-void residual 24 mL. Bladder wall 3 mm, with no focal bladder wall lesion.\n\n**Prostate:**\nVolume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis with a 6 mm left lower-pole renal calculus.\n- Incidental mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 284,
+            "prompt_tokens": 1636,
+            "total_tokens": 1920,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 43,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.3421026626601815
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 2.853665322996676,
+          "usage": {
+            "completion_tokens": 232,
+            "prompt_tokens": 3424,
+            "total_tokens": 3656,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3421,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 7.196698818355799,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "History: Chronic renal impairment.\nHistory: Chronic renal insufficiency.\nStudy: Renal tract ultrasound.\nKidney / length / right: 10.8 cm.\nKidney / length / left: 10.2 cm.\nKidney / cortical thickness / right: 14 mm.\nKidney / cortical thickness / left: 12 mm.\nKidney / pelvicaliectasis / right: No.\nKidney / pelvicaliectasis / left: Mild.\nKidney / renal pelvis / left: 9 mm AP.\nKidney / calculus / right: None seen.\nKidney / calculus / left: Present; 6 mm lower-pole calculus.\nKidney / renal cyst / right: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / renal cyst / left: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. A 6 mm lower-pole calculus is present. No evidence of renal cyst.\n\n**Bladder:** Pre-void volume 318 mL. Post-void residual 24 mL. Wall thickness 3 mm. No evidence of a focal bladder wall lesion. Bilateral ureteric jets are present.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n1. Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n2. Right upper-pole simple renal cyst.\n3. Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 265,
+            "prompt_tokens": 1636,
+            "total_tokens": 1901,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 5.243151645176113
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.145438630133867,
+          "usage": {
+            "completion_tokens": 244,
+            "prompt_tokens": 3454,
+            "total_tokens": 3698,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3451,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.40290104597807,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal.\nFour-chamber heart: Normal.\nRVOT: Not well seen; Fetal position.\nLVOT: Normal.\nKidneys: Abnormal; LEFT renal pelvis 6.2 mm.\nSpine: Normal.\nFace / upper lip: Not well seen; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nAnterior placenta, clear of the internal os. Cervix: 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nNormal cranium / intracranial anatomy, four-chamber heart, LVOT and spine.\n\nMild left fetal pyelectasis; left renal pelvis measures 6.2 mm.\n\nRVOT and face / upper lip are not well seen. RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- Incomplete anatomical assessment: RVOT and upper lip inadequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 523,
+            "prompt_tokens": 2704,
+            "total_tokens": 3227,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.861579443328083
+        }
+      ],
+      "seconds": 8.862231685779989,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "source_notes": "Gestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; 55th centile.\nHC: 190 mm; 48th centile.\nAC: 166 mm; 57th centile.\nFL: 35 mm; 42nd centile.\nEstimated fetal weight: 432 g; 51st centile.\nCranium / intracranial anatomy: Normal.\nFour-chamber heart: Normal.\nRVOT: Not well seen; fetal position.\nLVOT: Normal.\nKidneys: Abnormal; LEFT renal pelvis 6.2 mm.\nSpine: Normal.\nFace / upper lip: Not well seen; repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\nSingleton fetus at a documented gestational age of 21 weeks 3 days, in cephalic presentation. FHR 148 bpm. Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight 432 g (51st centile).\n\nCranium/intracranial anatomy, four-chamber heart, LVOT and spine marked normal. Mild left fetal pyelectasis; left renal pelvis 6.2 mm.\n\nRVOT and face/upper lip not well seen. The RVOT and upper lip were not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- Incomplete assessment of the RVOT and upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 545,
+            "prompt_tokens": 2704,
+            "total_tokens": 3249,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 31,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 7.747581441886723
+        }
+      ],
+      "seconds": 7.748567273840308,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nStudy / placenta: Anterior, clear of internal os\nStudy / cervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal\nFetal anatomy / renal pelvis / left: 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; repeat imaging recommended\nComments / fetal kidney / left: Mild LEFT fetal pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\n**Pregnancy:** Singleton fetus in cephalic presentation. Gestational age: 21 weeks 3 days. Fetal heart rate: 148 bpm.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix: 3.6 cm, closed.\n\n**Biometry:**\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\n\n**Fetal anatomy:**\n**Cranium / intracranial anatomy:** Normal.\n**Four-chamber heart:** Normal.\n**RVOT:** Not adequately visualised due to fetal position.\n**LVOT:** Normal.\n**Kidneys:** Abnormal, with mild left fetal pyelectasis. Left renal pelvis: 6.2 mm.\n**Spine:** Normal.\n**Face / upper lip:** Not adequately visualised due to fetal position; repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 273,
+            "prompt_tokens": 2056,
+            "total_tokens": 2329,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1664,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.747355016879737
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.922348627820611,
+          "usage": {
+            "completion_tokens": 295,
+            "prompt_tokens": 3462,
+            "total_tokens": 3757,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 300,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.685580587945879,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6-sol",
+      "repeat": 2,
+      "source_notes": "Gestational age: 21 weeks 3 days\nNumber of fetuses: Singleton\nPresentation: Cephalic\nFHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; 55th centile\nBiometry / HC: 190 mm; 48th centile\nBiometry / AC: 166 mm; 57th centile\nBiometry / FL: 35 mm; 42nd centile\nBiometry / estimated fetal weight: 432 g; 51st centile\nFetal anatomy / cranium and intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys / left: Abnormal; renal pelvis 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face and upper lip: Not well seen\nComments / left fetal kidney: Mild pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\n**Biometry:** Biparietal diameter: 52 mm; 55th centile. Head circumference: 190 mm; 48th centile. Abdominal circumference: 166 mm; 57th centile. Femur length: 35 mm; 42nd centile. Estimated fetal weight: 432 g; 51st centile.\n\n**Fetal anatomy:** Cranium and intracranial anatomy, four-chamber heart, LVOT and spine are normal. Mild left renal pyelectasis; renal pelvis 6.2 mm. RVOT and face and upper lip are not adequately visualised due to fetal position.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix: 3.6 cm, closed.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with the renal pelvis measuring 6.2 mm.\n- RVOT and upper lip not adequately visualised due to fetal position. Fetal biometry is appropriate for the stated gestational age.",
+      "api_calls": [
+        {
+          "model": "gpt-6-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 283,
+            "prompt_tokens": 2056,
+            "total_tokens": 2339,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 26,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1664,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 3.4769276892766356
+        },
+        {
+          "model": "gpt-6-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.896104707382619,
+          "usage": {
+            "completion_tokens": 347,
+            "prompt_tokens": 3440,
+            "total_tokens": 3787,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 72,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3437,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 8.398193752393126,
+      "first_text_seconds": null
+    }
+  ],
+  "summary": {
+    "availability:gpt-6-sol": {
+      "n": 1,
+      "completed": 1,
+      "median_seconds": 1.094891450367868,
+      "max_seconds": 1.094891450367868,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "availability:gpt-6.1-sol": {
+      "n": 1,
+      "completed": 1,
+      "median_seconds": 1.1683024326339364,
+      "max_seconds": 1.1683024326339364,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "worksheet_one_step:gpt-6-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 6.509032760746777,
+      "max_seconds": 7.748567273840308,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "worksheet_one_step:gpt-6.1-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 8.274725429248065,
+      "max_seconds": 8.862231685779989,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "worksheet_two_step:gpt-6-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 7.616654200013727,
+      "max_seconds": 8.857377194799483,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "worksheet_two_step:gpt-6.1-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 9.544240816961974,
+      "max_seconds": 10.141548008657992,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    }
+  },
+  "worksheet_phase": "complete"
+}
