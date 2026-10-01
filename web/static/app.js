@@ -1836,6 +1836,16 @@ function _selectedCtCapLayout() {
   return document.querySelector('input[name="ct-cap-layout"]:checked')?.value || "compare";
 }
 
+function _looksLikeCtCap(transcription) {
+  const context = [
+    transcription,
+    $("modality")?.value || "",
+    $("body-part")?.value || "",
+  ].join(" ").toLowerCase().replace(/[–—]/g, "-");
+  return /\bct\s+c[\s./-]*a[\s./-]*p(?:s)?\b/.test(context)
+    || /\b(?:ct\s+)?(?:chest|thorax)\s*,?\s*(?:abdomen|abdominal)\s*(?:(?:and|&)\s*)?pelvis\b/.test(context);
+}
+
 function _updateCtCapLayoutVisibility() {
   const panel = $("ct-cap-layout-panel");
   if (!panel) return;
@@ -2029,11 +2039,20 @@ async function formatReport() {
     return;
   }
 
-  const isCtCap = $("template-select").value === CT_CAP_TEMPLATE;
-  const capLayout = isCtCap ? _selectedCtCapLayout() : null;
+  const selectedTemplate = $("template-select").value;
+  const autoDetectedCtCap = !selectedTemplate && _looksLikeCtCap(transcription);
+  const isCtCap = selectedTemplate === CT_CAP_TEMPLATE || autoDetectedCtCap;
+  // Auto-select uses comparison mode so an incorrect generic CT template can
+  // never silently absorb a combined chest/abdomen/pelvis staging study.
+  const capLayout = autoDetectedCtCap
+    ? "compare"
+    : (isCtCap ? _selectedCtCapLayout() : null);
   const body = _formatRequestBody(
     transcription,
-    capLayout && capLayout !== "compare" ? { cap_layout: capLayout } : {},
+    {
+      ...(autoDetectedCtCap ? { template_name: CT_CAP_TEMPLATE } : {}),
+      ...(capLayout && capLayout !== "compare" ? { cap_layout: capLayout } : {}),
+    },
   );
 
   setUI("formatting");

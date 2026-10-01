@@ -110,7 +110,7 @@ def _get_guidelines() -> List[str]:
 _KEYWORD_MAP = [
     # (template_filename, [keywords — checked against lowercase transcript])
     # Order matters: more specific entries first
-    ("CT_CAP_Staging.txt",          ["ct cap", "staging ct", "ct chest abdomen pelvis", "ct chest abdomen and pelvis"]),
+    ("CT_CAP_Staging.txt",          ["ct cap", "ct c a p", "staging ct cap", "restaging ct cap", "ct chest abdomen pelvis", "ct chest abdomen and pelvis", "ct thorax abdomen pelvis", "ct thorax abdomen and pelvis"]),
     ("CT_Angiography_Thoracic.txt", ["cta thorax", "ct angio thorax", "thoracic aorta", "ct pulmonary angiogram", "ctpa"]),
     ("HRCT_Thorax.txt",             ["hrct", "high resolution ct", "high-resolution ct", "hrct thorax"]),
     ("CT_Chest.txt",                ["ct chest", "chest ct", "ct thorax", "thorax ct"]),

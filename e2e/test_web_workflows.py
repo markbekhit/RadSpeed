@@ -125,7 +125,8 @@ def test_ct_cap_compare_mode_generates_both_layouts_then_uses_one(page: Page, ba
     expect(page.locator('#template-select option[value="_CT_CAP_Staging_Regions.txt"]')).to_have_count(0)
     page.locator("#template-select").select_option("CT_CAP_Staging.txt")
     expect(page.locator("#ct-cap-layout-panel")).to_be_visible()
-    page.get_by_label("Compare both").check()
+    page.locator("#template-select").select_option("")
+    expect(page.locator("#ct-cap-layout-panel")).to_be_hidden()
     page.locator("#transcription").fill(
         "Staging CT CAP. No pulmonary or hepatic metastasis. No lymphadenopathy."
     )

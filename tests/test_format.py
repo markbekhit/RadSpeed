@@ -241,6 +241,10 @@ class TestKeywordTemplateSelection(unittest.TestCase):
                 fmt._keyword_select_template("Staging CT chest abdomen and pelvis"),
                 "CT_CAP_Staging.txt",
             )
+            self.assertEqual(
+                fmt._keyword_select_template("CT C A P surveillance"),
+                "CT_CAP_Staging.txt",
+            )
 
 
 # ---------------------------------------------------------------------------
