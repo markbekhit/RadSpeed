@@ -113,7 +113,7 @@ fn cmd_set_compact_mode(app: AppHandle, compact: bool) {
         return;
     };
     if compact {
-        let _ = window.set_resizable(false);
+        let _ = window.set_resizable(true);
         let _ = window.set_size(Size::Logical(LogicalSize::new(520.0, 200.0)));
         let _ = window.set_always_on_top(true);
         position_app_overlay(&window);
@@ -261,7 +261,10 @@ pub fn run() {
             )
             .title("RadSpeed")
             .inner_size(520.0, 200.0)
-            .resizable(false)
+            .min_inner_size(420.0, 200.0)
+            .resizable(true)
+            // Runs on every navigation, including the query-free OAuth return.
+            .initialization_script("window.__RADSPEED_DESKTOP_OVERLAY__ = true;")
             .always_on_top(true)
             .visible(false)
             .build()?;

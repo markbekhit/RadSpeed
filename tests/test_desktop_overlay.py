@@ -39,6 +39,19 @@ class DesktopOverlayTests(unittest.TestCase):
         self.assertIn(".always_on_top(true)", source)
         self.assertIn('get_webview_window("settings")', source)
 
+    def test_native_compact_window_remains_resizable(self):
+        source = (ROOT / "desktop/src-tauri/src/lib.rs").read_text()
+        command = source.split("fn cmd_set_compact_mode", 1)[1].split(
+            "pub(crate) fn show_app_window", 1
+        )[0]
+        builder = source.split('// Build the full-app window', 1)[1].split(
+            '// Close button hides', 1
+        )[0]
+        self.assertNotIn("set_resizable(false)", command)
+        self.assertIn(".resizable(true)", builder)
+        self.assertIn(".min_inner_size(420.0, 200.0)", builder)
+        self.assertIn('.initialization_script("window.__RADSPEED_DESKTOP_OVERLAY__ = true;")', builder)
+
     def test_remote_window_can_only_use_scoped_desktop_commands(self):
         capability = (
             ROOT / "desktop/src-tauri/capabilities/remote-report-copy.json"

@@ -315,6 +315,8 @@ practice rather than a tinkerer.
   hides it to the system tray, so the controller and hotkey remain available.
   Version 0.2.33 preserves bold inline anatomical subheadings through native
   RTF and HTML report copy, while keeping the finding text normal weight.
+  Version 0.2.34 keeps the compact controller after sign-in redirects and
+  allows resizing from its edges, with a 420 by 200 minimum control area.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

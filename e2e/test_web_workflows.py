@@ -5,6 +5,7 @@ import io
 import re
 import time
 
+import pytest
 from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import Browser, Page, expect
 
@@ -137,6 +138,54 @@ def test_desktop_overlay_keeps_reporting_controls_compact(page: Page, base_url: 
     expect(page.locator("body > header")).to_be_visible()
     expect(page.locator("#btn-desktop-collapse")).to_be_visible()
     assert errors == []
+
+
+@pytest.mark.parametrize("desktop_signal", ["marker", "tauri-window"])
+def test_desktop_overlay_survives_query_free_sign_in(page: Page, base_url: str, desktop_signal: str):
+    errors = _console_errors(page)
+    # Model WebView2's document-start scripts and the OAuth callback to /app.
+    signal_script = (
+        "window.__RADSPEED_DESKTOP_OVERLAY__ = true;" if desktop_signal == "marker"
+        else "window.__TAURI__.window = {getCurrentWindow: () => ({label: 'app'})};"
+    )
+    page.add_init_script("""
+        window.desktopCalls = [];
+        window.__TAURI__ = {
+            core: {invoke: async (command, args) => window.desktopCalls.push({command, args})}
+        };
+    """ + signal_script)
+    page.set_viewport_size({"width": 420, "height": 200})
+    page.goto(f"{base_url}/app")
+
+    expect(page.locator("body")).to_have_class(re.compile("desktop-overlay"))
+    expect(page.locator("body > header")).to_be_hidden()
+    for width, height in ((420, 200), (520, 200), (700, 300)):
+        page.set_viewport_size({"width": width, "height": height})
+        for selector in ("#btn-record", "#btn-stop", "#btn-overlay-copy", "#btn-overlay-next"):
+            expect(page.locator(selector)).to_be_in_viewport()
+        assert page.evaluate("document.documentElement.scrollWidth") <= width
+        assert page.evaluate("document.documentElement.scrollHeight") <= height
+
+    page.locator("#btn-desktop-settings").click()
+    page.locator("#btn-desktop-expand").click()
+    expect(page.locator("body > header")).to_be_visible()
+    page.locator("#btn-desktop-collapse").click()
+    expect(page.locator("body > header")).to_be_hidden()
+    assert page.evaluate("window.desktopCalls") == [
+        {"command": "cmd_show_settings", "args": {}},
+        {"command": "cmd_set_compact_mode", "args": {"compact": False}},
+        {"command": "cmd_set_compact_mode", "args": {"compact": True}},
+    ]
+    page.reload()
+    expect(page.locator("body")).to_have_class(re.compile("desktop-overlay"))
+    assert errors == []
+
+
+def test_browser_workstation_without_desktop_signal_stays_full_size(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    expect(page.locator("body")).not_to_have_class(re.compile("desktop-host"))
+    expect(page.locator("body > header")).to_be_visible()
+    expect(page.locator("#desktop-overlay-head")).to_be_hidden()
 
 
 def test_authenticated_impression_action_preserves_the_report(page: Page, base_url: str):

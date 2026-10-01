@@ -271,7 +271,11 @@ async function setDesktopCompactMode(compact) {
 
 function initDesktopOverlay() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get("desktop") !== "overlay") return;
+  // OAuth callbacks return to /app without the original query. Identify the
+  // native app window as well, including already-installed desktop versions.
+  const nativeAppWindow = window.__RADSPEED_DESKTOP_OVERLAY__ === true
+    || window.__TAURI__?.window?.getCurrentWindow?.().label === "app";
+  if (params.get("desktop") !== "overlay" && !nativeAppWindow) return;
 
   document.body.classList.add("desktop-host", "desktop-overlay");
   $("btn-desktop-expand")?.addEventListener("click", () => setDesktopCompactMode(false));
