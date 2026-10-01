@@ -556,7 +556,10 @@ def _list_templates() -> list[str]:
     names: set[str] = set()
     for d in (template_dir, _BUNDLED_TEMPLATES_DIR):
         if os.path.isdir(d):
-            names.update(f for f in os.listdir(d) if f.endswith((".txt", ".md")))
+            names.update(
+                f for f in os.listdir(d)
+                if f.endswith((".txt", ".md")) and not f.startswith("_")
+            )
     # Pin Plain_Prose.txt to the top so the unstructured option is discoverable
     # without scrolling past the alphabetical list of structured templates.
     ordered = sorted(names)
@@ -2528,6 +2531,41 @@ class FormatRequest(BaseModel):
     # A prior is included only after explicit radiologist selection in the UI.
     comparison_report: Optional[str] = None
     comparison_date: Optional[str] = None
+    cap_layout: Optional[Literal["components", "regions"]] = None
+    # Comparison drafts must not create duplicate clinical exports. The chosen
+    # draft can still be signed off through the normal audited workflow.
+    comparison_draft: bool = False
+
+
+_CT_CAP_TEMPLATE = "CT_CAP_Staging.txt"
+_CT_CAP_REGIONS_TEMPLATE = "_CT_CAP_Staging_Regions.txt"
+
+
+def _format_template_content(req: "FormatRequest") -> str:
+    """Resolve the visible CT CAP template to its selected report layout."""
+    name = req.template_name
+    if name == _CT_CAP_TEMPLATE and req.cap_layout == "regions":
+        name = _CT_CAP_REGIONS_TEMPLATE
+    return _load_template_content(name) if name else ""
+
+
+def _mock_report_for_request(req: "FormatRequest") -> str:
+    if req.template_name != _CT_CAP_TEMPLATE:
+        return _MOCK_REPORT
+    if req.cap_layout == "regions":
+        return (
+            "**EXAM:** CT chest, abdomen and pelvis\n\n"
+            "**FINDINGS:**\n\n**Chest:** No thoracic metastatic disease.\n\n"
+            "**Abdomen and Pelvis:** No abdominopelvic metastatic disease.\n\n"
+            "**IMPRESSION:**\n1. No metastatic disease in the chest, abdomen or pelvis."
+        )
+    return (
+        "**EXAM:** CT chest, abdomen and pelvis\n\n"
+        "**FINDINGS:**\n\n**Lungs and Airways:** No pulmonary metastasis.\n\n"
+        "**Liver and Biliary System:** No hepatic metastasis.\n\n"
+        "**Lymph Nodes:** No lymphadenopathy.\n\n"
+        "**IMPRESSION:**\n1. No metastatic disease in the chest, abdomen or pelvis."
+    )
 
 
 def _hl7_outbox_dir() -> Optional[str]:
@@ -2757,7 +2795,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
     """Format a transcription into a structured radiology report."""
     if _MOCK_MODE:
         logger.info("[mock] Returning canned report")
-        return {"report": _MOCK_REPORT, "fhir_saved": False}
+        return {"report": _mock_report_for_request(req), "fhir_saved": False}
 
     if not config.TEXT_API_KEY:
         raise HTTPException(
@@ -2770,9 +2808,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
         _style["numeral_corrections"] = numeral_prefs
     with _format_lock:
         old_template = config.global_md_text_content
-        config.global_md_text_content = (
-            _load_template_content(req.template_name) if req.template_name else ""
-        )
+        config.global_md_text_content = _format_template_content(req)
         try:
             report = format_text(
                 req.transcription,
@@ -2787,7 +2823,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
         raise HTTPException(status_code=503, detail="Report generation failed.")
 
     fhir_saved = False
-    if _user_fhir_enabled(user):
+    if not req.comparison_draft and _user_fhir_enabled(user):
         path = save_fhir_report(
             report_text=report,
             template_name=req.template_name,
@@ -2799,7 +2835,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
 
     hl7_saved = False
     _hl7_dir = _hl7_outbox_dir()
-    if _hl7_dir:
+    if not req.comparison_draft and _hl7_dir:
         try:
             path = save_hl7_report(
                 report_text=report,
@@ -2815,7 +2851,7 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
 
     sr_saved = False
     _sr_dir = _sr_outbox_dir()
-    if _sr_dir:
+    if not req.comparison_draft and _sr_dir:
         try:
             path = save_dicom_sr_report(
                 report_text=report,
@@ -2842,6 +2878,8 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
             "fhir_saved": fhir_saved,
             "hl7_saved": hl7_saved,
             "sr_saved": sr_saved,
+            "cap_layout": req.cap_layout,
+            "comparison_draft": req.comparison_draft,
         },
     )
     return {
@@ -2864,10 +2902,11 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
     if _MOCK_MODE:
         def _mock_stream():
             import time
-            for word in _MOCK_REPORT.split(" "):
+            for word in _mock_report_for_request(req).split(" "):
                 yield f'data: {{"token": {json.dumps(word + " ")}}}\n\n'
                 time.sleep(0.03)
-            yield 'data: {"done": true, "fhir_saved": false}\n\n'
+            report = _mock_report_for_request(req)
+            yield f'data: {json.dumps({"done": True, "fhir_saved": False, "report": report})}\n\n'
         return StreamingResponse(_mock_stream(), media_type="text/event-stream")
 
     if not config.TEXT_API_KEY:
@@ -2886,9 +2925,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
     # config.global_md_text_content and released the lock before streaming, so
     # a concurrent request could swap the template mid-stream and a report
     # would be structured against the wrong template.
-    _template_snapshot = (
-        _load_template_content(req.template_name) if req.template_name else ""
-    )
+    _template_snapshot = _format_template_content(req)
 
     def _generate():
         try:
@@ -2917,7 +2954,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
         corrected_report = postprocess_report(reinsert_identifiers(full_report, _ctx))
 
         fhir_saved = False
-        if _user_fhir_enabled(user) and corrected_report:
+        if not req.comparison_draft and _user_fhir_enabled(user) and corrected_report:
             try:
                 path = save_fhir_report(
                     report_text=corrected_report,
@@ -2932,7 +2969,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
 
         hl7_saved = False
         _hl7_dir = _hl7_outbox_dir()
-        if _hl7_dir and corrected_report:
+        if not req.comparison_draft and _hl7_dir and corrected_report:
             try:
                 path = save_hl7_report(
                     report_text=corrected_report,
@@ -2948,7 +2985,7 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
 
         sr_saved = False
         _sr_dir = _sr_outbox_dir()
-        if _sr_dir and corrected_report:
+        if not req.comparison_draft and _sr_dir and corrected_report:
             try:
                 path = save_dicom_sr_report(
                     report_text=corrected_report,
@@ -2972,6 +3009,8 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
                 "hl7_saved": hl7_saved,
                 "sr_saved": sr_saved,
                 "stream": True,
+                "cap_layout": req.cap_layout,
+                "comparison_draft": req.comparison_draft,
             },
         )
         yield f'data: {json.dumps({"done": True, "fhir_saved": fhir_saved, "hl7_saved": hl7_saved, "sr_saved": sr_saved, "report": corrected_report})}\n\n'

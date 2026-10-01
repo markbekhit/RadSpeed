@@ -223,6 +223,112 @@ footer {
   margin-bottom: 10px;
 }
 
+/* CT CAP layout choice appears only for the staging template. */
+.ct-cap-layout-panel {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.ct-cap-layout-panel[hidden] { display: none; }
+.ct-cap-layout-panel legend {
+  padding: 0 5px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ct-cap-layout-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.ct-cap-layout-option {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  cursor: pointer;
+}
+.ct-cap-layout-option:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(0, 194, 255, 0.08);
+}
+.ct-cap-layout-option.recommended:has(input:checked) {
+  border-color: var(--mint);
+  background: rgba(0, 229, 160, 0.07);
+}
+.ct-cap-layout-option input { margin-top: 3px; accent-color: var(--accent); }
+.ct-cap-layout-option span { display: flex; min-width: 0; flex-direction: column; }
+.ct-cap-layout-option strong { font-size: 12px; }
+.ct-cap-layout-option small { color: var(--muted); font-size: 10px; line-height: 1.35; }
+.ct-cap-layout-panel .field-note { margin-top: 7px; }
+
+main.cap-comparison-open { max-width: 1260px; }
+.ct-cap-comparison {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(0, 194, 255, 0.45);
+  border-radius: 7px;
+  background: rgba(0, 194, 255, 0.035);
+}
+.ct-cap-comparison[hidden] { display: none; }
+.ct-cap-comparison-head { margin-bottom: 10px; }
+.ct-cap-comparison-head p { margin-top: 2px; color: var(--muted); font-size: 11px; }
+.ct-cap-draft-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.ct-cap-draft {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.ct-cap-draft > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ct-cap-draft > header span {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.ct-cap-draft-report {
+  min-height: 260px;
+  max-height: 560px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.ct-cap-draft-report:empty::before { content: "Generating draft…"; color: var(--muted); }
+.ct-cap-draft-report p { margin: 4px 0; }
+.ct-cap-draft-report ul, .ct-cap-draft-report ol { margin: 4px 0 4px 18px; }
+.ct-cap-draft-error { color: var(--red); font-size: 11px; }
+.ct-cap-draft .btn { align-self: flex-end; }
+
+@media (max-width: 760px) {
+  .ct-cap-layout-options,
+  .ct-cap-draft-grid { grid-template-columns: 1fr; }
+  .ct-cap-draft-report { max-height: 420px; }
+}
+
 /* ── Inputs ── */
 select, input[type=text], input[type=number], input[type=date], textarea {
   background: var(--bg);

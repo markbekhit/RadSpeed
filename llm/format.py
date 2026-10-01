@@ -81,7 +81,10 @@ def _get_file_list(directory: str, ext: str) -> List[str]:
     """Get files with given extension in directory."""
     if not os.path.exists(directory):
         return []
-    return [f for f in os.listdir(directory) if f.endswith(ext)]
+    return [
+        f for f in os.listdir(directory)
+        if f.endswith(ext) and not f.startswith("_")
+    ]
 
 
 def _get_templates() -> List[str]:
@@ -107,6 +110,7 @@ def _get_guidelines() -> List[str]:
 _KEYWORD_MAP = [
     # (template_filename, [keywords — checked against lowercase transcript])
     # Order matters: more specific entries first
+    ("CT_CAP_Staging.txt",          ["ct cap", "staging ct", "ct chest abdomen pelvis", "ct chest abdomen and pelvis"]),
     ("CT_Angiography_Thoracic.txt", ["cta thorax", "ct angio thorax", "thoracic aorta", "ct pulmonary angiogram", "ctpa"]),
     ("HRCT_Thorax.txt",             ["hrct", "high resolution ct", "high-resolution ct", "hrct thorax"]),
     ("CT_Chest.txt",                ["ct chest", "chest ct", "ct thorax", "thorax ct"]),

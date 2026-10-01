@@ -51,6 +51,16 @@ class BundledTemplateTests(unittest.TestCase):
     def test_missing_template_returns_none(self):
         self.assertIsNone(fmt._get_template_content("does-not-exist.txt"))
 
+    def test_ct_cap_templates_offer_component_and_regional_structures(self):
+        components = fmt._get_template_content("CT_CAP_Staging.txt")
+        regions = fmt._get_template_content("_CT_CAP_Staging_Regions.txt")
+
+        self.assertIn("**Lungs and Airways**", components)
+        self.assertIn("**Liver and Biliary System**", components)
+        self.assertIn("**Chest**", regions)
+        self.assertIn("**Abdomen and Pelvis**", regions)
+        self.assertNotIn("**Lungs and Airways**", regions)
+
     def test_spine_templates_use_compact_overview_levels_final_checks_order(self):
         names = (
             "MRI_Spine_Cervical.txt",
@@ -101,7 +111,7 @@ class BundledTemplateTests(unittest.TestCase):
                 continue
             technique_lines[name] = content.split("### Technique:\n", 1)[1].splitlines()[0]
 
-        self.assertEqual(len(technique_lines), 39)
+        self.assertEqual(len(technique_lines), 41)
         self.assertEqual(
             technique_lines["CT_Spine_Lumbar.txt"],
             "Non-contrast CT of the lumbar spine.",

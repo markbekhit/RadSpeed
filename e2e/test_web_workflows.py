@@ -111,6 +111,49 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     assert errors == []
 
 
+def test_ct_cap_compare_mode_generates_both_layouts_then_uses_one(page: Page, base_url: str):
+    errors = _console_errors(page)
+    payloads = []
+    page.on(
+        "request",
+        lambda request: payloads.append(request.post_data_json)
+        if request.url.endswith("/format/stream") and request.method == "POST"
+        else None,
+    )
+    page.goto(f"{base_url}/app")
+
+    expect(page.locator('#template-select option[value="_CT_CAP_Staging_Regions.txt"]')).to_have_count(0)
+    page.locator("#template-select").select_option("CT_CAP_Staging.txt")
+    expect(page.locator("#ct-cap-layout-panel")).to_be_visible()
+    page.get_by_label("Compare both").check()
+    page.locator("#transcription").fill(
+        "Staging CT CAP. No pulmonary or hepatic metastasis. No lymphadenopathy."
+    )
+    page.locator("#btn-format").click()
+
+    expect(page.locator("#ct-cap-comparison")).to_be_visible()
+    expect(page.locator("#ct-cap-components-report")).to_contain_text(
+        "Lungs and Airways", timeout=15_000
+    )
+    expect(page.locator("#ct-cap-regions-report")).to_contain_text(
+        "Abdomen and Pelvis", timeout=15_000
+    )
+    expect(page.locator("#btn-use-cap-components")).to_be_enabled()
+    expect(page.locator("#btn-use-cap-regions")).to_be_enabled()
+
+    comparison_payloads = [p for p in payloads if p.get("comparison_draft")]
+    assert {p["cap_layout"] for p in comparison_payloads} == {"components", "regions"}
+    assert all(p["template_name"] == "CT_CAP_Staging.txt" for p in comparison_payloads)
+
+    page.locator("#btn-use-cap-regions").click()
+    expect(page.locator("#ct-cap-comparison")).to_be_hidden()
+    expect(page.locator("#report-rendered")).to_contain_text("Chest")
+    expect(page.locator("#report-rendered")).to_contain_text("Abdomen and Pelvis")
+    expect(page.locator("#status")).to_contain_text("selected")
+    expect(page.locator("#report-status-badge")).to_have_text("Preliminary")
+    assert errors == []
+
+
 def test_desktop_overlay_keeps_reporting_controls_compact(page: Page, base_url: str):
     errors = _console_errors(page)
     page.set_viewport_size({"width": 520, "height": 200})

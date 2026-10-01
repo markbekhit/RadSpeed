@@ -58,6 +58,7 @@ const state = {
   // can't land in the next patient's case.
   caseEpoch: 0,
   formatAbort: null,
+  ctCapDrafts: {},
   // Dictation mode may complete missing template anatomy with normal defaults.
   // Worksheet mode never does: blank/unmarked worksheet cells remain unknown.
   sourceKind: "dictation",
@@ -1828,14 +1829,60 @@ async function generateFromWorksheet(onePass = false) {
 // ---------------------------------------------------------------------------
 // Format — streaming SSE
 // ---------------------------------------------------------------------------
-async function formatReport() {
-  const transcription = $("transcription").value.trim();
-  if (!transcription) {
-    setStatus("No transcription to format.", "error");
-    return;
-  }
+const CT_CAP_TEMPLATE = "CT_CAP_Staging.txt";
+const CT_CAP_LAYOUT_STORAGE_KEY = "radspeed.ctCapLayout";
 
-  const body = {
+function _selectedCtCapLayout() {
+  return document.querySelector('input[name="ct-cap-layout"]:checked')?.value || "compare";
+}
+
+function _updateCtCapLayoutVisibility() {
+  const panel = $("ct-cap-layout-panel");
+  if (!panel) return;
+  panel.hidden = $("template-select")?.value !== CT_CAP_TEMPLATE;
+}
+
+function _initCtCapLayout() {
+  let saved = "compare";
+  try {
+    const stored = localStorage.getItem(CT_CAP_LAYOUT_STORAGE_KEY);
+    if (["components", "regions", "compare"].includes(stored)) saved = stored;
+  } catch (_) {}
+  const selected = document.querySelector(`input[name="ct-cap-layout"][value="${saved}"]`);
+  if (selected) selected.checked = true;
+  document.querySelectorAll('input[name="ct-cap-layout"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      try { localStorage.setItem(CT_CAP_LAYOUT_STORAGE_KEY, input.value); } catch (_) {}
+    });
+  });
+  _updateCtCapLayoutVisibility();
+}
+
+function _hideCtCapComparison({ clear = true } = {}) {
+  const panel = $("ct-cap-comparison");
+  if (panel) panel.hidden = true;
+  document.querySelector("main")?.classList.remove("cap-comparison-open");
+  if (!clear) return;
+  state.ctCapDrafts = {};
+  for (const layout of ["components", "regions"]) {
+    const report = $(`ct-cap-${layout}-report`);
+    const error = $(`ct-cap-${layout}-error`);
+    const button = $(`btn-use-cap-${layout}`);
+    if (report) report.innerHTML = "";
+    if (error) { error.textContent = ""; error.hidden = true; }
+    if (button) button.disabled = true;
+  }
+}
+
+function _showCtCapComparison() {
+  _hideCtCapComparison();
+  const panel = $("ct-cap-comparison");
+  if (panel) panel.hidden = false;
+  document.querySelector("main")?.classList.add("cap-comparison-open");
+}
+
+function _formatRequestBody(transcription, overrides = {}) {
+  return {
     transcription,
     template_name: $("template-select").value || null,
     session_id: state.sessionId || null,
@@ -1849,12 +1896,151 @@ async function formatReport() {
     referring_physician:  $("referring-physician").value.trim()  || null,
     radiologist:          $("radiologist").value.trim()          || null,
     ..._selectedPriorPayload(),
+    ...overrides,
   };
+}
+
+async function _streamFormatRequest(body, { signal, onToken } = {}) {
+  const resp = await fetch("/format/stream", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+    throw new Error(err.detail || resp.statusText);
+  }
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let accumulated = "";
+  let completed = null;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const payload = line.slice(6).trim();
+      if (!payload) continue;
+      let msg;
+      try { msg = JSON.parse(payload); } catch { continue; }
+      if (msg.token) {
+        accumulated += msg.token;
+        if (onToken) onToken(accumulated);
+      } else if (msg.done) {
+        completed = { ...msg, report: msg.report || accumulated };
+      } else if (msg.error) {
+        throw new Error(msg.error);
+      }
+    }
+  }
+  if (!completed) throw new Error("Report generation ended before a completed draft was returned.");
+  return completed;
+}
+
+function _activateGeneratedReport(report, statusText = "Report ready.") {
+  $("report-raw").value = report;
+  $("report-rendered").innerHTML = renderMarkdown(report);
+  state.reportLlmOutput = report;
+  state.reportCopied = false;
+  _qaCheckedReport = "";
+  _setReportEditMode(false);
+  _signedReportId = null;
+  if (typeof _setReportStatus === "function") _setReportStatus("preliminary");
+  if (typeof _clearQaPanel === "function") _clearQaPanel();
+  setUI("done");
+  setStatus(statusText, "success");
+  runQaCheck({ quiet: true });
+  refreshFollowupSuggestions(report);
+  $("report-rendered").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function useCtCapDraft(layout) {
+  const report = state.ctCapDrafts[layout];
+  if (!report) return;
+  _hideCtCapComparison({ clear: false });
+  _activateGeneratedReport(
+    report,
+    layout === "components"
+      ? "Component-based CT CAP draft selected."
+      : "Chest + Abdomen/Pelvis CT CAP draft selected.",
+  );
+}
+
+async function _generateCtCapComparison(baseBody, myEpoch, ac) {
+  _showCtCapComparison();
+  $("report-raw").value = "";
+  $("report-rendered").innerHTML = "";
+  _qaCheckedReport = "";
+  _setReportEditMode(false);
+  setStatus("Generating both CT CAP layouts…", "active");
+
+  const generate = async (layout) => {
+    const reportEl = $(`ct-cap-${layout}-report`);
+    const errorEl = $(`ct-cap-${layout}-error`);
+    try {
+      const result = await _streamFormatRequest(
+        { ...baseBody, cap_layout: layout, comparison_draft: true },
+        {
+          signal: ac.signal,
+          onToken: (text) => {
+            if (state.caseEpoch === myEpoch) reportEl.innerHTML = renderMarkdown(text);
+          },
+        },
+      );
+      if (state.caseEpoch !== myEpoch) return false;
+      state.ctCapDrafts[layout] = result.report;
+      reportEl.innerHTML = renderMarkdown(result.report);
+      $(`btn-use-cap-${layout}`).disabled = false;
+      return true;
+    } catch (error) {
+      if (ac.signal.aborted || state.caseEpoch !== myEpoch) return false;
+      errorEl.textContent = `This draft failed: ${error.message}`;
+      errorEl.hidden = false;
+      reportEl.innerHTML = "";
+      return false;
+    }
+  };
+
+  const outcomes = await Promise.all([generate("components"), generate("regions")]);
+  if (ac.signal.aborted || state.caseEpoch !== myEpoch) return;
+  const ready = outcomes.filter(Boolean).length;
+  setUI("transcribed");
+  if (ready === 2) {
+    setStatus("Two CT CAP drafts are ready. Choose one to continue.", "success");
+  } else if (ready === 1) {
+    setStatus("One CT CAP draft is ready. The other draft failed.", "error");
+  } else {
+    setStatus("Both CT CAP drafts failed. Try again.", "error");
+  }
+  $("ct-cap-comparison").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function formatReport() {
+  const transcription = $("transcription").value.trim();
+  if (!transcription) {
+    setStatus("No transcription to format.", "error");
+    return;
+  }
+
+  const isCtCap = $("template-select").value === CT_CAP_TEMPLATE;
+  const capLayout = isCtCap ? _selectedCtCapLayout() : null;
+  const body = _formatRequestBody(
+    transcription,
+    capLayout && capLayout !== "compare" ? { cap_layout: capLayout } : {},
+  );
 
   setUI("formatting");
   setStatus("Generating report…", "active");
 
-  // Clear report area and start streaming into it
+  // Clear report area and start streaming into it.
+  _hideCtCapComparison();
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
   _qaCheckedReport = "";
@@ -1867,68 +2053,22 @@ async function formatReport() {
   state.formatAbort = ac;
 
   try {
-    const resp = await fetch("/format/stream", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    if (isCtCap && capLayout === "compare") {
+      await _generateCtCapComparison(body, myEpoch, ac);
+      return;
+    }
+
+    const result = await _streamFormatRequest(body, {
       signal: ac.signal,
+      onToken: (text) => {
+        if (state.caseEpoch !== myEpoch) return;
+        $("report-raw").value = text;
+        $("report-rendered").innerHTML = renderMarkdown(text);
+      },
     });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-      throw new Error(err.detail || resp.statusText);
-    }
-
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let accumulated = "";
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      if (state.caseEpoch !== myEpoch) return;  // superseded by Next Case
-      buffer += decoder.decode(value, { stream: true });
-
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (state.caseEpoch !== myEpoch) return;  // superseded mid-batch
-        if (!line.startsWith("data: ")) continue;
-        const payload = line.slice(6).trim();
-        if (!payload) continue;
-        let msg;
-        try { msg = JSON.parse(payload); } catch { continue; }
-
-        if (msg.token) {
-          accumulated += msg.token;
-          $("report-raw").value = accumulated;
-          $("report-rendered").innerHTML = renderMarkdown(accumulated);
-        } else if (msg.done) {
-          // Replace streamed text with the post-processed version (e.g. capitalisation fixes)
-          if (msg.report) {
-            $("report-raw").value = msg.report;
-            $("report-rendered").innerHTML = renderMarkdown(msg.report);
-          }
-          // Snapshot the LLM output so copyReport() can diff for style-drift detection.
-          state.reportLlmOutput = $("report-raw").value;
-          const fhirNote = msg.fhir_saved ? " · FHIR R4 JSON saved." : "";
-          // Phase 1: report is now preliminary until the user explicitly signs off.
-          _signedReportId = null;
-          if (typeof _setReportStatus === "function") _setReportStatus("preliminary");
-          if (typeof _clearQaPanel === "function") _clearQaPanel();
-          setUI("done");
-          setStatus("Report ready." + fhirNote, "success");
-          // Deterministic QA is fast and advisory. Run it automatically so the
-          // radiologist only has to act when a flag is raised.
-          runQaCheck({ quiet: true });
-          refreshFollowupSuggestions($("report-raw").value);
-          $("report-rendered").scrollIntoView({ behavior: "smooth", block: "start" });
-        } else if (msg.error) {
-          throw new Error(msg.error);
-        }
-      }
-    }
+    if (state.caseEpoch !== myEpoch) return;
+    const fhirNote = result.fhir_saved ? " · FHIR R4 JSON saved." : "";
+    _activateGeneratedReport(result.report, "Report ready." + fhirNote);
   } catch (err) {
     // Silent on an intentional abort (Next Case) or a superseded run.
     if (ac.signal.aborted || state.caseEpoch !== myEpoch) return;
@@ -2442,6 +2582,7 @@ function nextCase({ keepRadiologist = true, force = false } = {}) {
   $("transcription").value = "";
   $("report-raw").value = "";
   $("report-rendered").innerHTML = "";
+  _hideCtCapComparison();
   state.reportCopied = false;
   state.reportLlmOutput = "";
   state.sourceKind = "dictation";
@@ -3552,6 +3693,7 @@ function _tmplSyncDropdown() {
         if (t.name === current) opt.selected = true;
         sel.appendChild(opt);
       });
+      _updateCtCapLayoutVisibility();
     });
 }
 
@@ -3560,6 +3702,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   initCanvasResize();
   setUI("idle");
   setStatus("Press Record to start dictating.");
+  _initCtCapLayout();
+  $("template-select")?.addEventListener("change", _updateCtCapLayoutVisibility);
 
   // Editing the report after a copy re-arms the unsaved-work guard.
   const _reportRaw = $("report-raw");
@@ -3743,6 +3887,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("btn-record").addEventListener("click", onRecordClick);
   $("btn-stop").addEventListener("click", stopRecording);
   $("btn-format").addEventListener("click", formatReport);
+  $("btn-use-cap-components")?.addEventListener("click", () => useCtCapDraft("components"));
+  $("btn-use-cap-regions")?.addEventListener("click", () => useCtCapDraft("regions"));
   if ($("btn-impression")) $("btn-impression").addEventListener("click", generateImpressionOnly);
   $("btn-copy").addEventListener("click", copyReport);
   if ($("btn-copy-from-comparison")) {

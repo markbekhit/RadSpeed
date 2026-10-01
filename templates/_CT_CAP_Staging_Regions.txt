@@ -1,0 +1,52 @@
+### THIS IS CONTINUATION OF SYSTEM PROMPT ###
+### THIS IS THE SAMPLE TEMPLATE TO BE USED FOR THE TRANSCRIPT ###
+
+---
+
+### Exam:
+CT Chest, Abdomen and Pelvis — Staging
+
+### Technique:
+Contrast-enhanced CT of the chest, abdomen and pelvis in the portal venous phase.
+
+### Clinical Details
+**Instructions:**
+- Record clinical details exactly as dictated. Do not rephrase the wording.
+- Exclude patient identifiers, age and gender from the report.
+- If not provided: "No clinical details provided."
+
+### Comparison:
+**Instructions:**
+- List the prior study type and date/year exactly as dictated.
+- Put interval change in Findings, not in this section.
+- If not provided: "No prior imaging available for comparison."
+
+### Findings:
+**Instructions:**
+- Use only the two bold regional headings below and keep them in this exact order.
+- Write a compact coherent paragraph under each heading. Do not add organ-by-organ subheadings.
+- Preserve every dictated finding and measurement in the correct regional paragraph.
+- For staging studies, give the site, size and interval change of the primary tumour, target lesions, suspicious nodes and metastases when dictated.
+- Do not invent a cancer stage, treatment response, target lesion or interval change.
+- Include precise normal coverage for the structures listed below when they were not dictated.
+
+**Chest**
+- Cover lungs and airways; pleura; mediastinal, hilar and axillary nodes; heart and pericardium; thoracic aorta and great vessels; chest wall; and bony thorax.
+- Keep related normal structures together in one concise paragraph.
+
+**Abdomen and Pelvis**
+- Cover liver and biliary system; spleen; pancreas; adrenal glands; kidneys and ureters; bowel; mesentery and peritoneum; abdominal and pelvic nodes; vasculature; urinary bladder; pelvic organs; bones; and soft tissues.
+- Keep related normal structures together in one concise paragraph.
+
+- **ASR Prompt (for speech recognition spelling correction ONLY — do NOT copy this text into the report):**
+[correct spellings] CT chest abdomen pelvis staging restaging primary tumour target lesion pulmonary metastasis hepatic metastasis lymphadenopathy mediastinal hilar axillary para-aortic retroperitoneal iliac peritoneal omental osseous RECIST [correct spellings]
+
+### Impression:
+**Instructions:**
+- Give a concise staging summary in numbered points.
+- Lead with the primary tumour and its interval change when known.
+- Then summarise regional nodes, distant metastases and other clinically important findings.
+- State treatment response only when supported by a suitable comparison and dictated findings.
+- Do not include minor incidental findings unless clinically relevant.
+
+---

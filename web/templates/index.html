@@ -56,6 +56,25 @@
       <button id="btn-template-edit" class="btn btn-ghost btn-sm" type="button" title="View / edit templates" style="flex-shrink:0;margin-bottom:1px;">&#9998; Edit</button>
     </div>
 
+    <fieldset id="ct-cap-layout-panel" class="ct-cap-layout-panel" hidden>
+      <legend>CT CAP layout</legend>
+      <div class="ct-cap-layout-options">
+        <label class="ct-cap-layout-option">
+          <input type="radio" name="ct-cap-layout" value="components" />
+          <span><strong>By component</strong><small>Separate organ and system subheadings</small></span>
+        </label>
+        <label class="ct-cap-layout-option">
+          <input type="radio" name="ct-cap-layout" value="regions" />
+          <span><strong>Chest + Abdomen/Pelvis</strong><small>Two compact regional sections</small></span>
+        </label>
+        <label class="ct-cap-layout-option recommended">
+          <input type="radio" name="ct-cap-layout" value="compare" />
+          <span><strong>Compare both</strong><small>Generate both drafts, then choose one</small></span>
+        </label>
+      </div>
+      <p class="field-note">Comparison drafts are not exported. Only the report you choose continues to QA and sign-off.</p>
+    </fieldset>
+
     <details id="patient-context-details" style="margin-top:10px;">
       <summary><span>Patient / RIS details</span><span id="patient-summary" class="patient-summary">No case loaded</span></summary>
 
@@ -274,6 +293,28 @@
     <div id="qa-panel" class="qa-panel" style="display:none;"></div>
     <!-- Explicit follow-up language found in the report; never auto-tracked. -->
     <div id="followup-suggest-panel" class="followup-suggest-panel" style="display:none;"></div>
+    <section id="ct-cap-comparison" class="ct-cap-comparison" hidden aria-labelledby="ct-cap-comparison-title">
+      <div class="ct-cap-comparison-head">
+        <div>
+          <strong id="ct-cap-comparison-title">Choose the CT CAP draft to continue</strong>
+          <p>Both drafts use the same dictation. Review the layout, then choose one for editing, QA, copying and sign-off.</p>
+        </div>
+      </div>
+      <div class="ct-cap-draft-grid">
+        <article class="ct-cap-draft" data-layout="components">
+          <header><strong>By component</strong><span>Detailed</span></header>
+          <div id="ct-cap-components-report" class="ct-cap-draft-report"></div>
+          <div id="ct-cap-components-error" class="ct-cap-draft-error" hidden></div>
+          <button id="btn-use-cap-components" class="btn btn-secondary" type="button" disabled>Use this draft</button>
+        </article>
+        <article class="ct-cap-draft" data-layout="regions">
+          <header><strong>Chest + Abdomen/Pelvis</strong><span>Compact</span></header>
+          <div id="ct-cap-regions-report" class="ct-cap-draft-report"></div>
+          <div id="ct-cap-regions-error" class="ct-cap-draft-error" hidden></div>
+          <button id="btn-use-cap-regions" class="btn btn-secondary" type="button" disabled>Use this draft</button>
+        </article>
+      </div>
+    </section>
     <!-- Rendered markdown view (default) -->
     <div id="report-rendered" class="report-rendered"></div>
     <!-- Raw edit textarea (shown when editing) -->

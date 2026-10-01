@@ -229,6 +229,20 @@ class TestSelectTemplate(unittest.TestCase):
         mock_client.chat.completions.create.assert_not_called()
 
 
+class TestKeywordTemplateSelection(unittest.TestCase):
+
+    def test_ct_cap_is_selected_before_ct_chest(self):
+        with patch.object(
+            fmt,
+            "_get_templates",
+            return_value=["CT_CAP_Staging.txt", "CT_Chest.txt", "CT_Abdomen_Pelvis.txt"],
+        ):
+            self.assertEqual(
+                fmt._keyword_select_template("Staging CT chest abdomen and pelvis"),
+                "CT_CAP_Staging.txt",
+            )
+
+
 # ---------------------------------------------------------------------------
 # Tests for _analyze_recommendation_needs
 # ---------------------------------------------------------------------------

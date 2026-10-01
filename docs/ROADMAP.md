@@ -60,8 +60,12 @@ These are confirmed in code on `main` as of this update — not aspirations.
   measurement units + separators + decimal precision, laterality, impression
   style, negation phrasing, date format, paste format
   (`config/config.py`, `llm/format.py`).
-- **40 bundled radiology templates + 5 guidelines** (BIRADS, TIRADS, PIRADS,
+- **42 bundled radiology templates + 5 guidelines** (BIRADS, TIRADS, PIRADS,
   LIRADS, Fleischner) — see `templates/` and `guidelines/`.
+- **CT CAP staging layout trial** — the staging template can produce either
+  component-based findings or compact Chest and Abdomen/Pelvis sections. A
+  comparison mode creates both non-exported drafts and lets the radiologist
+  choose one before editing, QA, copying or sign-off.
 - **Streaming report generation** with patient context block
   (`stream_format_text`, `format_text(patient_context=...)`).
 - **Impression-only refresh** in the signed-in report screen. It replaces only

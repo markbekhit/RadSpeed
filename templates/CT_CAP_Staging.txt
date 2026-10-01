@@ -1,0 +1,85 @@
+### THIS IS CONTINUATION OF SYSTEM PROMPT ###
+### THIS IS THE SAMPLE TEMPLATE TO BE USED FOR THE TRANSCRIPT ###
+
+---
+
+### Exam:
+CT Chest, Abdomen and Pelvis — Staging
+
+### Technique:
+Contrast-enhanced CT of the chest, abdomen and pelvis in the portal venous phase.
+
+### Clinical Details
+**Instructions:**
+- Record clinical details exactly as dictated. Do not rephrase the wording.
+- Exclude patient identifiers, age and gender from the report.
+- If not provided: "No clinical details provided."
+
+### Comparison:
+**Instructions:**
+- List the prior study type and date/year exactly as dictated.
+- Put interval change in Findings, not in this section.
+- If not provided: "No prior imaging available for comparison."
+
+### Findings:
+**Instructions:**
+- Use the bold component headings below in this exact order.
+- Preserve every dictated finding and measurement under the correct component.
+- For staging studies, give the site, size and interval change of the primary tumour, target lesions, suspicious nodes and metastases when dictated.
+- Do not invent a cancer stage, treatment response, target lesion or interval change.
+- Combine normal structures within one component. Use precise normal wording for structures not dictated.
+
+**Lungs and Airways**
+- Include pulmonary nodules or masses by lobe, size and interval change when stated.
+- Default: "Lungs clear. No suspicious pulmonary nodule or mass. Airways patent."
+
+**Pleura**
+- Default: "No pleural effusion, pneumothorax or pleural nodularity."
+
+**Mediastinum, Hila and Axillae**
+- Describe suspicious lymph nodes by station and short-axis size when stated.
+- Default: "No mediastinal, hilar or axillary lymphadenopathy."
+
+**Heart and Great Vessels**
+- Default: "Heart normal in size. No pericardial effusion. Thoracic aorta normal in calibre."
+
+**Liver and Biliary System**
+- Describe focal lesions by segment, size and interval change when stated.
+- Default: "Liver unremarkable with no focal lesion. Gallbladder and biliary system unremarkable."
+
+**Spleen and Pancreas**
+- Default: "Spleen and pancreas unremarkable."
+
+**Adrenal Glands, Kidneys and Ureters**
+- Default: "Adrenal glands and kidneys unremarkable. No hydronephrosis."
+
+**Bowel, Mesentery and Peritoneum**
+- Include peritoneal or omental disease and ascites when present.
+- Default: "Bowel, mesentery and peritoneum unremarkable. No ascites or peritoneal nodularity."
+
+**Pelvic Organs and Urinary Bladder**
+- Default: "Pelvic organs and urinary bladder unremarkable."
+
+**Lymph Nodes**
+- Describe suspicious abdominal and pelvic nodes by chain and short-axis size when stated.
+- Default: "No abdominal or pelvic lymphadenopathy."
+
+**Vasculature**
+- Default: "Abdominal aorta and major abdominal vessels unremarkable."
+
+**Bones and Soft Tissues**
+- Preserve dictated osseous and soft-tissue findings exactly.
+- Default: "No aggressive osseous lesion. No significant chest wall or abdominopelvic soft-tissue abnormality."
+
+- **ASR Prompt (for speech recognition spelling correction ONLY — do NOT copy this text into the report):**
+[correct spellings] CT chest abdomen pelvis staging restaging primary tumour target lesion pulmonary metastasis hepatic metastasis lymphadenopathy mediastinal hilar axillary para-aortic retroperitoneal iliac peritoneal omental osseous RECIST [correct spellings]
+
+### Impression:
+**Instructions:**
+- Give a concise staging summary in numbered points.
+- Lead with the primary tumour and its interval change when known.
+- Then summarise regional nodes, distant metastases and other clinically important findings.
+- State treatment response only when supported by a suitable comparison and dictated findings.
+- Do not include minor incidental findings unless clinically relevant.
+
+---
