@@ -47,8 +47,11 @@ The original Tkinter build remains in the tree for offline use.
 - ⌨️ **Keyboard-first workflow** — Alt/Option+R record/pause,
   Alt/Option+S stop, Ctrl/Cmd+Enter generate, Ctrl/Cmd+Shift+C copy, and
   Alt/Option+N next case
-- 🛡️ **Automatic deterministic QA** — laterality, gender, unit, and anatomy
-  checks run after generation and before sign-off; flags never rewrite text
+- 🛡️ **Automatic deterministic QA** — laterality, gender, unit, anatomy, and
+  source-to-report coverage checks run after generation and before sign-off;
+  worksheet QA treats an unmarked form label as unknown only when a negative
+  report matches the same finding terms without extra qualifiers; asserted or
+  measured findings remain eligible for warnings; flags never rewrite text
 - 🎨 **Reporting style preferences** — British/American spelling, grade
   numerals, measurement units, impression format, laterality, date format
 - 👤 **Patient context** — name, DOB, MRN, accession, modality, body part,
@@ -283,6 +286,9 @@ In this repo:
 - [`docs/mwl-bridge-agent.md`](docs/mwl-bridge-agent.md) — MWL bridge setup
 - [`docs/local-whisper-setup.md`](docs/local-whisper-setup.md) — self-hosted STT
 - [`docs/FFmpeg.md`](docs/FFmpeg.md) — audio pipeline notes
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — shipped capabilities and planned work
+- [`docs/compliance/README.md`](docs/compliance/README.md) — Australian practice compliance pack
+- [`TESTING.md`](TESTING.md) — test layers, commands and clinical-test conventions
 - [`CLAUDE.md`](CLAUDE.md) — project instructions for AI-assisted development
 
 Original VoxRad desktop app's GitBook: https://voxrad.gitbook.io/voxrad

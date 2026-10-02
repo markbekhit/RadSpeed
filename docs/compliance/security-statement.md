@@ -88,7 +88,7 @@ DICOM worklist bridge once the practice's integration team is ready.
 | Audit | Seventeen event types in a SHA-256 hash chain; `verify_chain` detects any edited, removed or reordered row; append lock prevents forks under concurrent writes. |
 | Retention | Scheduled scrub of report text and identifiers after 30 days, deletion of export files after 14 days, both audited; optional de-identified quality samples are deleted after 365 days or immediately when the radiologist opts out; admin endpoint to run on demand. |
 | Integration security | Constant-time bearer-token check on the worklist push endpoint, which is disabled when no token is set; field allow-list and filename sanitisation on inbound orders; oversized or malformed HL7 files quarantined. |
-| Build and deploy | GitHub Actions with OpenID Connect to AWS (no long-lived keys); SSH opened only to the runner for the duration of a deploy; immutable container images; 383 unit tests, 65 browser tests and a clinical evaluation set must pass before deployment. |
+| Build and deploy | GitHub Actions with OpenID Connect to AWS (no long-lived keys); SSH opened only to the runner for the duration of a deploy; immutable container images; 386 unit tests, 66 browser tests and a clinical evaluation set must pass before deployment. |
 
 ## 2. Security review and practice workflow
 
@@ -99,7 +99,7 @@ used synthetic identifiers; no real patient records were accessed.
 |---|---|---|
 | Application review | Every route, authentication boundary, data flow to external providers, storage location, export path and log statement was read and documented (22 September 2026). | Completed |
 | Remediation | Findings from the review were fixed the same day: offshore provider paths, shared-password fallback, session lifetime, cache headers, plain-HTTP proxy, transcript logging, absence of retention, absence of an AI disclosure line. | Completed |
-| Automated verification | 383 unit tests, 65 browser workflow tests and the clinical evaluation set pass; they run on every deployment. | Pass |
+| Automated verification | 386 unit tests, 66 browser workflow tests and the clinical evaluation set pass; they run on every deployment. | Pass |
 | Live service | HTTPS enforcement, HSTS, no-store on private responses, HTTP-to-HTTPS redirect and SSO sign-in observed on production. | Pass |
 | Secrets and dependencies | Secrets are held outside the repository; direct dependencies reviewed against the deployed architecture. | Reviewed |
 | Practice SSO | Microsoft Entra or Google Workspace tenant configuration and end-to-end validation are required before live use. | Pending |

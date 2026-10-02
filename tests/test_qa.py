@@ -40,6 +40,148 @@ class SourceOmissionTests(unittest.TestCase):
         self.assertTrue(check_source_omissions("Acute dislocation.", source))
         self.assertTrue(check_source_omissions("Acute fracture.", source))
 
+    # Value: protects=ambiguous worksheet labels do not create polarity alerts;
+    # fails_when=short unstructured form labels are treated as asserted findings;
+    # why_new=dictation polarity tests do not cover worksheet extraction noise;
+    # seam=none
+    def test_ignores_ambiguous_worksheet_labels_covered_by_negative_report(self):
+        source = (
+            "FORM EXTRACT — blank fields are unknown:\n"
+            "Free fluid collection seen\n"
+            "Adnexal mass seen bilaterally"
+        )
+        report = (
+            "No evidence of focal lesion, hyperaemia or free fluid collection. "
+            "No free fluid seen in either iliac fossa.\n"
+            "No evidence of ovarian or adnexal mass bilaterally."
+        )
+
+        self.assertEqual(
+            check_source_omissions(report, source, source_kind="worksheet"),
+            [],
+        )
+        self.assertEqual(
+            check_source_omissions(
+                "No mass is identified.",
+                "Mass seen",
+                source_kind="worksheet",
+            ),
+            [],
+        )
+        self.assertEqual(
+            check_source_omissions(
+                "No renal mass. No adnexal mass.",
+                "Renal mass: absent\nAdnexal mass seen",
+                source_kind="worksheet",
+            ),
+            [],
+        )
+        self.assertEqual(
+            len(check_source_omissions(
+                "No abdominal free fluid collection.",
+                "Pelvic free fluid collection seen",
+                source_kind="worksheet",
+            )),
+            1,
+        )
+        for narrower_report in (
+            "No left adnexal mass.",
+            "No new adnexal mass.",
+            "No free fluid collection in the right iliac fossa.",
+            "No suspicious adnexal mass.",
+            "No free fluid collection in the pelvis.",
+            "No large free fluid collection.",
+            "No residual free fluid collection.",
+            "No free fluid collection, right iliac fossa.",
+        ):
+            source_label = (
+                "Free fluid collection seen"
+                if "fluid" in narrower_report
+                else "Adnexal mass seen"
+            )
+            with self.subTest(narrower_report=narrower_report):
+                self.assertEqual(
+                    len(check_source_omissions(
+                        narrower_report,
+                        source_label,
+                        source_kind="worksheet",
+                    )),
+                    1,
+                )
+        for source_label, different_location_report in (
+            ("RUL nodule seen", "No LUL nodule."),
+            ("Segment 7 lesion seen", "No segment 8 lesion."),
+        ):
+            with self.subTest(different_location_report=different_location_report):
+                self.assertEqual(
+                    len(check_source_omissions(
+                        different_location_report,
+                        source_label,
+                        source_kind="worksheet",
+                    )),
+                    1,
+                )
+
+    # Value: protects=worksheet noise is suppressed only when a negative report covers it;
+    # fails_when=the worksheet exception hides omitted or explicitly positive findings;
+    # why_new=the false-positive regression covers only matched negative report clauses;
+    # seam=none
+    def test_keeps_polarity_alert_for_dictation_and_structured_worksheet_values(self):
+        report = "No free fluid collection. No adnexal mass bilaterally."
+        self.assertEqual(
+            len(check_source_omissions(
+                report,
+                "Free fluid collection seen. Adnexal mass seen bilaterally.",
+            )),
+            2,
+        )
+        self.assertEqual(
+            len(check_source_omissions(
+                "The appendix is normal.",
+                "WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:\n"
+                "Free fluid collection seen",
+                source_kind="worksheet",
+            )),
+            1,
+        )
+        for structured_value in (
+            "Free fluid collection abnormal",
+            "Free fluid collection definite",
+            "Free fluid collection positive",
+            "Free fluid collection present",
+            "Free fluid collection yes",
+            "Free fluid collection seen measuring 5 mm",
+            "☑ Free fluid collection seen",
+            "[x] Free fluid collection seen",
+            "(x) Free fluid collection seen",
+            "● Free fluid collection seen",
+            "■ Free fluid collection seen",
+            "Free fluid = collection seen",
+            "Free fluid — collection seen",
+            "☑ Free fluid or collection seen",
+            "Pelvis / free fluid: none, but collection seen",
+        ):
+            with self.subTest(structured_value=structured_value):
+                self.assertEqual(
+                    len(check_source_omissions(
+                        report,
+                        "WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:\n"
+                        + structured_value,
+                        source_kind="worksheet",
+                    )),
+                    1,
+                )
+        self.assertEqual(
+            len(check_source_omissions(
+                report,
+                "WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:\n"
+                "Pelvis / free fluid: Collection seen\n"
+                "Adnexa / bilateral: Mass seen",
+                source_kind="worksheet",
+            )),
+            2,
+        )
+
     def test_anatomy_only_overlap_does_not_hide_pathology_omission(self):
         self.assertTrue(check_source_omissions(
             "The ACL is completely obscured by artifact.",
@@ -52,6 +194,15 @@ class SourceOmissionTests(unittest.TestCase):
             "No acute fracture.",
         ), [])
 
+    def test_but_boundary_keeps_each_findings_polarity(self):
+        self.assertEqual(
+            len(check_source_omissions(
+                "No free fluid, but a left adnexal mass is present.",
+                "No adnexal mass.",
+            )),
+            1,
+        )
+
     def test_no_interval_change_means_stable_not_absent(self):
         self.assertEqual(check_source_omissions(
             "No interval change in the right renal mass.",
@@ -61,6 +212,18 @@ class SourceOmissionTests(unittest.TestCase):
             "No significant change in pulmonary nodule.",
             "Stable pulmonary nodule.",
         ), [])
+        self.assertEqual(check_source_omissions(
+            "No interval change in the right renal mass or adrenal nodule.",
+            "Stable adrenal nodule.",
+        ), [])
+        self.assertTrue(check_source_omissions(
+            "No acute abnormality.",
+            "No interval change in size or appearance of the left adrenal nodule.",
+        ))
+        self.assertTrue(check_source_omissions(
+            "No acute abnormality.",
+            "No interval worsening in size or appearance of the left adrenal nodule.",
+        ))
 
     def test_identical_short_pathology_does_not_warn(self):
         self.assertEqual(check_source_omissions("Mass.", "Mass."), [])

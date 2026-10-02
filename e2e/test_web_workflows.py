@@ -730,6 +730,32 @@ def test_pasted_worksheet_screenshot_generates_report_in_safe_source_mode(
     assert format_payloads and format_payloads[-1]["source_kind"] == "worksheet"
     assert format_payloads[-1]["template_name"] == "Ultrasound_Worksheet.txt"
 
+    first_source = page.locator("#transcription").input_value()
+    page.evaluate("state.reportCopied = true")
+    page.evaluate(
+        """() => {
+          const b64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZJfQAAAAASUVORK5CYII=";
+          const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+          const file = new File([bytes], "second-worksheet.png", { type: "image/png" });
+          const data = new DataTransfer();
+          data.items.add(file);
+          document.getElementById("worksheet-drop-zone").dispatchEvent(
+            new ClipboardEvent("paste", {
+              clipboardData: data,
+              bubbles: true,
+              cancelable: true,
+            })
+          );
+        }"""
+    )
+    expect(page.locator("#btn-worksheet-generate")).to_be_enabled()
+    page.locator("#btn-worksheet-generate").click()
+    expect(page.locator("#status")).to_contain_text("Report ready", timeout=15_000)
+    page.wait_for_function("() => document.querySelector('#transcription').value.split('WORKSHEET SOURCE NOTES').length >= 3")
+    assert first_source in page.locator("#transcription").input_value()
+    assert len(format_payloads) >= 2
+    assert format_payloads[-1]["source_kind"] == "dictation"
+
 
     # Copy must preserve clinical line structure without exporting the browser's
     # paragraph/list spacing. PowerScribe prefers text/html when both clipboard
@@ -1017,6 +1043,82 @@ def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
         "dictated finding may be missing", timeout=5_000
     )
     expect(page.locator("#qa-panel")).to_contain_text("arcuate ligament")
+    assert errors == []
+
+
+# Value: protects=worksheet QA hides ambiguous labels only when the report covers them;
+# fails_when=the browser/API path regresses or the exception spreads to asserted findings;
+# why_new=unit coverage does not prove the report screen sends and renders QA results;
+# seam=none
+def test_worksheet_qa_tones_down_labels_but_keeps_asserted_findings(
+    page: Page, base_url: str
+):
+    errors = _console_errors(page)
+    qa_requests: list[dict] = []
+    page.on(
+        "request",
+        lambda request: qa_requests.append(request.post_data_json)
+        if request.url.endswith("/api/qa-check")
+        else None,
+    )
+    page.goto(f"{base_url}/app")
+    report = (
+        "**FINDINGS:**\nNo evidence of free fluid collection.\n\n"
+        "**IMPRESSION:**\nNo evidence of ovarian or adnexal mass bilaterally."
+    )
+    page.locator("#transcription").fill(
+        "FORM EXTRACT — blank fields are unknown:\n"
+        "Free fluid collection seen\n"
+        "Adnexal mass seen bilaterally"
+    )
+    page.evaluate(
+        "report => { state.sourceKind = 'worksheet'; setReport(report); setUI('done'); }",
+        report,
+    )
+
+    page.locator("#btn-qa").click()
+    expect(page.locator("#qa-panel")).to_contain_text(
+        "No flags raised", timeout=5_000
+    )
+    assert qa_requests[-1]["source_kind"] == "worksheet"
+
+    page.evaluate("state.sourceKind = 'worksheet'")
+    transcript = page.locator("#transcription")
+    transcript.fill(f"{transcript.input_value()}\nAdditional dictated clinical text")
+    with page.expect_request("**/api/qa-check") as edited_request:
+        page.locator("#btn-qa").click()
+    assert edited_request.value.post_data_json["source_kind"] == "dictation"
+
+    page.locator("#transcription").fill(
+        "WORKSHEET SOURCE NOTES — blank/unmarked fields are unknown:\n"
+        "Pelvis / free fluid: Collection seen"
+    )
+    page.evaluate("state.sourceKind = 'worksheet'")
+    with page.expect_request("**/api/qa-check") as structured_request:
+        page.locator("#btn-qa").click()
+    expect(page.locator("#qa-panel")).to_contain_text(
+        "dictated finding may be missing", timeout=5_000
+    )
+    expect(page.locator("#qa-panel")).to_contain_text("Collection seen")
+    assert structured_request.value.post_data_json["source_kind"] == "worksheet"
+
+    page.evaluate(
+        """() => {
+          state.sourceKind = 'worksheet';
+          Object.defineProperty(navigator, 'mediaDevices', {
+            configurable: true,
+            value: {getUserMedia: async () => { throw new Error('synthetic denial'); }},
+          });
+        }"""
+    )
+    page.locator("#btn-record").click()
+    expect(page.locator("#status")).to_contain_text("Microphone access denied")
+    with page.expect_request("**/api/qa-check") as request_info:
+        page.locator("#btn-qa").click()
+    expect(page.locator("#qa-panel")).to_contain_text(
+        "dictated finding may be missing", timeout=5_000
+    )
+    assert request_info.value.post_data_json["source_kind"] == "dictation"
     assert errors == []
 
 

@@ -46,7 +46,7 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **Gemini multimodal path in web mode** — `mm_gemini()` in transcriber.py uses `genai.upload_file()` directly. Web mode currently ignores `multimodal_pref=True`. Web UI should either: (a) show a warning when multimodal is enabled and route to it, or (b) always use standard ASR in web mode. Needs a decision and implementation.
 
-- [x] **Playwright E2E tests (web UI)** — 65 Chromium workflows run against an
+- [x] **Playwright E2E tests (web UI)** — 66 Chromium workflows run against an
   isolated mock-mode server. They cover public tools, streaming transcription,
   formatting, QA, settings, worksheet images, clipboard behavior, layout,
   mobile behavior and authentication. CI retains traces on failure.
@@ -58,7 +58,7 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
   keyword selection, fallback rendering, and streamed reasoning removal.
   `tests/test_transcription_pipeline.py` covers encrypted audio through mocked
   ASR and formatting to encrypted report output, including cleanup and failure
-  preservation. The full 383-test Python suite now runs in GitHub Actions.
+  preservation. The full 386-test Python suite now runs in GitHub Actions.
 
 - [ ] **Per-user API key tokens** — Upgrade from shared password to per-user tokens stored in settings.ini. Required for proper audit logging and multi-radiologist accountability.
 

@@ -551,7 +551,9 @@ function resumeRecording() {
 async function startRecording() {
   if (state.isRecording) return; // Stop button ends recording
   state.isPaused = false;
-  if (!($("transcription")?.value || "").trim()) state.sourceKind = "dictation";
+  // Once voice is added, use strict dictation QA for the mixed source. This can
+  // create an extra warning, but it must not hide a genuine dictated conflict.
+  state.sourceKind = "dictation";
 
   // Belt-and-suspenders: re-read selections at click time.
   // _grabVoiceEdit() on pointerdown is the primary path; this catches keyboard
@@ -1819,7 +1821,7 @@ async function generateFromWorksheet(onePass = false) {
         .find((option) => option.value === "Ultrasound_Worksheet.txt");
       if (worksheetOption) templateSelect.value = worksheetOption.value;
     }
-    state.sourceKind = "worksheet";
+    state.sourceKind = existing ? "dictation" : "worksheet";
     state.sessionId = null;
     clearWorksheetImages();
 
@@ -3232,6 +3234,7 @@ async function runQaCheck({ quiet = false } = {}) {
   const body = {
     report_text: text,
     source_text: ($("transcription")?.value || "").trim() || null,
+    source_kind: state.sourceKind === "worksheet" ? "worksheet" : "dictation",
     accession: $("accession")?.value.trim() || null,
     body_part: $("body-part")?.value.trim() || null,
     ordered_side: _orderedSideFromBodyPart($("body-part")?.value),
@@ -4127,6 +4130,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     tx.addEventListener("focus", () => { _txSnapshot = tx.value; });
 
     tx.addEventListener("input", () => {
+      // Typed or pasted text is no longer a worksheet-only source. Use the
+      // stricter dictation rule even when the user started from worksheet OCR.
+      state.sourceKind = "dictation";
       // Pasted or typed dictation should be format-ready just like speech-to-
       // text output. Previously the Re-format button stayed disabled unless a
       // recording session had changed the UI mode first.

@@ -3647,6 +3647,7 @@ def api_retention_run(user: dict = Depends(_verify_auth)):
 class QACheckRequest(BaseModel):
     report_text: str
     source_text: Optional[str] = None
+    source_kind: Literal["dictation", "worksheet"] = "dictation"
     accession: Optional[str] = None
     patient_gender: Optional[str] = None  # "M" / "F" / "male" / "female"
     body_part: Optional[str] = None
@@ -3664,6 +3665,7 @@ def api_qa_check(req: QACheckRequest, user: dict = Depends(_verify_auth)):
         ordered_side=req.ordered_side,
         body_part=req.body_part,
         source_text=req.source_text,
+        source_kind=req.source_kind,
     )
     log_event(
         user_id=user.get("id"),

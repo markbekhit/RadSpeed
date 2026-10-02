@@ -18,7 +18,7 @@ Design goals:
 from __future__ import annotations
 
 import re
-from typing import Optional
+from typing import Literal, Optional
 
 
 # ---------------------------------------------------------------------------
@@ -361,7 +361,7 @@ def _coverage_tokens(text: str) -> set[str]:
 
 def _pathology_clauses(source_text: str) -> list[str]:
     clauses: list[str] = []
-    for sentence in re.split(r"[\n.;]+", source_text):
+    for sentence in re.split(r"[\n.;]+|,?\s+but\s+", source_text, flags=re.I):
         sentence = sentence.strip(" ,-:")
         if not sentence:
             continue
@@ -370,7 +370,24 @@ def _pathology_clauses(source_text: str) -> list[str]:
             sentence,
             flags=re.IGNORECASE,
         )
-        carry_negative = len(or_parts) > 1 and _pathology_is_negated(or_parts[0])
+        carry_negative = len(or_parts) > 1 and (
+            _pathology_is_negated(or_parts[0])
+            or (
+                _PATHOLOGY_RE.search(or_parts[0]) is None
+                and not re.search(
+                    r"\b(?:interval|since|change|difference|unchanged|stable|increase|"
+                    r"decrease|growth|progression|worsening|enlargement|improvement|"
+                    r"regression|resolution)\b",
+                    or_parts[0],
+                    re.I,
+                )
+                and bool(re.search(
+                    r"\b(?:no|without|absence\s+of|negative\s+for)\b",
+                    or_parts[0],
+                    re.I,
+                ))
+            )
+        )
         if carry_negative:
             or_parts = [
                 part if index == 0 or _pathology_is_negated(part) else f"No {part}"
@@ -419,11 +436,7 @@ def _pathology_is_negated(text: str) -> bool:
 
 
 def _report_clauses(report_text: str) -> list[str]:
-    return [
-        clause.strip(" ,-:")
-        for clause in re.split(r"[\n.;]+", report_text)
-        if clause.strip(" ,-:")
-    ]
+    return _pathology_clauses(report_text)
 
 
 def _measurements_mm(text: str) -> set[float]:
@@ -434,10 +447,70 @@ def _measurements_mm(text: str) -> set[float]:
     return values
 
 
-def check_source_omissions(report_text: str, source_text: Optional[str]) -> list[dict]:
+def _has_structured_worksheet_value(text: str) -> bool:
+    """Return whether text contains evidence of an entered worksheet value."""
+    if (
+        ":" in text
+        or re.search(
+            r"(?:^\s*(?:\(?x\)?|\[\s*x\s*\]|[☑☒✓✔●◉■])\s*|[=|]|\s[-–—]\s)",
+            text,
+            re.I,
+        )
+        or _measurements_mm(text)
+        or _pathology_is_negated(text)
+        or re.search(r"\b(?:abnormal|definite|positive|present|yes)\b", text, re.I)
+    ):
+        return True
+    return False
+
+
+def _is_ambiguous_worksheet_label(clause: str) -> bool:
+    """Return whether a worksheet clause resembles an unmarked form label."""
+    if _has_structured_worksheet_value(clause):
+        return False
+    return bool(re.search(
+        r"\b(?:seen|identified|visuali[sz]ed|demonstrated)\b"
+        r"(?:\s+(?:bilaterally|on\s+the\s+(?:left|right)|left|right))?$",
+        clause,
+        re.IGNORECASE,
+    ))
+
+
+def _worksheet_suppression_terms(text: str) -> set[str]:
+    """Return lossless clinical terms used by the worksheet exception."""
+    normal = text.lower().replace("-", " ")
+    for pattern, replacement in _PHRASE_ALIASES:
+        normal = pattern.sub(replacement, normal)
+    presentation_words = {
+        "a", "an", "and", "are", "as", "at", "be", "been", "being", "by",
+        "demonstrated", "demonstrates", "evidence", "finding", "findings", "for",
+        "from", "had", "has", "have", "here", "identified", "in", "is", "negative",
+        "no", "not", "noted", "of", "on", "or", "present", "seen", "shows", "the",
+        "there", "to", "visualised", "visualized", "was", "were", "with", "without",
+        "absence",
+    }
+    terms: set[str] = set()
+    for raw in re.findall(r"\d+(?:\.\d+)?|[a-z]+", normal):
+        token = _TOKEN_ALIASES.get(raw, raw)
+        if token in presentation_words:
+            continue
+        if token.endswith("ies") and len(token) > 5:
+            token = token[:-3] + "y"
+        elif token.endswith("s") and not token.endswith("ss") and len(token) > 5:
+            token = token[:-1]
+        terms.add(token)
+    return terms
+
+
+def check_source_omissions(
+    report_text: str,
+    source_text: Optional[str],
+    source_kind: Literal["dictation", "worksheet"] = "dictation",
+) -> list[dict]:
     """Flag dictated pathology clauses with little clinical-token coverage."""
     if not source_text or not source_text.strip():
         return []
+    worksheet_source = source_kind == "worksheet"
     report_tokens = _coverage_tokens(report_text)
     report_clauses = _report_clauses(report_text)
     flags: list[dict] = []
@@ -451,6 +524,11 @@ def check_source_omissions(report_text: str, source_text: Optional[str]) -> list
         measurement_match = not source_measurements or source_measurements <= report_measurements
         pathology_tokens = _coverage_tokens(_PATHOLOGY_RE.search(clause).group(0))
         source_negated = _pathology_is_negated(clause)
+        structured_source_line = any(
+            clause.casefold() in line.casefold()
+            and _has_structured_worksheet_value(line)
+            for line in re.split(r"[\n.;]+", source_text)
+        )
         matching_report_clauses = []
         minimum_overlap = 1 if len(source_tokens) == 1 else 2
         for report_clause in report_clauses:
@@ -471,6 +549,25 @@ def check_source_omissions(report_text: str, source_text: Optional[str]) -> list
         if source_negated:
             if same_polarity or not matching_report_clauses:
                 continue
+        elif (
+            worksheet_source
+            and matching_report_clauses
+            and not same_polarity
+            and all(_pathology_is_negated(item) for item in matching_report_clauses)
+            and any(
+                _worksheet_suppression_terms(clause)
+                == _worksheet_suppression_terms(item)
+                for item in matching_report_clauses
+            )
+            and not structured_source_line
+            and _is_ambiguous_worksheet_label(clause)
+        ):
+            # An unstructured, value-less worksheet fragment is weak evidence
+            # of a positive finding. When the report explicitly covers the same
+            # concept as negative, do not turn likely printed-label noise into
+            # a polarity alert. Dictation and structured worksheet values keep
+            # the stricter behaviour below.
+            continue
         elif (
             same_polarity
             and measurement_match
@@ -511,6 +608,7 @@ def run_qa_checks(
     ordered_side: Optional[str] = None,
     body_part: Optional[str] = None,
     source_text: Optional[str] = None,
+    source_kind: Literal["dictation", "worksheet"] = "dictation",
 ) -> list[dict]:
     """Run all deterministic QA checks and return a flat list of flags.
 
@@ -525,7 +623,7 @@ def run_qa_checks(
     flags.extend(check_gender_anatomy(report_text, patient_gender))
     flags.extend(check_modality_anatomy(report_text, body_part))
     flags.extend(check_unit_drift(report_text))
-    flags.extend(check_source_omissions(report_text, source_text))
+    flags.extend(check_source_omissions(report_text, source_text, source_kind))
 
     severity_order = {"error": 0, "warning": 1, "info": 2}
     flags.sort(key=lambda f: severity_order.get(f.get("severity", "info"), 3))

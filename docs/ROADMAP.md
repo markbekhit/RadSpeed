@@ -195,9 +195,16 @@ deployment and partner sign-on, not new code.
 
 - **`web/qa.py`** — deterministic laterality / gender / unit-drift /
   modality-anatomy checks plus a conservative transcript-to-report pathology
-  coverage check. Flag-only, never rewrites.
+  coverage check. Worksheet sources suppress a polarity warning only for an
+  ambiguous unmarked label that a negative report matches without extra
+  finding terms; qualifier mismatches, structured values, measurements and
+  explicit positive statuses still warn.
+  Flag-only, never rewrites.
 - **`POST /api/qa-check`** — runs all checks, returns a flat list of
-  severity-tagged flags.
+  severity-tagged flags. Its `source_kind` field accepts `dictation` or
+  `worksheet` and defaults to `dictation`. The browser sends `worksheet` only
+  for the worksheet workflow and falls back to `dictation` for any unexpected
+  internal source state.
 - QA runs automatically after generation and again before sign-off, while
   remaining advisory and never rewriting the report. Laterality is inferred
   from body-part labels such as "Right knee". The manual "QA Check" button
@@ -217,7 +224,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **383 Python tests + 65 Chromium E2E workflows** run before deployment and on
+- **386 Python tests + 66 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -228,8 +235,8 @@ deployment and partner sign-on, not new code.
 - Browser tests start an isolated mock-mode server and exercise public
   Impressions validation/generation, authenticated audio-segment transcription
   through streamed formatting, worksheet screenshot paste-to-report,
-  indication screenshot OCR/copy, patient-detail disclosure defaults, mobile
-  overflow, and authentication rejection.
+  worksheet-aware QA, indication screenshot OCR/copy, patient-detail disclosure
+  defaults, mobile overflow, and authentication rejection.
 - A six-case synthetic clinical corpus gates dictated concepts, negation,
   measurements, laterality, and section order. Reference validation runs in CI;
   the deployed production model is evaluated weekly and on demand.
@@ -295,7 +302,13 @@ only setups, and useful belt-and-braces verification anywhere.
   - **Modality / anatomy mismatch** — flags anatomy from a different region
     than the ordered body part (e.g. "cardiac chambers" on a knee MR).
   - **Unit drift** — a single measurement that mixes mm and cm.
-- `POST /api/qa-check` — flag-only, never rewrites the report.
+  - **Source coverage** — flags dictated pathology omitted from the report;
+    ambiguous unmarked worksheet labels are not treated as positive findings
+    only when the negative report matches the same finding terms without extra
+    qualifiers. A qualifier mismatch remains eligible for a warning.
+- `POST /api/qa-check` — flag-only, never rewrites the report. The optional
+  `source_kind` request field is `dictation` by default and accepts `worksheet`;
+  the browser falls back to `dictation` for an unexpected internal source state.
 - UI: "QA Check" button → flag panel above the report. Each flag is
   dismissible; severity-coloured (error / warning / info).
 - The deterministic pass now runs automatically after report generation and
