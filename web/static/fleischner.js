@@ -10,6 +10,7 @@
 
 (() => {
   const $ = (id) => document.getElementById(id);
+  let latestRequest = 0;
   const num = (id) => {
     const raw = $(id).value.trim();
     if (!raw) return null;
@@ -78,6 +79,7 @@
   }
 
   async function recommend() {
+    const requestId = ++latestRequest;
     syncFields();
     const type = $("nodule_type").value;
     const longAxis = num("long_axis_mm");
@@ -130,9 +132,14 @@
         } catch (_) {}
         throw new Error(detail);
       }
-      render(await resp.json());
+      const result = await resp.json();
+      // Rapid input can leave several requests in flight. Only the newest
+      // response represents the form that the radiologist can now see.
+      if (requestId !== latestRequest) return;
+      render(result);
       setStatus("");
     } catch (err) {
+      if (requestId !== latestRequest) return;
       setStatus("Error: " + (err.message || err), "error");
     }
   }
