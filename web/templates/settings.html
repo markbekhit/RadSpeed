@@ -218,6 +218,21 @@
     </div>
   </div>
 
+  <!-- ── Quality improvement ── -->
+  <div class="card">
+    <div class="settings-section">
+      <div class="settings-section-title">Quality improvement</div>
+      <label class="provider-option" style="cursor:pointer;">
+        <input type="checkbox" id="retain_deidentified_samples" style="accent-color:var(--accent);width:16px;height:16px;" />
+        <div class="provider-label">
+          <div class="provider-name">Use de-identified pairs for RadSpeed quality and training</div>
+          <div class="provider-desc">Optional. RadSpeed stores cleaned transcript, draft and correction pairs for 365 days. RadSpeed can use them for internal checks, evaluation and model training. They are not sent to outside AI providers for training. Turning this off deletes your retained pairs.</div>
+        </div>
+      </label>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;">Automated redaction can miss identifiers. Use this only with de-identified dictation.</div>
+    </div>
+  </div>
+
   <!-- ── FHIR Export ── -->
   <div class="card">
     <div class="settings-section">

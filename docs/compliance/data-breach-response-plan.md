@@ -1,6 +1,6 @@
 # RadSpeed Data Breach Response Plan and Retention Schedule
 
-**Version 1.0 draft, 22 September 2026. Owner: Dr Mark Bekhit.**
+**Version 1.1 draft, 2 October 2026. Owner: Dr Mark Bekhit.**
 
 ## Part A: Data breach response
 
@@ -73,7 +73,8 @@ the practice-profile defaults and are adjustable per practice.
 | Record | Retention | Enforcement | Basis |
 |---|---|---|---|
 | Streamed dictation audio | Not stored | Design | APP 11.2 data minimisation |
-| Transcript awaiting formatting | 30 minutes in memory | Automatic | Operational need only |
+| Transcript awaiting formatting | Access expires after 30 minutes; removed within 31 minutes | Automatic | Operational need only |
+| Opt-in de-identified transcript, draft and correction pairs | Up to 365 days; deleted when the radiologist opts out | Automatic | Internal quality checks, evaluation and training of RadSpeed-owned models; off by default |
 | Draft report before sign-off | Until sign-off or next case; not persisted server-side beyond the session | Design | Draft is the radiologist's working text |
 | Signed report copy, patient identifiers | 30 days, then text and identifiers replaced by a purge marker | Automatic (`RADSPEED_RETENTION_DAYS`) | Supports amendments and audit review; the RIS is the record of record, retained by the practice for the statutory period (typically 7 years for adults, longer for minors; RANZCR notes reports may be retained 20 years) |
 | HL7, DICOM SR, FHIR export files | 14 days | Automatic (`RADSPEED_OUTBOX_RETENTION_DAYS`) | Integration engine has consumed them |

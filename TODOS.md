@@ -14,7 +14,7 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [x] **Local Whisper setup guide** — `docs/local-whisper-setup.md` created covering faster-whisper, whisper.cpp HTTP server, VoxRad base URL config, model recommendations, and HIPAA air-gapped deployment note.
 
-- [x] **20+ report templates** — 27 templates created in `templates/`:
+- [x] **Report templates** — 42 public report templates now ship in `templates/`.
   - CT: `CT_Abdomen_Pelvis.txt`, `CT_Chest.txt`, `CT_Head_Brain.txt`, `CT_Spine_Cervical.txt`, `CT_Spine_Lumbar.txt`, `CT_Spine_Thoracic.txt`, `CT_Angiography_Thoracic.txt`, `CT_KUB.txt`
   - MRI: `MRI_Brain.txt`, `MRI_Spine_Cervical.txt`, `MRI_Spine_Lumbar.txt`, `MRI_Knee.txt`, `MRI_Shoulder.txt`, `MRI_Hip.txt`, `MRI_Abdomen_Liver.txt`, `MRI_Pelvis.txt`, `MRI_Breast.txt`, `MRI_Prostate.txt`
   - Plain/USG/Nuclear: `CXR.txt`, `Abdominal_Xray.txt`, `Ultrasound_Abdomen.txt`, `Ultrasound_Pelvis.txt`, `Ultrasound_Thyroid.txt`, `Ultrasound_Breast.txt`, `Bone_Scan.txt`, `PET_CT.txt`, `Echocardiography.txt`
@@ -46,12 +46,10 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
 
 - [ ] **Gemini multimodal path in web mode** — `mm_gemini()` in transcriber.py uses `genai.upload_file()` directly. Web mode currently ignores `multimodal_pref=True`. Web UI should either: (a) show a warning when multimodal is enabled and route to it, or (b) always use standard ASR in web mode. Needs a decision and implementation.
 
-- [x] **Playwright E2E tests (web UI)** — Four Chromium workflows now run
-  against an isolated mock-mode server: public Impressions validation and
-  generation, authenticated synthetic audio segment → transcription → streamed
-  report, mobile overflow, and rejected authentication. CI retains traces and
-  screenshots on failure. Browser microphone permission and FHIR download can
-  be added when those specific paths change.
+- [x] **Playwright E2E tests (web UI)** — 65 Chromium workflows run against an
+  isolated mock-mode server. They cover public tools, streaming transcription,
+  formatting, QA, settings, worksheet images, clipboard behavior, layout,
+  mobile behavior and authentication. CI retains traces on failure.
 
 - [x] **LLM and template pipeline tests** — `tests/test_format.py` covers the
   retry loop, JSON fallback chain, tool-call parsing, recommendation analysis,
@@ -60,11 +58,13 @@ See `~/.gstack/projects/markbekhit-VoxRad/ceo-plans/2026-03-27-voxrad-improvemen
   keyword selection, fallback rendering, and streamed reasoning removal.
   `tests/test_transcription_pipeline.py` covers encrypted audio through mocked
   ASR and formatting to encrypted report output, including cleanup and failure
-  preservation. The full 74-test Python suite now runs in GitHub Actions.
+  preservation. The full 383-test Python suite now runs in GitHub Actions.
 
 - [ ] **Per-user API key tokens** — Upgrade from shared password to per-user tokens stored in settings.ini. Required for proper audit logging and multi-radiologist accountability.
 
-- [ ] **WebSocket real-time streaming** — V1 uses request/response for transcription (wait ~5-10s). V2 can stream partial transcription results via WebSocket as Whisper processes audio. High UX impact, deferred.
+- [x] **WebSocket real-time streaming** — Deepgram and AssemblyAI partial and
+  final results stream into the editor. Stop-time recovery protects the last
+  interim phrase and cursor movement does not duplicate prior finals.
 
 - [ ] **HTTPS/TLS setup guide** — Document nginx reverse proxy config for TLS termination in front of VoxRad web server. HTTP Basic Auth is credential-exposing over plain HTTP; this is a required deployment step for any non-localhost use.
 

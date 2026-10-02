@@ -20,6 +20,10 @@ class LegalPageTests(unittest.TestCase):
         self.assertIn("hello@radspeed.com.au", response.text)
         self.assertIn("Australian Privacy Principles", response.text)
         self.assertIn("10 December", response.text)  # automated decision-making disclosure
+        self.assertIn("Version 1.1, 2 October 2026", response.text)
+        self.assertIn("kept for up to 365 days", response.text)
+        self.assertIn("internal model training and evaluation", response.text)
+        self.assertIn("not given to outside AI providers for training", response.text)
         self.assertNotIn("Draft for review", response.text)
 
     def test_terms_page_states_clinical_responsibility(self):

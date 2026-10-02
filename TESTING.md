@@ -14,8 +14,10 @@ coverage. The test data is synthetic and must never contain patient information.
   Auth, and exercises public Impressions plus authenticated transcription and
   streamed formatting. It also covers keyboard-first reporting, automatic
   laterality-aware QA, atomic worklist case switching, compact patient focus,
-  deterministic follow-up prompting, and manual score insertion. External model
-  calls are routed to local mock endpoints.
+  deterministic follow-up prompting, streaming-final recovery, transcript
+  omission warnings, quality-retention consent, numeral preferences, compact
+  report lists, and manual score insertion. External model calls are routed to
+  local mock endpoints.
 - **Clinical quality:** `python -m evals.clinical_quality`
   validates the reviewed synthetic references. Use
   `python -m evals.clinical_quality --live --minimum-pass-rate 0.80` only in an

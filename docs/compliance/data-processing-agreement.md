@@ -1,6 +1,6 @@
 # Data Processing Agreement
 
-**RadSpeed practice deployment. Version 1.0 draft, 22 September 2026**
+**RadSpeed practice deployment. Version 1.1 draft, 2 October 2026**
 
 **Between:** Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed")
 **and:** [Practice legal name, ABN] ("Practice")
@@ -29,6 +29,7 @@ state laws where they apply to the Practice.
 | Patient demographics | Name, date of birth, patient identifier, accession number | Practice RIS via HL7, DICOM worklist or FHIR |
 | Study context | Modality, body part, referrer, reporting radiologist | Practice RIS |
 | Clinical content | Dictated audio (streamed, not stored), transcript, draft and signed report text, prior report selected for comparison | Radiologist |
+| Optional quality samples | De-identified transcript, draft and correction pairs retained only after the radiologist opts in | Radiologist |
 | Staff data | Name, email, identity-provider ID, style preferences, audit events | Practice SSO and use of the service |
 
 ## 3. Processing locations and sub-processors
@@ -64,7 +65,7 @@ RadSpeed maintains the measures in its Security Statement, including:
 - Immutable signed reports with versioned amendments and mandatory reasons.
 - Encrypted storage at rest in Sydney; secrets held outside the code
   repository; no long-lived cloud credentials in the deployment pipeline.
-- Automated tests (317 unit, 50 browser, clinical evaluation set) run on
+- Automated tests (383 unit, 65 browser, clinical evaluation set) run on
   every deployment; deployments are immutable images.
 
 ## 5. Personnel
@@ -78,7 +79,8 @@ within one business day when a person's role ends.
 | Item | Retention | Method |
 |---|---|---|
 | Streamed audio | Not stored | Processed in memory only |
-| Transcript awaiting formatting | Up to 30 minutes | In-memory cache, then discarded |
+| Transcript awaiting formatting | Access expires after 30 minutes; removed within 31 minutes | In-memory cache, then discarded by scheduled cleanup |
+| Opt-in de-identified quality samples | Up to 365 days, or until the radiologist opts out | Stored in RadSpeed's database; opting out deletes that radiologist's retained samples in the same transaction |
 | Signed report copy and patient identifiers | 30 days (configurable) | Text and identifiers replaced by a purge marker; row, version chain and audit events retained |
 | HL7 / DICOM SR / FHIR export files | 14 days (configurable) | Deleted by scheduled job |
 | Audit log | Life of the agreement plus 7 years, or as the Practice directs | Retained without patient free text; contains identifiers only where the Practice's accession is the key |
@@ -88,6 +90,12 @@ within one business day when a person's role ends.
 On termination RadSpeed exports any unpurged signed reports to the Practice on
 request, then deletes the Practice's data and snapshots within 30 days and
 confirms deletion in writing.
+
+Quality retention is off by default. Samples are used only for RadSpeed's
+internal quality checks, evaluation and training of RadSpeed-owned models.
+They are not supplied to an outside AI provider for training. Automated
+redaction can miss identifiers. The Practice must approve the feature and
+radiologists must use it only with dictation that is already de-identified.
 
 ## 7. Data breach notification
 

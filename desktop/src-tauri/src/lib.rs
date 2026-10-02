@@ -96,7 +96,34 @@ fn cmd_get_version() -> String {
 
 #[tauri::command]
 fn cmd_show_app(app: AppHandle) {
+    if let Ok(mut app_url) = url::Url::parse(&settings::load(&app).api_base) {
+        app_url.set_path("/app");
+        app_url.set_query(Some("desktop=overlay"));
+        if let Some(window) = app.get_webview_window("app") {
+            let _ = window.navigate(app_url);
+        }
+    }
     show_app_window(&app);
+}
+
+#[tauri::command]
+fn cmd_show_reporting_settings(app: AppHandle) -> Result<(), String> {
+    let api_base = settings::load(&app).api_base;
+    let mut settings_url = url::Url::parse(&api_base)
+        .map_err(|error| format!("Invalid RadSpeed cloud URL: {error}"))?;
+    settings_url.set_path("/settings");
+    settings_url.set_query(None);
+    settings_url.set_fragment(None);
+
+    let window = app
+        .get_webview_window("app")
+        .ok_or_else(|| "RadSpeed window is not available".to_string())?;
+    window
+        .navigate(settings_url)
+        .map_err(|error| format!("Could not open reporting preferences: {error}"))?;
+    let _ = window.show();
+    let _ = window.set_focus();
+    Ok(())
 }
 
 #[tauri::command]
@@ -225,6 +252,7 @@ pub fn run() {
             cmd_hide_settings,
             cmd_trigger_now,
             cmd_show_app,
+            cmd_show_reporting_settings,
             cmd_show_settings,
             cmd_set_compact_mode,
             cmd_get_version,
@@ -353,6 +381,17 @@ mod tests {
     }
 
     #[test]
+    fn desktop_exposes_reporting_preferences() {
+        let source = include_str!("lib.rs");
+        let html = include_str!("../../src/index.html");
+        let javascript = include_str!("../../src/main.js");
+        assert!(source.contains("settings_url.set_path(\"/settings\")"));
+        assert!(html.contains("Reporting preferences"));
+        assert!(html.contains("Roman or Arabic numerals"));
+        assert!(javascript.contains("cmd_show_reporting_settings"));
+    }
+
+    #[test]
     fn local_settings_commands_are_allowed_by_acl() {
         let capability = include_str!("../capabilities/default.json");
         let permissions = include_str!("../permissions/report-copy.toml");
@@ -365,6 +404,7 @@ mod tests {
             "cmd_trigger_now",
             "cmd_show_app",
             "cmd_show_settings",
+            "cmd_show_reporting_settings",
             "cmd_set_compact_mode",
             "cmd_get_version",
         ] {

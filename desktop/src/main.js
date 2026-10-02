@@ -84,6 +84,7 @@ async function testConnection() {
 }
 
 async function openApp() { await invoke("cmd_show_app"); }
+async function openReportingSettings() { await invoke("cmd_show_reporting_settings"); }
 async function triggerNow() { await invoke("cmd_trigger_now"); }
 async function hide() { await invoke("cmd_hide_settings"); }
 
@@ -92,6 +93,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("btn-cancel").addEventListener("click", hide);
   $("btn-test").addEventListener("click", testConnection);
   $("btn-open-app").addEventListener("click", openApp);
+  $("btn-reporting-settings").addEventListener("click", openReportingSettings);
   $("btn-trigger").addEventListener("click", triggerNow);
   $("paste-mode").addEventListener("change", updateJumpKeysVisibility);
   load();

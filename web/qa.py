@@ -1,4 +1,4 @@
-"""NLP QA layer — laterality / gender / unit / modality / anatomy checks.
+"""NLP QA layer — report consistency and dictated-finding coverage checks.
 
 Phase 2 of the post-PACS roadmap. PowerScribe One ships its own QA pass, so
 this is parity rather than a moat — but it's table stakes for users on Dragon,
@@ -298,6 +298,208 @@ def check_unit_drift(report_text: str) -> list[dict]:
     return flags
 
 
+# Keep this deliberately conservative. It looks only at clauses that contain a
+# clear pathology or injury term, then asks whether their main clinical words
+# appear in the report. It warns; it never rewrites or claims an omission as
+# fact. Phrase replacements cover common radiology paraphrases.
+_PATHOLOGY_RE = re.compile(
+    r"\b(?:tear|torn|ruptur(?:e|ed)|fractur(?:e|ed)|avuls(?:ion|ed)|injur(?:y|ed)|"
+    r"sprain(?:ed)?|strain(?:ed)?|dislocat(?:ion|ed)|sublux(?:ation|ed)|lesion|"
+    r"mass|nodule|metasta(?:sis|tic)|oedema|edema|effusion|collection|stenosis|"
+    r"thrombo(?:sis|sed)|infarct(?:ion|ed)?|ha?emorrhag(?:e|ic)|obstruction|"
+    r"thickening|defect|disrupt(?:ion|ed)|abnormalit(?:y|ies))\b",
+    re.IGNORECASE,
+)
+
+_SOURCE_STOPWORDS = {
+    "about", "after", "again", "also", "along", "appears", "approximately",
+    "before", "being", "demonstrates", "demonstrated", "evidence", "finding",
+    "findings", "from", "given", "into", "measures", "measuring", "noted",
+    "present", "seen", "shows", "there", "these", "this", "through", "within",
+    "with", "without", "which", "where", "that", "than", "then", "very",
+    "change", "changed", "interval", "significant", "stable", "unchanged",
+}
+
+_TOKEN_ALIASES = {
+    "torn": "tear", "rupture": "tear", "ruptured": "tear", "disrupted": "tear",
+    "disruption": "tear", "fractured": "fracture", "avulsed": "avulsion",
+    "injured": "injury", "metastatic": "metastasis", "oedema": "edema",
+    "haemorrhage": "hemorrhage", "haemorrhagic": "hemorrhage",
+    "hemorrhagic": "hemorrhage", "completely": "complete",
+}
+
+_PHRASE_ALIASES = (
+    (re.compile(r"\bposterolateral\b", re.I), "posterior lateral"),
+    (re.compile(r"\blateral collateral ligament\b", re.I), "fibular collateral ligament"),
+    (re.compile(r"\blcl\b", re.I), "fibular collateral ligament"),
+    (re.compile(r"\bacl\b", re.I), "anterior cruciate ligament"),
+    (re.compile(r"\bpcl\b", re.I), "posterior cruciate ligament"),
+    (re.compile(r"\bmcl\b", re.I), "medial collateral ligament"),
+)
+
+
+def _coverage_tokens(text: str) -> set[str]:
+    normal = text.lower().replace("-", " ")
+    for pattern, replacement in _PHRASE_ALIASES:
+        normal = pattern.sub(replacement, normal)
+    tokens: set[str] = set()
+    for raw in re.findall(r"\d+(?:\.\d+)?|[a-z]+", normal):
+        if raw[0].isdigit():
+            # Measurements are normalised separately to millimetres. Keeping
+            # their raw spelling here would make 5 mm and 0.5 cm look different.
+            continue
+        token = _TOKEN_ALIASES.get(raw, raw)
+        if token in _SOURCE_STOPWORDS or len(token) < 4:
+            continue
+        if token.endswith("ies") and len(token) > 5:
+            token = token[:-3] + "y"
+        elif token.endswith("s") and not token.endswith("ss") and len(token) > 5:
+            token = token[:-1]
+        tokens.add(token)
+    return tokens
+
+
+def _pathology_clauses(source_text: str) -> list[str]:
+    clauses: list[str] = []
+    for sentence in re.split(r"[\n.;]+", source_text):
+        sentence = sentence.strip(" ,-:")
+        if not sentence:
+            continue
+        or_parts = re.split(
+            r"\s+or\s+(?=[^.;\n]{0,100}" + _PATHOLOGY_RE.pattern + r")",
+            sentence,
+            flags=re.IGNORECASE,
+        )
+        carry_negative = len(or_parts) > 1 and _pathology_is_negated(or_parts[0])
+        if carry_negative:
+            or_parts = [
+                part if index == 0 or _pathology_is_negated(part) else f"No {part}"
+                for index, part in enumerate(or_parts)
+            ]
+        # Split a compound sentence only when the next part contains its own
+        # pathology cue. This catches two separately dictated injuries.
+        parts = []
+        for or_part in or_parts:
+            parts.extend(re.split(
+                r"\s+(?:and|with)\s+(?=[^.;\n]{0,100}" + _PATHOLOGY_RE.pattern + r")"
+                r"|,\s*(?=[^.;\n]{0,100}" + _PATHOLOGY_RE.pattern + r")",
+                or_part,
+                flags=re.IGNORECASE,
+            ))
+        for part in parts:
+            part = part.strip(" ,-:")
+            pathology = _PATHOLOGY_RE.search(part)
+            if not pathology:
+                continue
+            clauses.append(part)
+    return clauses
+
+
+def _pathology_is_negated(text: str) -> bool:
+    """Return whether a pathology statement is explicitly negative."""
+    pathology = _PATHOLOGY_RE.search(text)
+    if pathology:
+        prefix = text[max(0, pathology.start() - 45):pathology.start()]
+        suffix = text[pathology.end():pathology.end() + 35]
+        if re.search(
+            r"\bno\s+(?:(?:significant|interval)\s+)*change\s+in\b[^,.;]{0,40}$",
+            prefix,
+            re.IGNORECASE,
+        ):
+            return False
+        if re.search(
+            r"\b(?:no|not|without|absence\s+of|negative\s+for)\b[^,.;]{0,35}$",
+            prefix,
+            re.IGNORECASE,
+        ):
+            return True
+        if re.search(r"^.{0,20}\b(?:absent|not\s+seen|not\s+identified)\b", suffix, re.I):
+            return True
+    return bool(re.search(r"\b(?:intact|unremarkable|normal)\b", text, re.I))
+
+
+def _report_clauses(report_text: str) -> list[str]:
+    return [
+        clause.strip(" ,-:")
+        for clause in re.split(r"[\n.;]+", report_text)
+        if clause.strip(" ,-:")
+    ]
+
+
+def _measurements_mm(text: str) -> set[float]:
+    values: set[float] = set()
+    for value, unit in re.findall(r"\b(\d+(?:\.\d+)?)\s*(mm|cm)\b", text, re.I):
+        number = float(value)
+        values.add(round(number * (10 if unit.lower() == "cm" else 1), 3))
+    return values
+
+
+def check_source_omissions(report_text: str, source_text: Optional[str]) -> list[dict]:
+    """Flag dictated pathology clauses with little clinical-token coverage."""
+    if not source_text or not source_text.strip():
+        return []
+    report_tokens = _coverage_tokens(report_text)
+    report_clauses = _report_clauses(report_text)
+    flags: list[dict] = []
+    for clause in _pathology_clauses(source_text):
+        source_tokens = _coverage_tokens(clause)
+        if not source_tokens:
+            continue
+        overlap = source_tokens & report_tokens
+        source_measurements = _measurements_mm(clause)
+        report_measurements = _measurements_mm(report_text)
+        measurement_match = not source_measurements or source_measurements <= report_measurements
+        pathology_tokens = _coverage_tokens(_PATHOLOGY_RE.search(clause).group(0))
+        source_negated = _pathology_is_negated(clause)
+        matching_report_clauses = []
+        minimum_overlap = 1 if len(source_tokens) == 1 else 2
+        for report_clause in report_clauses:
+            candidate_tokens = _coverage_tokens(report_clause)
+            candidate_overlap = source_tokens & candidate_tokens
+            if (
+                len(candidate_overlap) >= minimum_overlap
+                and len(candidate_overlap) / len(source_tokens) >= 0.75
+            ):
+                matching_report_clauses.append(report_clause)
+
+        # Do not warn when a routine negative was simply omitted. Do warn when
+        # the report contains the same finding with the opposite polarity.
+        same_polarity = [
+            item for item in matching_report_clauses
+            if _pathology_is_negated(item) == source_negated
+        ]
+        if source_negated:
+            if same_polarity or not matching_report_clauses:
+                continue
+        elif (
+            same_polarity
+            and measurement_match
+            and any(pathology_tokens & _coverage_tokens(item) for item in same_polarity)
+        ):
+            continue
+        elif matching_report_clauses:
+            pass
+        elif (
+            len(overlap) >= minimum_overlap
+            and len(overlap) / len(source_tokens) >= 0.75
+            and measurement_match
+            and bool(pathology_tokens & report_tokens)
+        ):
+            continue
+        # One matching generic word such as "injury" must not hide an omitted
+        # named structure. Numeric changes and missing pathology terms also
+        # remain visible even when the anatomy words match.
+        excerpt = clause if len(clause) <= 180 else clause[:177].rstrip() + "..."
+        flags.append(_flag(
+            type_="source_omission",
+            severity="warning",
+            message="A dictated finding may be missing or too broadly summarised. Confirm it in the report.",
+            location=excerpt,
+            suggestion="Compare this dictated finding with the report before sign-off.",
+        ))
+    return flags
+
+
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
@@ -308,6 +510,7 @@ def run_qa_checks(
     patient_gender: Optional[str] = None,
     ordered_side: Optional[str] = None,
     body_part: Optional[str] = None,
+    source_text: Optional[str] = None,
 ) -> list[dict]:
     """Run all deterministic QA checks and return a flat list of flags.
 
@@ -322,6 +525,7 @@ def run_qa_checks(
     flags.extend(check_gender_anatomy(report_text, patient_gender))
     flags.extend(check_modality_anatomy(report_text, body_part))
     flags.extend(check_unit_drift(report_text))
+    flags.extend(check_source_omissions(report_text, source_text))
 
     severity_order = {"error": 0, "warning": 1, "info": 2}
     flags.sort(key=lambda f: severity_order.get(f.get("severity", "info"), 3))

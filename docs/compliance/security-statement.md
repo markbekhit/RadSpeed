@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| **Report date** | 22 September 2026 |
+| **Report date** | 2 October 2026 |
 | **Application** | RadSpeed production service at radspeed.com.au, practice profile |
 | **Technical owner** | Dr Mark Bekhit |
 | **Practice pilot** | Dedicated instance per practice, Australian practice profile, HL7 or MWL integration |
@@ -41,6 +41,9 @@ automated test suites, and non-destructive checks of the production service.
   reason.
 - Stored report copies are scrubbed after 30 days and export files deleted
   after 14 days, automatically and with an audit entry.
+- Optional quality retention is off by default. If a radiologist opts in,
+  RadSpeed keeps de-identified correction pairs for up to 365 days. Opting
+  out deletes that radiologist's samples.
 
 **Recommended practice position.** Subject to practice review and approval,
 begin with a small group of radiologists on a dedicated RadSpeed instance,
@@ -62,10 +65,14 @@ DICOM worklist bridge once the practice's integration team is ready.
 
 - Patient demographics supplied by the RIS: name, date of birth, patient
   identifier, accession, modality, body part, referrer.
-- Dictated audio (streamed, not written to disk), transcript (in memory for
-  up to 30 minutes), draft and signed report text, and a prior report the
+- Dictated audio (streamed, not written to disk), transcript (expires in memory
+  after 30 minutes and is removed within one further minute), draft and signed report text, and a prior report the
   radiologist explicitly selects for comparison.
 - Staff identity from the practice's SSO: name and email.
+- If the radiologist opts in, de-identified transcript, draft and correction
+  pairs for internal quality checks, evaluation and RadSpeed-owned model
+  training. Automated redaction can miss identifiers, so this feature is for
+  already de-identified dictation only.
 - No medical images are stored. The optional research features that accept
   images are disabled in the practice profile.
 
@@ -79,9 +86,9 @@ DICOM worklist bridge once the practice's integration team is ready.
 | Application and network | HTTPS redirect, HSTS, nosniff, strict referrer policy, frame denial, `Cache-Control: no-store` on every authenticated page and API response, signed WebSocket tokens, rate limiting on public tools. |
 | Report integrity | Explicit sign-off locks the report with a SHA-256 hash and server timestamp; amendments create a new version with a mandatory reason; exports run only against signed text; deterministic laterality, sex, anatomy and unit checks flag but never rewrite. |
 | Audit | Seventeen event types in a SHA-256 hash chain; `verify_chain` detects any edited, removed or reordered row; append lock prevents forks under concurrent writes. |
-| Retention | Scheduled scrub of report text and identifiers after 30 days, deletion of export files after 14 days, both audited; admin endpoint to run on demand. |
+| Retention | Scheduled scrub of report text and identifiers after 30 days, deletion of export files after 14 days, both audited; optional de-identified quality samples are deleted after 365 days or immediately when the radiologist opts out; admin endpoint to run on demand. |
 | Integration security | Constant-time bearer-token check on the worklist push endpoint, which is disabled when no token is set; field allow-list and filename sanitisation on inbound orders; oversized or malformed HL7 files quarantined. |
-| Build and deploy | GitHub Actions with OpenID Connect to AWS (no long-lived keys); SSH opened only to the runner for the duration of a deploy; immutable container images; 317 unit tests, 50 browser tests and a clinical evaluation set must pass before deployment. |
+| Build and deploy | GitHub Actions with OpenID Connect to AWS (no long-lived keys); SSH opened only to the runner for the duration of a deploy; immutable container images; 383 unit tests, 65 browser tests and a clinical evaluation set must pass before deployment. |
 
 ## 2. Security review and practice workflow
 
@@ -92,7 +99,7 @@ used synthetic identifiers; no real patient records were accessed.
 |---|---|---|
 | Application review | Every route, authentication boundary, data flow to external providers, storage location, export path and log statement was read and documented (22 September 2026). | Completed |
 | Remediation | Findings from the review were fixed the same day: offshore provider paths, shared-password fallback, session lifetime, cache headers, plain-HTTP proxy, transcript logging, absence of retention, absence of an AI disclosure line. | Completed |
-| Automated verification | 317 unit tests, 50 browser workflow tests and the clinical evaluation set pass; they run on every deployment. | Pass |
+| Automated verification | 383 unit tests, 65 browser workflow tests and the clinical evaluation set pass; they run on every deployment. | Pass |
 | Live service | HTTPS enforcement, HSTS, no-store on private responses, HTTP-to-HTTPS redirect and SSO sign-in observed on production. | Pass |
 | Secrets and dependencies | Secrets are held outside the repository; direct dependencies reviewed against the deployed architecture. | Reviewed |
 | Practice SSO | Microsoft Entra or Google Workspace tenant configuration and end-to-end validation are required before live use. | Pending |
@@ -165,5 +172,5 @@ engine were not independently audited.
 - Deepgram, Australia endpoint and Model Improvement Program opt-out
 - AWS, Amazon Bedrock geographic cross-Region inference and data handling
 
-Version 1.0, 22 September 2026. Reassess after material identity,
+Version 1.1, 2 October 2026. Reassess after material identity,
 integration or hosting changes.

@@ -685,7 +685,7 @@ def _create_structured_report(
             **completion_options(config.SELECTED_MODEL, temperature=0.1),
         )
         if response.choices and response.choices[0].message.content:
-            return postprocess_report(response.choices[0].message.content)
+            return postprocess_report(response.choices[0].message.content, style)
         else:
             return None
 
@@ -1186,11 +1186,68 @@ def uppercase_report_section_headings(text: str) -> str:
     return "\n".join(output)
 
 
-def postprocess_report(text: str) -> str:
+_ROMAN_NUMERALS = {
+    "I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6,
+    "VII": 7, "VIII": 8, "IX": 9, "X": 10, "XI": 11, "XII": 12,
+}
+_ARABIC_NUMERALS = {value: key for key, value in _ROMAN_NUMERALS.items()}
+
+
+def apply_numeral_style(text: str, style: Optional[dict] = None) -> str:
+    """Apply the selected grade and liver-segment numeral style.
+
+    The conversion is deliberately narrow. It does not alter vertebral levels,
+    device names, staging labels, or other clinical numbers.
+    """
+    preference = str((style or {}).get("numerals") or "").lower()
+    if preference not in {"arabic", "roman"}:
+        return text
+
+    def _is_liver_segment(match: re.Match) -> bool:
+        label = match.group(1).lower()
+        if label == "grade":
+            return True
+        nearby = text[max(0, match.start() - 160):match.end() + 160].lower()
+        immediate = text[max(0, match.start() - 35):match.start()].lower()
+        modifier = re.search(r"\b([a-z]+)\s+$", immediate)
+        if modifier:
+            return modifier.group(1) in {"liver", "hepatic", "couinaud"}
+        return bool(re.search(r"\b(?:liver|hepatic|couinaud)\b", nearby))
+
+    if preference == "arabic":
+        pattern = re.compile(
+            r"\b(grade|segment)(\s+)(XII|XI|IX|VIII|VII|VI|IV|III|II|X|V|I)\b",
+            re.IGNORECASE,
+        )
+        def _to_arabic(match: re.Match) -> str:
+            if not _is_liver_segment(match):
+                return match.group(0)
+            return (
+                f"{match.group(1)}{match.group(2)}"
+                f"{_ROMAN_NUMERALS[match.group(3).upper()]}"
+            )
+        return pattern.sub(_to_arabic, text)
+
+    pattern = re.compile(
+        r"\b(grade|segment)(\s+)(12|11|10|[1-9])\b",
+        re.IGNORECASE,
+    )
+    def _to_roman(match: re.Match) -> str:
+        if not _is_liver_segment(match):
+            return match.group(0)
+        return (
+            f"{match.group(1)}{match.group(2)}"
+            f"{_ARABIC_NUMERALS[int(match.group(3))]}"
+        )
+    return pattern.sub(_to_roman, text)
+
+
+def postprocess_report(text: str, style: Optional[dict] = None) -> str:
     """Apply deterministic presentation fixes to a complete report."""
     text = capitalize_after_colon(text)
     text = number_long_impression_lists(text)
-    return uppercase_report_section_headings(text)
+    text = uppercase_report_section_headings(text)
+    return apply_numeral_style(text, style)
 
 
 def capitalize_after_colon(text: str) -> str:

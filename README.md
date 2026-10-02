@@ -21,8 +21,9 @@ your RIS — or, where integrations are available, delivered automatically.
 The project is web-first: deploy a single container to AWS or another Docker host and
 your radiologists get a browser-based workstation with streaming speech-
 to-text, LLM report formatting, patient-context awareness, a DICOM/HL7
-worklist, and standards-based export back to the RIS. A legacy desktop
-(Tkinter) build is still in the tree for offline use.
+worklist, and standards-based export back to the RIS. A native Windows
+companion adds a PowerScribe overlay, global hotkey, rich paste and updates.
+The original Tkinter build remains in the tree for offline use.
 
 > **Note on lineage** — this codebase began as a fork of Ankush Ankush's
 > original VoxRad desktop app (see [citation below](#-cite)) and has since
@@ -35,7 +36,7 @@ worklist, and standards-based export back to the RIS. A legacy desktop
 - 🎤 **Streaming STT** — Deepgram Nova-3 Medical or AssemblyAI Universal-3
   Pro with Medical Mode and radiology keyterm prompting; falls back to Groq
   Whisper Large V3 Turbo when no streaming key is configured
-- 📝 **LLM report formatting** — GPT-5.6 Sol in production, with an
+- 📝 **LLM report formatting** — GPT-6 Sol in production, with an
   OpenAI-compatible endpoint for alternative providers and local models,
   plus user-editable templates
 - 🎯 **Voice refinement** — select a passage, speak corrections, regenerate
@@ -72,10 +73,11 @@ worklist, and standards-based export back to the RIS. A legacy desktop
 - 🔎 **FHIR RIS patient lookup** — query a FHIR server by accession to
   auto-fill patient context
 
-### Desktop (legacy, still in tree)
-- Tkinter UI, multimodal (Gemini) mode, encrypted clipboard paste
-- Not at feature parity with the web app — new integration features are
-  web-only
+### Windows desktop companion
+- Native Tauri 2 tray app, compact reporting overlay and global hotkey
+- PowerScribe selection capture and editable rich-text paste
+- Reporting preferences open in the signed-in RadSpeed window
+- Signed automatic updates; see [`desktop/README.md`](desktop/README.md)
 
 ## 🏗️ Architecture
 
@@ -108,7 +110,7 @@ Core subsystems:
 - `audio/` — microphone capture + segment/stream encoding
 - `agents/` — on-prem MWL bridge (stands apart from the server)
 - `config/`, `utils/` — settings loader, encryption
-- `templates/` — 40 bundled report templates covering CT (chest, CTPA,
+- `templates/` — 42 bundled report templates covering CT (chest, CTPA,
   neck, sinuses, head/brain, abdo/pelvis, KUB, thoracic angio, HRCT,
   spine C/T/L), MRI (brain, breast, MRCP, abdomen, hip, knee, ankle,
   wrist, shoulder, pelvis, prostate, spine C/T/L), ultrasound (abdomen,
@@ -117,6 +119,7 @@ Core subsystems:
   bone scan, PET/CT, plus a free-prose pseudo-template
 - `guidelines/` — BIRADS, TIRADS, PIRADS, LIRADS, Fleischner reference
 - `ui/` — legacy Tkinter desktop
+- `desktop/` — current Tauri 2 Windows companion
 
 ## 🚀 Quick start — web app
 
@@ -251,7 +254,14 @@ Each finalised report emits a `DiagnosticReport` JSON to the working
 directory; the "Lookup" button queries the FHIR server by accession to
 pre-fill patient context.
 
-## 🖥️ Desktop app (legacy)
+## 🖥️ Windows desktop companion
+
+The current Tauri 2 companion runs from the Windows system tray. It provides
+the compact reporting controller, global impression hotkey, rich report copy,
+and automatic updates. Install and development details are in
+[`desktop/README.md`](desktop/README.md).
+
+### Original desktop app
 
 The original Tkinter desktop app still works for local, offline use:
 

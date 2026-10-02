@@ -33,6 +33,8 @@ from typing import Iterable, Optional
 from config.config import config
 from config import practice
 from web.audit import _conn, log_event
+from web.quality_samples import RETENTION_DAYS as QUALITY_SAMPLE_RETENTION_DAYS
+from web.quality_samples import purge_quality_samples
 
 logger = logging.getLogger(__name__)
 
@@ -150,10 +152,14 @@ def run_once(*, user_id: Optional[int] = None, now: Optional[datetime] = None) -
         "reports_scrubbed": scrub_reports(s.retention_days, now),
         "followups_scrubbed": scrub_followups(s.retention_days, now),
         "files_removed": purge_outboxes(s.outbox_retention_days),
+        "quality_samples_removed": purge_quality_samples(),
         "retention_days": s.retention_days,
         "outbox_retention_days": s.outbox_retention_days,
+        "quality_sample_retention_days": QUALITY_SAMPLE_RETENTION_DAYS,
     }
-    if any(result[k] for k in ("reports_scrubbed", "followups_scrubbed", "files_removed")):
+    if any(result[k] for k in (
+        "reports_scrubbed", "followups_scrubbed", "files_removed", "quality_samples_removed"
+    )):
         log_event(user_id=user_id, event_type="retention_purge", metadata=result)
         logger.info("[retention] %s", result)
     return result

@@ -1,6 +1,6 @@
 # RadSpeed: AI-tool evidence pack for RANZCR Standards of Practice v12
 
-**Version 1.0 draft, 22 September 2026. For the practice's clinical
+**Version 1.1 draft, 2 October 2026. For the practice's clinical
 governance committee and Diagnostic Imaging Accreditation Scheme file.**
 
 The RANZCR *Standards of Practice for Clinical Radiology* v12.0 (7 November
@@ -12,8 +12,8 @@ says what RadSpeed supplies to support it.
 ## 1. Product description and intended purpose (R3.20)
 
 **What RadSpeed does.** A radiologist dictates; RadSpeed transcribes the
-speech (Deepgram Nova-3 Medical) and a language model (Claude Sonnet 5 on
-Amazon Bedrock) arranges the transcript into the practice's report template
+speech (Deepgram Nova-3 Medical) and a language model arranges the transcript
+into the practice's report template
 in the radiologist's style. Deterministic checks flag possible laterality,
 sex, anatomy and unit inconsistencies. The radiologist reviews, edits and
 signs. The signed report is exported to the RIS or pasted into PowerScribe.
@@ -39,17 +39,24 @@ that would do so are disabled in the practice profile.
 
 ## 2. Development, training data and validation (R3.20, R3.21, R3.22a)
 
-RadSpeed does not train its own models.
+The current single-radiologist production service uses GPT-6 Sol. The
+Australian practice profile uses Claude Sonnet 5 through Amazon Bedrock.
+Outside providers do not train on RadSpeed content. A radiologist can choose
+to retain de-identified correction pairs for RadSpeed's internal model
+training and evaluation. This choice is off by default.
 
 | Component | Developer | Training data | RadSpeed's validation |
 |---|---|---|---|
 | Speech to text | Deepgram Nova-3 Medical, a general-purpose medical model | Deepgram's proprietary corpus; not the practice's data (opt-out enforced) | Radiology keyterm prompting; per-template spelling lists; radiologist-level accuracy review during pilot |
-| Language model | Anthropic Claude Sonnet 5 via Amazon Bedrock | Anthropic's general training; not the practice's data | Clinical evaluation set of high-risk synthetic cases (laterality, side-specific pathology, negatives) run on every release; 317 unit tests including template rendering and fact preservation |
+| Language model, current single-radiologist production | GPT-6 Sol | Provider's general training; RadSpeed content is not supplied for provider training | Clinical evaluation set of high-risk synthetic cases (laterality, side-specific pathology, negatives) run on every release; 383 unit tests including template rendering and fact preservation |
+| Language model, Australian practice profile | Anthropic Claude Sonnet 5 via Amazon Bedrock | Anthropic's general training; not the practice's data | The same release evaluation and review controls |
 | Deterministic QA | RadSpeed | Rules only, no training | Unit tests per rule |
+| Optional RadSpeed-owned internal model | RadSpeed | Only opt-in, de-identified transcript, draft and correction pairs retained for up to 365 days | Must have separate training, validation and test sets, documented performance and clinical-governance approval before use in a live report path |
 
-No independent training, validation and test split applies because no model
-is trained on practice data. Overfitting is therefore not a risk; drift in a
-provider's model is handled under section 6.
+The current live report path does not use a RadSpeed-trained model. If
+RadSpeed develops one, it will use separate training, validation and test
+sets. It will also complete a privacy review and clinical validation before
+release. Provider-model drift is handled under section 6.
 
 ## 3. Interoperability and data access (R3.22b, R3.22d)
 
@@ -84,7 +91,7 @@ takes precedence.
 
 ## 6. Software updates and monitoring (R3.23, R3.24)
 
-- RadSpeed releases are immutable images that pass 317 unit tests, 50
+- RadSpeed releases are immutable images that pass 383 unit tests, 65
   browser tests and the clinical evaluation set before deployment. Release
   notes are provided to the practice for any change affecting data handling,
   model provider or clinical output.
@@ -123,8 +130,11 @@ For the practice's governance file:
 - **Ethical principles (R1.22).** RadSpeed's design follows the RANZCR
   Ethical Principles for AI in Medicine: the radiologist keeps authority and
   accountability; the tool is transparent about its role on every report;
-  patient data is minimised and stays in Australia; no practice data trains
-  any model; the system is auditable end to end.
+  patient data is minimised and stays in Australia; outside providers do not
+  train on RadSpeed content; optional internal training uses only samples
+  retained after explicit opt-in and automated redaction; the system is
+  auditable end to end. Automated redaction can miss identifiers, so the
+  feature is limited to dictation that is already de-identified.
 - **Conflicts of interest (R1.21).** RadSpeed is developed by Dr Mark
   Bekhit, FRANZCR, who is a practising radiologist. Any use in a practice
   where he reports should be disclosed to that practice's governance

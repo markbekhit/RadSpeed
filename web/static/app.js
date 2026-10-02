@@ -29,6 +29,11 @@ const state = {
   streamingAudioCtx: null,
   confirmedText: "",
   interimText: "",
+  // All provider finals received in chronological order. Unlike confirmedText,
+  // this is not cleared when the user moves the insertion cursor.
+  streamingServerConfirmedText: "",
+  streamingBakedServerText: "",
+  streamingCursorRepositioned: false,
   // Cursor-aware insertion: text before/after the insert point when recording started.
   // Updated live as the user moves the cursor during streaming.
   streamingBefore: "",
@@ -751,6 +756,9 @@ async function startStreamingRecording() {
 
     state.confirmedText = "";
     state.interimText   = "";
+    state.streamingServerConfirmedText = "";
+    state.streamingBakedServerText = "";
+    state.streamingCursorRepositioned = false;
     state.isRecording   = true;
     startTimer();
     setUI("recording");
@@ -804,17 +812,34 @@ function handleStreamingMessage(msg) {
       state.confirmedText = state.confirmedText
         ? state.confirmedText + (chunk ? " " + chunk : "")
         : chunk;
+      state.streamingServerConfirmedText = state.streamingServerConfirmedText
+        ? state.streamingServerConfirmedText + (chunk ? " " + chunk : "")
+        : chunk;
       state.interimText = "";
       _updateStreamingDisplay();
       break;
     }
     case "session_complete": {
       if (msg.session_id) state.sessionId = msg.session_id;
-      // Use client-tracked confirmed text — the server's full transcription is
-      // chronologically ordered and doesn't account for cursor repositioning.
-      // Previous confirmed text is already baked into streamingBefore/After.
+      // The server can recover a final provider interim during shutdown and
+      // applies the last ASR correction pass. Prefer that canonical speech for
+      // this recording. Previous text is already in streamingBefore/After.
       state.streamingSelectedText = "";
-      const speech = state.confirmedText;
+      const canonical = (msg.transcription || "").trim();
+      const rawServer = (msg.raw_transcription || canonical).trim();
+      let speech;
+      if (!state.streamingCursorRepositioned) {
+        speech = canonical || state.confirmedText;
+      } else if (state.streamingBakedServerText && rawServer.startsWith(state.streamingBakedServerText)) {
+        // Cursor moves bake earlier finals into before/after. Insert only the
+        // chronological suffix that arrived after the latest move.
+        speech = rawServer.slice(state.streamingBakedServerText.length).trim();
+      } else {
+        // Compatibility/fallback when an older server omits raw_transcription.
+        const recovered = (msg.recovered_text || "").trim();
+        speech = state.confirmedText + (recovered ? (state.confirmedText ? " " : "") + recovered : "");
+      }
+      speech = (speech || "").trim();
       const before = state.streamingBefore;
       const after  = state.streamingAfter;
       const sep1 = (before && !/\s$/.test(before) && speech) ? " " : "";
@@ -923,6 +948,9 @@ function _cleanupStreaming() {
   state.isPaused      = false;
   state.confirmedText   = "";
   state.interimText     = "";
+  state.streamingServerConfirmedText = "";
+  state.streamingBakedServerText = "";
+  state.streamingCursorRepositioned = false;
   state.streamingBefore = "";
   state.streamingAfter  = "";
   state.streamingAnchorPos = 0;
@@ -3203,6 +3231,7 @@ async function runQaCheck({ quiet = false } = {}) {
   // catch an opposite-side report without another field or click.
   const body = {
     report_text: text,
+    source_text: ($("transcription")?.value || "").trim() || null,
     accession: $("accession")?.value.trim() || null,
     body_part: $("body-part")?.value.trim() || null,
     ordered_side: _orderedSideFromBodyPart($("body-part")?.value),
@@ -3230,7 +3259,7 @@ async function runQaCheck({ quiet = false } = {}) {
     }
     if (flags.length === 0) {
       if (!quiet) setStatus("QA: no flags raised.", "success");
-    } else {
+    } else if (!quiet) {
       setStatus(`QA: ${flags.length} flag${flags.length === 1 ? "" : "s"} raised.`, "active");
     }
     return flags;
@@ -3887,6 +3916,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     state.streamingSelectedText = (newPos !== newEnd)
       ? stableText.slice(newPos, newEnd)
       : "";
+    state.streamingBakedServerText = state.streamingServerConfirmedText;
+    state.streamingCursorRepositioned = true;
     state.confirmedText   = "";
     state.interimText     = "";
 

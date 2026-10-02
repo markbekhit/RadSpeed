@@ -18,6 +18,7 @@ commands.allow = [
   "cmd_hide_settings",
   "cmd_trigger_now",
   "cmd_show_app",
+  "cmd_show_reporting_settings",
   "cmd_show_settings",
   "cmd_set_compact_mode",
   "cmd_get_version",

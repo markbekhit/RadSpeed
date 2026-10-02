@@ -307,4 +307,4 @@ def draft_worksheet_report(
         "One-pass worksheet draft complete (%d images, %d note characters, %d report characters, %.1fs).",
         len(images), len(notes), len(report), time.monotonic() - started_at,
     )
-    return WorksheetDraft(source_notes=notes, report=postprocess_report(report))
+    return WorksheetDraft(source_notes=notes, report=postprocess_report(report, style))

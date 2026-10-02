@@ -1,6 +1,6 @@
 # RadSpeed Roadmap
 
-Updated: 2026-09-22
+Updated: 2026-10-02
 
 This document is the canonical product roadmap for RadSpeed. It is intended to
 survive context resets — refer back to this file when picking up work
@@ -194,13 +194,19 @@ deployment and partner sign-on, not new code.
 ### NLP QA layer (Phase 2, just shipped)
 
 - **`web/qa.py`** — deterministic laterality / gender / unit-drift /
-  modality-anatomy checks. Flag-only, never rewrites.
+  modality-anatomy checks plus a conservative transcript-to-report pathology
+  coverage check. Flag-only, never rewrites.
 - **`POST /api/qa-check`** — runs all checks, returns a flat list of
   severity-tagged flags.
 - QA runs automatically after generation and again before sign-off, while
   remaining advisory and never rewriting the report. Laterality is inferred
   from body-part labels such as "Right knee". The manual "QA Check" button
   remains available; each flag is dismissible.
+- **Opt-in quality samples** — each user can retain de-identified transcript,
+  draft and voice-correction pairs for internal checks, evaluation and training
+  of RadSpeed's own models. The setting is off by default, samples expire after
+  365 days, withdrawal deletes retained pairs, and no pair is shared with
+  outside model providers for training.
 
 ### Deployment
 
@@ -211,7 +217,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **154 Python tests + 22 Chromium E2E workflows** run before deployment and on
+- **383 Python tests + 65 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -321,6 +327,8 @@ practice rather than a tinkerer.
   RTF and HTML report copy, while keeping the finding text normal weight.
   Version 0.2.34 keeps the compact controller after sign-in redirects and
   allows resizing from its edges, with a 420 by 200 minimum control area.
+  Version 0.2.35 adds a direct Reporting preferences action, including the
+  grade and liver-segment numeral choice.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

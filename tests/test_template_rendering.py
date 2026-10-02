@@ -168,6 +168,36 @@ class StructuredReportRenderingTests(unittest.TestCase):
         self.assertIn("**L4/5:**", processed)
         self.assertIn("Facet joints: Mild arthropathy.", processed)
 
+    def test_arabic_style_converts_only_grades_and_liver_segments(self):
+        report = (
+            "FINDINGS:\nGrade III chondral loss. LIVER: Segment VIII lesion. "
+            "Type II acromion. L4 and CII are unchanged."
+        )
+        processed = fmt.postprocess_report(report, {"numerals": "arabic"})
+        self.assertIn("Grade 3 chondral loss", processed)
+        self.assertIn("Segment 8 lesion", processed)
+        self.assertIn("Type II acromion", processed)
+        self.assertIn("L4 and CII", processed)
+
+    def test_roman_style_converts_only_grades_and_liver_segments(self):
+        report = "FINDINGS:\nGrade 2 injury. LIVER: Segment 7 lesion. Type 2 acromion."
+        processed = fmt.postprocess_report(report, {"numerals": "roman"})
+        self.assertIn("Grade II injury", processed)
+        self.assertIn("Segment VII lesion", processed)
+        self.assertIn("Type 2 acromion", processed)
+
+    def test_numeral_style_does_not_change_non_liver_segments(self):
+        report = (
+            "FINDINGS:\nLiver normal. Bronchopulmonary segment VI, "
+            "small bowel segment 6, and colonic segment 6."
+        )
+        self.assertEqual(
+            fmt.apply_numeral_style(report, {"numerals": "arabic"}), report
+        )
+        self.assertEqual(
+            fmt.apply_numeral_style(report, {"numerals": "roman"}), report
+        )
+
     def test_report_prompt_requires_uppercase_section_headers(self):
         prompt = fmt._report_system_message("### Findings:\n\n### Impression:")
         self.assertIn("top-level report section header in UPPERCASE", prompt)

@@ -101,6 +101,7 @@ _STYLE_DEFAULTS: dict = {
     "negation_phrasing":     "no_evidence_of",
     "date_format":           "dd_mm_yyyy",
     "fhir_export_enabled":   False,
+    "retain_deidentified_samples": False,
 }
 
 
@@ -145,9 +146,16 @@ def init_db() -> None:
                 style_impression_style      TEXT    DEFAULT 'bulleted',
                 style_negation_phrasing     TEXT    DEFAULT 'no_evidence_of',
                 style_date_format           TEXT    DEFAULT 'dd_mm_yyyy',
-                fhir_export_enabled         INTEGER DEFAULT 0
+                fhir_export_enabled         INTEGER DEFAULT 0,
+                retain_deidentified_samples INTEGER DEFAULT 0
             )
         """)
+        columns = {row[1] for row in db.execute("PRAGMA table_info(user_settings)")}
+        if "retain_deidentified_samples" not in columns:
+            db.execute(
+                "ALTER TABLE user_settings ADD COLUMN "
+                "retain_deidentified_samples INTEGER DEFAULT 0"
+            )
         db.commit()
 
 
@@ -176,7 +184,7 @@ def get_user_style(user_id: int) -> dict:
             "SELECT style_spelling, style_numerals, style_measurement_unit, "
             "style_measurement_separator, style_decimal_precision, "
             "style_laterality, style_impression_style, style_negation_phrasing, "
-            "style_date_format, fhir_export_enabled "
+            "style_date_format, fhir_export_enabled, retain_deidentified_samples "
             "FROM user_settings WHERE user_id = ?",
             (user_id,)
         ).fetchone()
@@ -193,6 +201,7 @@ def get_user_style(user_id: int) -> dict:
         "negation_phrasing":     row[7],
         "date_format":           row[8],
         "fhir_export_enabled":   bool(row[9]),
+        "retain_deidentified_samples": bool(row[10]),
     }
 
 
@@ -204,8 +213,8 @@ def save_user_style(user_id: int, style: dict) -> None:
                 user_id, style_spelling, style_numerals, style_measurement_unit,
                 style_measurement_separator, style_decimal_precision,
                 style_laterality, style_impression_style, style_negation_phrasing,
-                style_date_format, fhir_export_enabled
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                style_date_format, fhir_export_enabled, retain_deidentified_samples
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(user_id) DO UPDATE SET
                 style_spelling              = excluded.style_spelling,
                 style_numerals              = excluded.style_numerals,
@@ -216,7 +225,8 @@ def save_user_style(user_id: int, style: dict) -> None:
                 style_impression_style      = excluded.style_impression_style,
                 style_negation_phrasing     = excluded.style_negation_phrasing,
                 style_date_format           = excluded.style_date_format,
-                fhir_export_enabled         = excluded.fhir_export_enabled
+                fhir_export_enabled         = excluded.fhir_export_enabled,
+                retain_deidentified_samples = excluded.retain_deidentified_samples
         """, (
             user_id,
             style.get("spelling",              "british"),
@@ -229,6 +239,7 @@ def save_user_style(user_id: int, style: dict) -> None:
             style.get("negation_phrasing",     "no_evidence_of"),
             style.get("date_format",           "dd_mm_yyyy"),
             int(bool(style.get("fhir_export_enabled", False))),
+            int(bool(style.get("retain_deidentified_samples", False))),
         ))
         db.commit()
 

@@ -121,6 +121,11 @@ from web.followups import (
     suggest_followups,
     update_followup,
 )
+from web.quality_samples import (
+    init_quality_samples,
+    save_quality_sample,
+    set_quality_retention,
+)
 from web.fracture_workbench import resolve_workbench_image
 from web import retention
 from web import adrenal
@@ -189,11 +194,20 @@ async def _retention_loop() -> None:
         await asyncio.sleep(interval)
 
 
+async def _session_cleanup_loop() -> None:
+    """Remove expired in-memory transcripts within one minute of expiry."""
+    while True:
+        _prune_sessions()
+        await asyncio.sleep(60)
+
+
 @contextlib.asynccontextmanager
 async def _lifespan(_app: FastAPI):
-    task = None
+    # Quality samples have a fixed 365-day limit even when the optional
+    # patient-report/outbox policy is disabled, so cleanup always runs.
+    task = asyncio.create_task(_retention_loop())
+    session_task = asyncio.create_task(_session_cleanup_loop())
     if retention.enabled():
-        task = asyncio.create_task(_retention_loop())
         logger.info(
             "[retention] enabled: reports %sd, outboxes %sd, every %ss",
             practice.settings.retention_days,
@@ -203,8 +217,8 @@ async def _lifespan(_app: FastAPI):
     try:
         yield
     finally:
-        if task:
-            task.cancel()
+        task.cancel()
+        session_task.cancel()
 
 
 app = FastAPI(title="RadSpeed Web", docs_url=None, redoc_url=None, lifespan=_lifespan)
@@ -305,6 +319,7 @@ security = HTTPBasic(auto_error=False)
 init_db()
 init_audit_db()
 init_followup_db()
+init_quality_samples()
 
 
 def _validate_deployment_profile() -> None:
@@ -2616,6 +2631,38 @@ def _patient_context(req: "FormatRequest") -> Optional[dict]:
     return ctx or None
 
 
+def _retain_quality_pair(
+    *,
+    user: dict,
+    style: Optional[dict],
+    kind: str,
+    source_text: str,
+    output_text: str,
+    patient_context: Optional[dict],
+    feedback_text: Optional[str] = None,
+    template_name: Optional[str] = None,
+    source_kind: Optional[str] = None,
+) -> None:
+    """Best-effort opt-in retention. A storage fault must not block reporting."""
+    if source_kind == "worksheet":
+        return
+    try:
+        save_quality_sample(
+            user_id=user.get("id"),
+            enabled=bool((style or {}).get("retain_deidentified_samples", False)),
+            kind=kind,
+            source_text=source_text,
+            output_text=output_text,
+            feedback_text=feedback_text,
+            patient_context=patient_context,
+            template_name=template_name,
+            model_name=config.SELECTED_MODEL or None,
+            source_kind=source_kind,
+        )
+    except Exception as exc:
+        logger.warning("Could not retain de-identified quality sample (%s).", type(exc).__name__)
+
+
 @app.post("/api/worksheet/extract")
 async def extract_worksheet(
     images: list[UploadFile] = File(...),
@@ -2882,6 +2929,16 @@ def format_report(req: FormatRequest, user: dict = Depends(_verify_auth)):
             "comparison_draft": req.comparison_draft,
         },
     )
+    _retain_quality_pair(
+        user=user,
+        style=_style,
+        kind="format",
+        source_text=req.transcription,
+        output_text=report,
+        patient_context=_patient_context(req),
+        template_name=req.template_name,
+        source_kind=req.source_kind,
+    )
     return {
         "report": report,
         "fhir_saved": fhir_saved,
@@ -2951,7 +3008,9 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
 
         # Apply post-processing (capitalise after colons) to the full report.
         # Send corrected version so the client can replace the streamed text.
-        corrected_report = postprocess_report(reinsert_identifiers(full_report, _ctx))
+        corrected_report = postprocess_report(
+            reinsert_identifiers(full_report, _ctx), _style
+        )
 
         fhir_saved = False
         if not req.comparison_draft and _user_fhir_enabled(user) and corrected_report:
@@ -3013,6 +3072,16 @@ def format_report_stream(req: FormatRequest, user: dict = Depends(_verify_auth))
                 "comparison_draft": req.comparison_draft,
             },
         )
+        _retain_quality_pair(
+            user=user,
+            style=_style,
+            kind="format",
+            source_text=req.transcription,
+            output_text=corrected_report,
+            patient_context=_ctx,
+            template_name=req.template_name,
+            source_kind=req.source_kind,
+        )
         yield f'data: {json.dumps({"done": True, "fhir_saved": fhir_saved, "hl7_saved": hl7_saved, "sr_saved": sr_saved, "report": corrected_report})}\n\n'
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
@@ -3067,6 +3136,19 @@ def format_feedback(req: FeedbackRequest, user: dict = Depends(_verify_auth)):
         )
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Report refinement failed: {e}")
+
+    corrected = postprocess_report(corrected, _user_style(user))
+
+    _retain_quality_pair(
+        user=user,
+        style=_user_style(user),
+        kind="refine",
+        source_text=req.report,
+        output_text=corrected,
+        feedback_text=req.feedback,
+        patient_context=feedback_ctx,
+        source_kind="dictation",
+    )
 
     return {"report": corrected}
 
@@ -3564,6 +3646,7 @@ def api_retention_run(user: dict = Depends(_verify_auth)):
 
 class QACheckRequest(BaseModel):
     report_text: str
+    source_text: Optional[str] = None
     accession: Optional[str] = None
     patient_gender: Optional[str] = None  # "M" / "F" / "male" / "female"
     body_part: Optional[str] = None
@@ -3580,6 +3663,7 @@ def api_qa_check(req: QACheckRequest, user: dict = Depends(_verify_auth)):
         patient_gender=req.patient_gender,
         ordered_side=req.ordered_side,
         body_part=req.body_part,
+        source_text=req.source_text,
     )
     log_event(
         user_id=user.get("id"),
@@ -3695,6 +3779,7 @@ class SettingsRequest(BaseModel):
     text_base_url: Optional[str] = None
     text_model: Optional[str] = None
     fhir_export_enabled: bool = False
+    retain_deidentified_samples: Optional[bool] = None
     # Reporting style preferences
     style_spelling: Optional[str] = None
     style_numerals: Optional[str] = None
@@ -3888,7 +3973,9 @@ def api_get_settings(user: dict = Depends(_verify_auth)):
         "text_model":             config.SELECTED_MODEL or "",
         "text_reasoning_effort":  reasoning_effort_for_model(config.SELECTED_MODEL) or "model default",
         "fhir_export_enabled":    style.get("fhir_export_enabled", config.fhir_export_enabled),
-        "style":                  {k: v for k, v in style.items() if k != "fhir_export_enabled"},
+        "retain_deidentified_samples": bool(style.get("retain_deidentified_samples", False)),
+        "quality_retention_available": bool(oauth_enabled() and user.get("id") is not None),
+        "style":                  {k: v for k, v in style.items() if k not in {"fhir_export_enabled", "retain_deidentified_samples"}},
         "oauth_mode":             oauth_enabled(),
         "hl7": {
             "export_enabled":     config.hl7_export_enabled,
@@ -4000,9 +4087,16 @@ def api_save_settings(req: SettingsRequest, user: dict = Depends(_verify_auth)):
     if oauth_enabled() and user.get("id") is not None:
         # Per-user: merge with existing preferences and save to SQLite
         existing = get_user_style(user["id"])
+        was_retaining = bool(existing.get("retain_deidentified_samples", False))
         existing.update(style_update)
         existing["fhir_export_enabled"] = req.fhir_export_enabled
+        # Keep the old consent value for this general settings write. The
+        # dedicated transaction below changes consent and deletes samples
+        # atomically when the user withdraws it.
+        existing["retain_deidentified_samples"] = was_retaining
         save_user_style(user["id"], existing)
+        if req.retain_deidentified_samples is not None:
+            set_quality_retention(user["id"], bool(req.retain_deidentified_samples))
         if _admin and (global_change_requested or hl7_touched):
             # Persist global changes in OAuth mode as well as Basic Auth mode.
             save_web_settings()
@@ -4155,12 +4249,14 @@ async def ws_transcribe(websocket: WebSocket, token: str = ""):
         # finalised the last interim (e.g. user stopped inside the endpointing
         # window and finalize didn't take effect), commit the interim text so
         # the voice edit isn't silently dropped.
+        recovered_text = ""
         if last_interim_state["text"] and not last_interim_state["committed"]:
             logger.info(
                 "[stt] no final received after stop — committing last interim (%d chars)",
                 len(last_interim_state["text"]),
             )
-            finals.append(last_interim_state["text"])
+            recovered_text = last_interim_state["text"]
+            finals.append(recovered_text)
 
         try:
             await asyncio.wait_for(provider.close(), timeout=4.0)
@@ -4190,6 +4286,8 @@ async def ws_transcribe(websocket: WebSocket, token: str = ""):
         await websocket.send_json({
             "type": "session_complete",
             "transcription": corrected,
+            "raw_transcription": full_text,
+            "recovered_text": recovered_text,
             "session_id": session_id,
         })
 

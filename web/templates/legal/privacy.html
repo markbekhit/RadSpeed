@@ -1,5 +1,5 @@
 <h1 id="radspeed-privacy-policy">RadSpeed Privacy Policy</h1>
-<p><strong>Version 1.0, 22 September 2026</strong> <strong>Operator:</strong> Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we") <strong>Contact:</strong> Dr Mark Bekhit, <a href="mailto:hello@radspeed.com.au">hello@radspeed.com.au</a></p>
+<p><strong>Version 1.1, 2 October 2026</strong> <strong>Operator:</strong> Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we") <strong>Contact:</strong> Dr Mark Bekhit, <a href="mailto:hello@radspeed.com.au">hello@radspeed.com.au</a></p>
 <p>RadSpeed is an AI-assisted dictation and report-formatting service for radiologists. This policy explains what information we handle, why, where it is processed, and your rights. It is written to meet the Australian Privacy Principles (APPs) in the <em>Privacy Act 1988</em> (Cth). We are a health service provider under that Act, so it applies to us regardless of our size.</p>
 <h2 id="1-who-this-policy-covers">1. Who this policy covers</h2>
 <ul>
@@ -18,8 +18,9 @@
 <li>To deliver the signed report to the practice's own systems (HL7, DICOM SR or FHIR export).</li>
 <li>To keep a medico-legal audit trail of who drafted, edited, signed and amended each report.</li>
 <li>To operate, secure and support the service.</li>
+<li>If a radiologist actively opts in, to keep de-identified transcript, draft and correction pairs for internal quality checks, evaluation and training RadSpeed's own models. This setting is off by default.</li>
 </ul>
-<p>We do not use patient information to train or improve AI models, and our providers are contractually or technically prevented from doing so (see section 5).</p>
+<p>We do not use identifiable patient information to train or improve AI models. RadSpeed may use opt-in quality samples for internal model training and evaluation. These samples stay within RadSpeed and are not given to outside AI providers for training. Automated redaction can miss identifiers, so radiologists must use this feature only with dictation that is already de-identified. Any later plan to export these samples or train a third-party model requires a separate privacy review and notice.</p>
 <h2 id="4-how-we-use-ai-and-automated-decisions">4. How we use AI, and automated decisions</h2>
 <p>RadSpeed uses two kinds of artificial intelligence:</p>
 <ol type="1">
@@ -67,7 +68,7 @@
 <h2 id="6-security">6. Security</h2>
 <p>Sign-in is through the practice's own single sign-on with its multi-factor policy. Sessions expire after 12 hours and after 30 minutes of inactivity. All traffic is encrypted in transit (HTTPS with HSTS). Data at rest is held on encrypted storage in Sydney. The language model does not receive the patient's name, date of birth, record number, accession or referrer; those are replaced by placeholders and restored after formatting. Every login, transcription, draft, edit, sign-off, amendment, export and purge is written to a tamper-evident audit log. Details are in our Security Statement, available to practices on request.</p>
 <h2 id="7-retention-and-deletion">7. Retention and deletion</h2>
-<p>The practice's radiology information system holds the report of record. RadSpeed keeps its own copy of a signed report for 30 days to support amendments and audit review, then replaces the report text and patient identifiers with a purge marker while keeping the audit entries. Export files handed to the practice's integration engine are deleted after 14 days. Transcripts are held in memory for at most 30 minutes. Audio is not stored. Server backups are retained for 7 days. A practice can request earlier deletion at any time.</p>
+<p>The practice's radiology information system holds the report of record. RadSpeed keeps its own copy of a signed report for 30 days to support amendments and audit review, then replaces the report text and patient identifiers with a purge marker while keeping the audit entries. Export files handed to the practice's integration engine are deleted after 14 days. Transcripts expire in memory after 30 minutes and scheduled cleanup removes expired entries within one additional minute, unless the radiologist opts in to de-identified quality retention. Opt-in transcript, draft and correction pairs are kept for up to 365 days. Turning the setting off deletes that radiologist's retained pairs. Audio is not stored. Server backups are retained for 7 days. A practice can request earlier deletion at any time.</p>
 <p>Account information for radiologists is kept while the account is active and deleted within 30 days of a closure request, except audit entries that must be retained for medico-legal reasons.</p>
 <h2 id="8-access-and-correction">8. Access and correction</h2>
 <p>Patients should direct requests to see or correct their imaging report to the radiology practice, which holds the record of record and can amend it through the practice's normal process. Radiologists and staff can see the information we hold about them in the service settings or by contacting us. We respond to access and correction requests within 30 days.</p>

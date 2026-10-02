@@ -88,6 +88,48 @@ def test_public_powerscribe_companion_page_is_useful_and_responsive(page: Page, 
     assert errors == []
 
 
+def test_reporting_preferences_save_numerals_and_quality_opt_in(page: Page, base_url: str):
+    saved: list[dict] = []
+
+    def handle_settings(route):
+        if route.request.method == "GET":
+            route.fulfill(json={
+                "keys": {
+                    "transcription": False,
+                    "text": False,
+                    "deepgram": False,
+                    "assemblyai": False,
+                },
+                "streaming_stt_provider": "auto",
+                "can_manage_global_settings": False,
+                "fhir_export_enabled": False,
+                "retain_deidentified_samples": False,
+                "quality_retention_available": True,
+                "style": {"numerals": "roman"},
+            })
+        else:
+            saved.append(route.request.post_data_json)
+            route.fulfill(json={"ok": True})
+
+    page.route("**/api/settings", handle_settings)
+    page.goto(f"{base_url}/settings")
+    quality = page.locator("#retain_deidentified_samples")
+    expect(quality).to_be_enabled()
+    expect(quality).not_to_be_checked()
+    expect(page.get_by_text("Automated redaction can miss identifiers")).to_be_visible()
+    quality.check()
+    page.locator("#style_numerals").select_option("arabic")
+    page.locator("#btn-save").click()
+    page.wait_for_function("() => document.querySelector('#save-msg').textContent.includes('Saved')")
+    assert saved[-1]["retain_deidentified_samples"] is True
+    assert saved[-1]["style_numerals"] == "arabic"
+
+    quality.uncheck()
+    with page.expect_request("**/api/settings") as request_info:
+        page.locator("#btn-save").click()
+    assert request_info.value.post_data_json["retain_deidentified_samples"] is False
+
+
 def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     errors = _console_errors(page)
     page.goto(f"{base_url}/app")
@@ -109,6 +151,97 @@ def test_authenticated_transcribe_to_streamed_report(page: Page, base_url: str):
     expect(page.locator("#status")).to_contain_text("Report ready")
     expect(page.locator("#report-status-badge")).to_have_text("Preliminary")
     assert errors == []
+
+
+def test_streaming_completion_uses_server_recovered_final_interim(page: Page, base_url: str):
+    """A provider interim recovered during stop must not disappear in the UI."""
+    errors = _console_errors(page)
+    page.goto(f"{base_url}/app")
+    page.locator("#template-select").select_option("MRI_Knee.txt")
+    page.locator("#transcription").fill("MRI knee.")
+
+    page.evaluate(
+        """() => {
+          state.confirmedText = "There is a popliteus tendon tear";
+          state.interimText = "complete arcuate ligament rupture";
+          state.streamingBefore = "MRI knee.";
+          state.streamingAfter = "";
+          handleStreamingMessage({
+            type: "session_complete",
+            transcription: "There is a popliteus tendon tear and complete arcuate ligament rupture",
+            session_id: "synthetic-stream-session"
+          });
+        }"""
+    )
+
+    expect(page.locator("#transcription")).to_have_value(
+        re.compile("popliteus tendon tear and complete arcuate ligament rupture"),
+        timeout=10_000,
+    )
+    expect(page.locator("#report-rendered")).to_contain_text(
+        "No acute cardiopulmonary abnormality", timeout=15_000
+    )
+    assert errors == []
+
+
+def test_streaming_completion_does_not_duplicate_finals_after_cursor_move(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    page.locator("#template-select").select_option("MRI_Knee.txt")
+    page.evaluate(
+        """() => {
+          state.streamingBefore = "alpha";
+          state.streamingAfter = "beta";
+          state.streamingServerConfirmedText = "beta";
+          state.streamingBakedServerText = "beta";
+          state.streamingCursorRepositioned = true;
+          state.confirmedText = "";
+          handleStreamingMessage({
+            type: "session_complete",
+            transcription: "beta gamma",
+            raw_transcription: "beta gamma",
+            session_id: "synthetic-cursor-session"
+          });
+        }"""
+    )
+
+    expect(page.locator("#transcription")).to_have_value("alpha gamma beta")
+
+
+def test_streaming_completion_without_server_transcript_uses_confirmed_text(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          state.streamingBefore = "";
+          state.streamingAfter = "";
+          state.confirmedText = "fallback confirmed phrase";
+          handleStreamingMessage({type: "session_complete", session_id: "legacy-session"});
+        }"""
+    )
+
+    expect(page.locator("#transcription")).to_have_value("fallback confirmed phrase")
+
+
+def test_streaming_cursor_fallback_uses_only_unbaked_confirmed_text(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        """() => {
+          state.streamingBefore = "inserted earlier alpha";
+          state.streamingAfter = "tail";
+          state.streamingServerConfirmedText = "alpha beta";
+          state.streamingBakedServerText = "alpha";
+          state.streamingCursorRepositioned = true;
+          state.confirmedText = "beta";
+          handleStreamingMessage({
+            type: "session_complete",
+            transcription: "corrected text that no longer matches raw",
+            recovered_text: "gamma",
+            session_id: "fallback-cursor-session"
+          });
+        }"""
+    )
+    expect(page.locator("#transcription")).to_have_value(
+        "inserted earlier alpha beta gamma tail"
+    )
 
 
 def test_ct_cap_compare_mode_generates_both_layouts_then_uses_one(page: Page, base_url: str):
@@ -819,10 +952,10 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
 
 def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: str):
     errors = _console_errors(page)
-    qa_requests: list[str] = []
+    qa_requests: list[dict] = []
     page.on(
         "request",
-        lambda request: qa_requests.append(request.url)
+        lambda request: qa_requests.append(request.post_data_json)
         if request.url.endswith("/api/qa-check")
         else None,
     )
@@ -840,6 +973,7 @@ def test_keyboard_first_reporting_loop_and_automatic_qa(page: Page, base_url: st
     page.wait_for_function("() => window.performance.now() > 0 && document.querySelector('#status').textContent !== 'Generating report…'")
     page.wait_for_timeout(200)
     assert qa_requests, "report generation should trigger deterministic QA automatically"
+    assert qa_requests[-1]["source_text"].startswith("CT chest with contrast")
 
     page.evaluate(
         """() => {
@@ -872,7 +1006,40 @@ def test_qa_infers_laterality_from_body_part(page: Page, base_url: str):
     expect(page.locator("#qa-panel")).to_contain_text(
         "Order is for the RIGHT side", timeout=5_000
     )
+
+    page.locator("#body-part").fill("Knee")
+    page.locator("#transcription").fill("Complete rupture of the arcuate ligament.")
+    page.evaluate(
+        "setReport('**FINDINGS:**\\nPopliteus tendon tear.'); setUI('done');"
+    )
+    page.locator("#btn-qa").click()
+    expect(page.locator("#qa-panel")).to_contain_text(
+        "dictated finding may be missing", timeout=5_000
+    )
+    expect(page.locator("#qa-panel")).to_contain_text("arcuate ligament")
     assert errors == []
+
+
+def test_rendered_impression_lists_are_compact(page: Page, base_url: str):
+    page.goto(f"{base_url}/app")
+    page.evaluate(
+        "setReport('**IMPRESSION:**\\n1. First conclusion.\\n2. Second conclusion.\\n3. Third conclusion.');"
+    )
+    styles = page.locator("#report-rendered ol").evaluate(
+        "el => ({margin: getComputedStyle(el).margin, paddingLeft: getComputedStyle(el).paddingLeft})"
+    )
+    item_styles = page.locator("#report-rendered li").first.evaluate(
+        "el => ({marginTop: getComputedStyle(el).marginTop, marginBottom: getComputedStyle(el).marginBottom})"
+    )
+    assert styles["margin"].startswith("2px")
+    assert float(styles["paddingLeft"].replace("px", "")) < 24
+    assert item_styles == {"marginTop": "0px", "marginBottom": "0px"}
+
+    page.evaluate("setReport('**IMPRESSION:**\\n- First.\\n- Second.');")
+    unordered = page.locator("#report-rendered ul")
+    expect(unordered).to_be_visible()
+    assert unordered.evaluate("el => getComputedStyle(el).marginTop") == "2px"
+    assert page.locator("#report-rendered li > p").count() == 0
 
 
 def test_qscan_copy_starts_at_priors_and_keeps_numbered_conclusions(

@@ -78,6 +78,10 @@ async function loadSettings() {
     if ($("text_model"))             $("text_model").value             = data.text_model             || "";
     if ($("text-effort"))            $("text-effort").textContent        = data.text_reasoning_effort || "model default";
     if ($("fhir_export_enabled"))    $("fhir_export_enabled").checked  = !!data.fhir_export_enabled;
+    if ($("retain_deidentified_samples")) {
+      $("retain_deidentified_samples").checked = !!data.retain_deidentified_samples;
+      $("retain_deidentified_samples").disabled = !data.quality_retention_available;
+    }
 
     // Shared provider/model settings are read-only for non-administrators.
     if (!data.can_manage_global_settings) {
@@ -136,6 +140,7 @@ async function saveSettings() {
     text_base_url:          ($("text_base_url")          || {}).value || null,
     text_model:             ($("text_model")             || {}).value || null,
     fhir_export_enabled:    !!($("fhir_export_enabled")  || {}).checked,
+    retain_deidentified_samples: !!($("retain_deidentified_samples") || {}).checked,
     style_spelling:              ($("style_spelling")              || {}).value || null,
     style_numerals:              ($("style_numerals")              || {}).value || null,
     style_measurement_unit:      ($("style_measurement_unit")      || {}).value || null,
