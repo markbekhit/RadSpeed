@@ -1,0 +1,3018 @@
+{
+  "baseline": "gpt-6-sol",
+  "candidate": "gpt-6.1-sol",
+  "reasoning_effort": "low",
+  "service_tier": "default",
+  "repeats": 3,
+  "include_reports": true,
+  "candidate_only": true,
+  "method": "Serial candidate retest; existing prompts, templates, processing tier and server",
+  "scope": "Synthetic cases only; timings exclude audio transcription, browser and clipboard",
+  "production_settings_changed": false,
+  "rows": [
+    {
+      "task": "availability",
+      "case_id": "probe",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "OK",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 4,
+            "prompt_tokens": 10,
+            "total_tokens": 14,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 2.683578532189131
+        }
+      ],
+      "seconds": 2.683603711426258,
+      "first_text_seconds": null
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo evidence of acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of subdural, extradural or subarachnoid haemorrhage. No evidence of extra-axial collection.\n\n**Skull and Calvarium**\nNo evidence of calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": false,
+        "score": 0.6,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.451908502727747,
+          "usage": {
+            "completion_tokens": 318,
+            "prompt_tokens": 2836,
+            "total_tokens": 3154,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2833,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.453463319689035,
+      "first_text_seconds": 1.6935596438124776
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of a lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe. No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 7.93762560095638,
+          "usage": {
+            "completion_tokens": 391,
+            "prompt_tokens": 2997,
+            "total_tokens": 3388,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 56,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2994,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 7.938790852203965,
+      "first_text_seconds": 4.154994917102158
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 2.3330008359625936,
+          "usage": {
+            "completion_tokens": 22,
+            "prompt_tokens": 2592,
+            "total_tokens": 2614,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2589,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 2.333711518906057,
+      "first_text_seconds": 2.045941957272589
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.385590891353786,
+          "usage": {
+            "completion_tokens": 244,
+            "prompt_tokens": 3240,
+            "total_tokens": 3484,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 3237,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 4.386552883312106,
+      "first_text_seconds": 1.667040920816362
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.6087906435132027,
+          "usage": {
+            "completion_tokens": 29,
+            "prompt_tokens": 2594,
+            "total_tokens": 2623,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 66,
+              "cached_tokens": 2525,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.6290020812302828,
+      "first_text_seconds": 1.2213328629732132
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\nThere is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n\nNo evidence of right renal calculus or hydronephrosis. Both kidneys have preserved size and cortical thickness, with unremarkable parenchymal density. No evidence of left renal calculi. The right ureter is unremarkable.\n\nThe urinary bladder is unremarkable.\n\nThe perinephric fat and fascia are unremarkable.\n\nThe adrenal glands are unremarkable.\n\nThe aorta and IVC are unremarkable. No significant lymphadenopathy.\n\nNo evidence of fracture or aggressive bony lesion in the bony pelvis or lumbar spine.\n\nThe visualised bowel is unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No evidence of right renal calculus or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.401126993820071,
+          "usage": {
+            "completion_tokens": 286,
+            "prompt_tokens": 2682,
+            "total_tokens": 2968,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2679,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.4121977323666215,
+      "first_text_seconds": 1.5970344459638
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo evidence of abnormal T2/FLAIR signal in the cerebral hemispheres or focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo evidence of haemorrhagic transformation or abnormal susceptibility.\n\n**Ventricular System**\nVentricles normal in size and configuration. No evidence of hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No evidence of mass effect or midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.875,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 6.0725555792450905,
+          "usage": {
+            "completion_tokens": 417,
+            "prompt_tokens": 2858,
+            "total_tokens": 3275,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2855,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.073577654547989,
+      "first_text_seconds": 1.0499920221045613
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.5630789445713162,
+          "usage": {
+            "completion_tokens": 34,
+            "prompt_tokens": 2588,
+            "total_tokens": 2622,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 60,
+              "cached_tokens": 2525,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.5638195015490055,
+      "first_text_seconds": 1.1807331452146173
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear. No evidence of confluent consolidation or pleural effusion.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Trachea central. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 3.6676028771325946,
+          "usage": {
+            "completion_tokens": 238,
+            "prompt_tokens": 2780,
+            "total_tokens": 3018,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 2777,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 3.6684649791568518,
+      "first_text_seconds": 0.9240403873845935
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo evidence of acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of subdural, extradural or subarachnoid haemorrhage. No evidence of extra-axial collection.\n\n**Skull and Calvarium**\nNo evidence of calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": false,
+        "score": 0.6,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.736110342666507,
+          "usage": {
+            "completion_tokens": 318,
+            "prompt_tokens": 2836,
+            "total_tokens": 3154,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2833,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 4.737252000719309,
+      "first_text_seconds": 0.9823391744866967
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo evidence of right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo evidence of pleural effusion or pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8571428571428571,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 6.247591166757047,
+          "usage": {
+            "completion_tokens": 381,
+            "prompt_tokens": 2997,
+            "total_tokens": 3378,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 43,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2994,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.248664081096649,
+      "first_text_seconds": 2.524881965480745
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.7415967592969537,
+          "usage": {
+            "completion_tokens": 22,
+            "prompt_tokens": 2592,
+            "total_tokens": 2614,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2589,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.7422105325385928,
+      "first_text_seconds": 1.52262322884053
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.862438359297812,
+          "usage": {
+            "completion_tokens": 244,
+            "prompt_tokens": 3240,
+            "total_tokens": 3484,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3237,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 4.863471114076674,
+      "first_text_seconds": 2.057628800161183
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the right medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.6935872118920088,
+          "usage": {
+            "completion_tokens": 29,
+            "prompt_tokens": 2594,
+            "total_tokens": 2623,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2591,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.7015142776072025,
+      "first_text_seconds": 1.2143194442614913
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\nThere is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n\nNo evidence of right renal calculus or hydronephrosis. Both kidneys demonstrate preserved size and cortical thickness with unremarkable parenchymal density. No evidence of left renal calculi. The right ureter is unremarkable throughout its course.\n\nThe urinary bladder is unremarkable.\n\nThe perinephric fat and fascia are unremarkable.\n\nThe adrenal glands are unremarkable.\n\nThe aorta and IVC are unremarkable. No significant lymphadenopathy.\n\nNo evidence of fracture or aggressive bony lesion in the bony pelvis or lumbar spine.\n\nThe visualised bowel is unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No evidence of right renal calculus or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.0305063631385565,
+          "usage": {
+            "completion_tokens": 288,
+            "prompt_tokens": 2682,
+            "total_tokens": 2970,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2679,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.03170839138329,
+      "first_text_seconds": 1.2559502767398953
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo evidence of abnormal T2/FLAIR signal in the cerebral hemispheres or focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction in the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo evidence of haemorrhagic transformation or abnormal susceptibility.\n\n**Ventricular System**\nVentricles normal in size and configuration. No evidence of hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No evidence of mass effect or midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute infarct in the left thalamus measuring 8 mm with diffusion restriction. No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.875,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.831898276694119,
+          "usage": {
+            "completion_tokens": 422,
+            "prompt_tokens": 2858,
+            "total_tokens": 3280,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2855,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.854330942034721,
+      "first_text_seconds": 1.0737311942502856
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 2.4480144307017326,
+          "usage": {
+            "completion_tokens": 29,
+            "prompt_tokens": 2588,
+            "total_tokens": 2617,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2585,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 2.4715875890105963,
+      "first_text_seconds": 1.855098431929946
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear. No evidence of confluent consolidation or pleural effusion.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 3.8955318089574575,
+          "usage": {
+            "completion_tokens": 233,
+            "prompt_tokens": 2780,
+            "total_tokens": 3013,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2777,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 3.896550092846155,
+      "first_text_seconds": 1.160709128715098
+    },
+    {
+      "task": "report",
+      "case_id": "ct_head_negative",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT Head and Brain\n\n**TECHNIQUE:**\nNon-contrast CT of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Brain Parenchyma**\nNo evidence of acute intracranial haemorrhage, territorial infarct or mass effect.\n\n**White Matter**\nWhite matter unremarkable. No evidence of focal low-density lesion.\n\n**Basal Ganglia and Thalami**\nBasal ganglia and thalami unremarkable.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable.\n\n**Ventricular System**\nVentricles are normal.\n\n**Sulci and Basal Cisterns**\nBasal cisterns are normal. Sulci patent. No evidence of sulcal effacement or transtentorial herniation.\n\n**Extra-Axial Spaces**\nNo evidence of subdural, extradural or subarachnoid haemorrhage or extra-axial collection.\n\n**Skull and Calvarium**\nNo evidence of calvarial fracture.\n\n**Paranasal Sinuses and Mastoids**\nParanasal sinuses clear. Mastoid air cells well aerated.\n\n**Orbits**\nOrbits unremarkable (to the extent visualised).\n\n**Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- No evidence of acute intracranial haemorrhage, territorial infarct or mass effect.",
+      "checks": {
+        "case_id": "ct_head_negative",
+        "passed": false,
+        "score": 0.6,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: no acute intracranial haemorrhage | no acute intracranial hemorrhage",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no calvarial fracture",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial haemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:intracranial hemorrhage is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.112060185521841,
+          "usage": {
+            "completion_tokens": 315,
+            "prompt_tokens": 2836,
+            "total_tokens": 3151,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2833,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.112990616820753,
+      "first_text_seconds": 1.1261715656146407
+    },
+    {
+      "task": "report",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT Pulmonary Angiogram (CTPA)\n\n**TECHNIQUE:**\nCT pulmonary angiogram.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Contrast Opacification**\nDiagnostic-quality pulmonary arterial opacification.\n\n**Pulmonary Arteries**\nAcute segmental pulmonary embolus in the right lower lobe.\n\n**Right Heart Strain (if PE present)**\nNo right heart strain. Main pulmonary artery measures 2.9 cm.\n\n**Lungs**\nLungs clear. No evidence of consolidation, infarct or nodule.\n\n**Pleura**\nNo pleural effusion. No evidence of pneumothorax.\n\n**Mediastinum and Hila**\nMediastinum unremarkable. No evidence of mediastinal or hilar lymphadenopathy or mediastinal mass.\n\n**Heart and Pericardium**\nHeart normal in size. No evidence of pericardial effusion.\n\n**Thoracic Aorta and Great Vessels**\nThoracic aorta normal in calibre and contour. No evidence of aortic dissection or acute aortic syndrome.\n\n**Chest Wall and Soft Tissues**\nChest wall and soft tissues unremarkable.\n\n**Bony Thorax**\nBony thorax intact. No evidence of a lytic or sclerotic lesion.\n\n**Visualised Upper Abdomen**\nVisualised upper abdominal structures unremarkable.\n\n**IMPRESSION:**\n- Acute segmental pulmonary embolus in the right lower lobe.\n- No right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:29 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 6.687773791141808,
+          "usage": {
+            "completion_tokens": 389,
+            "prompt_tokens": 2997,
+            "total_tokens": 3386,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 53,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2994,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.695816954597831,
+      "first_text_seconds": 2.8814405081793666
+    },
+    {
+      "task": "impression",
+      "case_id": "ctpa_right_lower_lobe_embolus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Acute right lower lobe segmental pulmonary embolus. No evidence of right heart strain.",
+      "checks": {
+        "case_id": "ctpa_right_lower_lobe_embolus",
+        "passed": false,
+        "score": 0.8333333333333334,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute segmental pulmonary embolus | acute right lower lobe segmental pulmonary embolus",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": false,
+            "detail": "one of: no right heart strain",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left lower lobe pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pulmonary embolus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.4565350031480193,
+          "usage": {
+            "completion_tokens": 22,
+            "prompt_tokens": 2592,
+            "total_tokens": 2614,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2589,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.4573112856596708,
+      "first_text_seconds": 1.3150188149884343
+    },
+    {
+      "task": "report",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nMRI right knee.\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the knee.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Menisci**\n**Medial meniscus:** Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n**Lateral meniscus:** Intact.\n\n**Cruciate Ligaments**\nACL and PCL are intact.\n\n**Collateral Ligaments and Posterolateral Corner**\nMCL, LCL and posterolateral corner structures intact.\n\n**Articular Cartilage**\nArticular cartilage intact throughout, no focal chondral defect.\n\n**Tendons**\nQuadriceps and patellar tendons intact.\n\n**Soft Tissues**\nSmall joint effusion. Hoffa's fat pad and popliteal fossa unremarkable. No Baker's cyst identified.\n\n**Bony Structures**\nNo marrow oedema, contusion or fracture.\n\n**IMPRESSION:**\n- Oblique undersurface tear of the body and posterior horn of the medial meniscus.\n- Small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": true,
+            "detail": "one of: acl and pcl are intact | acl and pcl: intact | acl and pcl intact | acl: intact",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.0596398543566465,
+          "usage": {
+            "completion_tokens": 244,
+            "prompt_tokens": 3240,
+            "total_tokens": 3484,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3237,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 4.069014310836792,
+      "first_text_seconds": 1.1684477990493178
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_knee_medial_meniscus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Oblique undersurface tear of the body and posterior horn of the medial meniscus, with a small joint effusion.",
+      "checks": {
+        "case_id": "mri_knee_medial_meniscus",
+        "passed": false,
+        "score": 0.8571428571428571,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: oblique undersurface tear",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: body and posterior horn",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:lateral meniscus tear",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no joint effusion",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:marrow oedema is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": false,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.4538126699626446,
+          "usage": {
+            "completion_tokens": 28,
+            "prompt_tokens": 2594,
+            "total_tokens": 2622,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2591,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.4548519952222705,
+      "first_text_seconds": 1.1662689615041018
+    },
+    {
+      "task": "report",
+      "case_id": "ct_kub_left_ureteric_calculus",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nCT KUB (Kidneys, Ureters, Bladder)\n\n**TECHNIQUE:**\nNon-contrast CT of the kidneys, ureters and bladder.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\nThere is a 4 mm calculus in the distal left ureter, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n\nNo evidence of right renal calculus or hydronephrosis. Both kidneys otherwise demonstrate preserved size and cortical thickness with unremarkable parenchymal density. No evidence of left renal calculus. The right ureter is unremarkable throughout its course.\n\nThe urinary bladder is unremarkable.\n\nThe perinephric fat and fascia are unremarkable.\n\nThe adrenal glands are unremarkable.\n\nThe aorta and IVC are unremarkable. No evidence of significant lymphadenopathy.\n\nNo evidence of fracture or aggressive bony lesion in the bony pelvis or lumbar spine.\n\nThe visualised bowel is unremarkable.\n\n**IMPRESSION:**\n- Single 4 mm distal left ureteric calculus, 2.0 cm proximal to the vesicoureteric junction, causing mild left hydroureteronephrosis.\n- No evidence of right urinary tract calculi or hydronephrosis.",
+      "checks": {
+        "case_id": "ct_kub_left_ureteric_calculus",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: distal left ureter",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: mild left hydroureteronephrosis",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:distal right ureteric calculus",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no left hydronephrosis",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:4 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:2 cm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.444845384918153,
+          "usage": {
+            "completion_tokens": 292,
+            "prompt_tokens": 2682,
+            "total_tokens": 2974,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2679,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 5.445864320732653,
+      "first_text_seconds": 1.1287107886746526
+    },
+    {
+      "task": "report",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nMRI Brain\n\n**TECHNIQUE:**\nMultiplanar multisequence non-contrast MRI of the brain.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Cerebral Hemispheres**\nNo evidence of abnormal T2/FLAIR signal in the cerebral hemispheres or focal parenchymal lesion.\n\n**Posterior Fossa**\nCerebellum and brainstem unremarkable. No evidence of posterior fossa mass or signal abnormality.\n\n**Basal Ganglia and Thalami**\nSmall acute infarct in the left thalamus measuring 8 mm with diffusion restriction. Basal ganglia and right thalamus unremarkable.\n\n**Diffusion-Weighted Imaging**\nDiffusion restriction within the small acute left thalamic infarct.\n\n**Susceptibility-Weighted Imaging**\nNo evidence of haemorrhagic transformation.\n\n**Ventricular System**\nVentricles normal in size and configuration. No evidence of hydrocephalus.\n\n**Sulci and Cisterns**\nSulci and basal cisterns patent. No evidence of sulcal effacement.\n\n**Extra-Axial Spaces**\nNo evidence of subdural or extradural collection or subarachnoid haemorrhage.\n\n**Midline Structures**\nCorpus callosum intact. No evidence of mass effect or midline shift.\n\n**Pituitary Gland and Sella**\nPituitary gland unremarkable.\n\n**Internal Auditory Canals and Cerebellopontine Angles**\nInternal auditory canals and cerebellopontine angles unremarkable.\n\n**Skull Base and Calvarium**\nSkull base and calvarium unremarkable.\n\n**Extracranial Soft Tissues**\nExtracranial soft tissues unremarkable.\n\n**IMPRESSION:**\n- Small acute left thalamic infarct measuring 8 mm.\n- No evidence of haemorrhagic transformation, mass effect or hydrocephalus.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.875,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:8 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 6.210120934061706,
+          "usage": {
+            "completion_tokens": 415,
+            "prompt_tokens": 2858,
+            "total_tokens": 3273,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2855,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 6.218728698790073,
+      "first_text_seconds": 1.2013690369203687
+    },
+    {
+      "task": "impression",
+      "case_id": "mri_brain_left_infarct",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "- Small acute left thalamic infarct measuring 8 mm. No evidence of haemorrhagic transformation or mass effect.",
+      "checks": {
+        "case_id": "mri_brain_left_infarct",
+        "passed": false,
+        "score": 0.7142857142857143,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": false,
+            "detail": "one of: acute infarct",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: left thalamus | left thalamic",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_3",
+            "passed": false,
+            "detail": "one of: no haemorrhagic transformation | no hemorrhagic transformation",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:right thalamic infarct",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:haemorrhagic transformation is present",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 1.7716739708557725,
+          "usage": {
+            "completion_tokens": 29,
+            "prompt_tokens": 2588,
+            "total_tokens": 2617,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2585,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 1.772245928645134,
+      "first_text_seconds": 1.3109630588442087
+    },
+    {
+      "task": "report",
+      "case_id": "cxr_right_pneumothorax",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "report": "**EXAM:**\nChest X-Ray (CXR)\n\n**TECHNIQUE:**\nPortable AP chest radiograph.\n\n**CLINICAL DETAILS:**\nNo clinical details provided.\n\n**COMPARISON:**\nNo prior imaging available for comparison.\n\n**FINDINGS:**\n\n**Lungs and Pleural Spaces**\nSmall right apical pneumothorax measuring 1.2 cm. Left lung is clear. No evidence of confluent consolidation or pleural effusion.\n\n**Hila**\nHila normal in size and density.\n\n**Cardiomediastinum**\nHeart size is normal. No mediastinal shift. Trachea central. Aortic knuckle unremarkable.\n\n**Hemidiaphragms**\nHemidiaphragms well-defined bilaterally. Costophrenic angles sharp.\n\n**Bones**\nNo evidence of suspicious osseous lesion or rib fracture.\n\n**Soft Tissues**\nSoft tissues unremarkable.\n\n**Visible Abdomen**\nNo evidence of free subdiaphragmatic gas.\n\n**IMPRESSION:**\n- Small right apical pneumothorax measuring 1.2 cm. No mediastinal shift.",
+      "checks": {
+        "case_id": "cxr_right_pneumothorax",
+        "passed": true,
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "required_concept_1",
+            "passed": true,
+            "detail": "one of: right apical pneumothorax",
+            "safety_critical": true
+          },
+          {
+            "name": "required_concept_2",
+            "passed": true,
+            "detail": "one of: no mediastinal shift | no tension features",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:left pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "forbidden:no pneumothorax",
+            "passed": true,
+            "detail": "must not appear",
+            "safety_critical": true
+          },
+          {
+            "name": "measurement:12 mm",
+            "passed": true,
+            "detail": "dictated measurement must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:right",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "laterality:left",
+            "passed": true,
+            "detail": "dictated laterality must be preserved",
+            "safety_critical": true
+          },
+          {
+            "name": "section_order",
+            "passed": true,
+            "detail": "findings \u2192 impression",
+            "safety_critical": false
+          }
+        ]
+      },
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 3.599573915824294,
+          "usage": {
+            "completion_tokens": 238,
+            "prompt_tokens": 2780,
+            "total_tokens": 3018,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 2777,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 3.600436447188258,
+      "first_text_seconds": 0.9977015806362033
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; Left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 x 1.7 x 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion.\nIncidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm and cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 x 1.7 x 1.5 cm.\n\nLeft kidney: Length 10.2 cm and cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nBoth ureteric jets are present. Bladder pre-void volume 318 mL and post-void residual 24 mL. Bladder wall measures 3 mm. No evidence of a focal bladder wall lesion.\n\nIncidental mild prostatomegaly; prostate volume 36 mL.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Incidental mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 485,
+            "prompt_tokens": 2284,
+            "total_tokens": 2769,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.07936518266797
+        }
+      ],
+      "seconds": 8.08004661463201,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "History: Chronic renal impairment.\nHistory: Chronic renal insufficiency.\nStudy: Renal tract ultrasound.\nKidney / right / length: 10.8 cm.\nKidney / left / length: 10.2 cm.\nKidney / right / cortical thickness: 14 mm.\nKidney / left / cortical thickness: 12 mm.\nKidney / right / pelvicaliectasis: No.\nKidney / left / pelvicaliectasis: Mild; left renal pelvis 9 mm AP.\nKidney / right / calculus: None seen.\nKidney / left / calculus: Present; 6 mm lower-pole calculus.\nKidney / right / renal cyst: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / left / renal cyst: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm. Cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis; left renal pelvis 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\n**Ureteric jets:** Present bilaterally.\n\n**Bladder:** Pre-void volume 318 mL. Post-void residual 24 mL. Wall thickness 3 mm. No evidence of a focal bladder wall lesion.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n1. Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n2. Simple right renal cyst.\n3. Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 260,
+            "prompt_tokens": 1636,
+            "total_tokens": 1896,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.906958463601768
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.357890141196549,
+          "usage": {
+            "completion_tokens": 243,
+            "prompt_tokens": 3449,
+            "total_tokens": 3692,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 3446,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.273906217887998,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal selected.\nFour-chamber heart: Normal selected.\nRVOT: Not well seen selected; Fetal position.\nLVOT: Normal selected.\nKidneys: Abnormal selected; LEFT renal pelvis 6.2 mm.\nSpine: Normal selected.\nFace / upper lip: Not well seen selected; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nPlacenta is anterior and clear of the internal os. Cervix: 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nCranium / intracranial anatomy, four-chamber heart, LVOT and spine are normal.\n\nMild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n\nRVOT and face / upper lip are not well seen. RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- Incomplete assessment of the RVOT and face / upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 533,
+            "prompt_tokens": 2704,
+            "total_tokens": 3237,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.265200337395072
+        }
+      ],
+      "seconds": 8.265907153487206,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 0,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nStudy / placenta: Anterior, clear of internal os\nStudy / cervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal\nFetal anatomy / renal pelvis / LEFT: 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; repeat imaging recommended\nComments / fetal kidney / LEFT: Mild LEFT fetal pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\n**Pregnancy:** Singleton fetus in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\n**Fetal biometry:**\n**BPD:** 52 mm; centile 55th.\n**HC:** 190 mm; centile 48th.\n**AC:** 166 mm; centile 57th.\n**FL:** 35 mm; centile 42nd.\n**Estimated fetal weight:** 432 g; centile 51st.\n\n**Fetal anatomy:**\n**Cranium / intracranial anatomy:** Normal.\n**Four-chamber heart:** Normal.\n**RVOT:** Not adequately visualised due to fetal position.\n**LVOT:** Normal.\n**Kidneys:** Mild left fetal pyelectasis. Left renal pelvis measures 6.2 mm.\n**Spine:** Normal.\n**Face / upper lip:** Not adequately visualised due to fetal position; repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 273,
+            "prompt_tokens": 2056,
+            "total_tokens": 2329,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 5.4425739627331495
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.824657392688096,
+          "usage": {
+            "completion_tokens": 291,
+            "prompt_tokens": 3462,
+            "total_tokens": 3753,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 300,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 10.28406048938632,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No selected.\nLeft pelvicaliectasis: Mild selected; Left renal pelvis 9 mm AP.\nRight calculus: None seen selected.\nLeft calculus: Present selected; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present selected; RIGHT upper-pole simple cyst 2.1 x 1.7 x 1.5 cm.\nLeft renal cyst: None selected.\nRight ureteric jet: Present selected.\nLeft ureteric jet: Present selected.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion.\nIncidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 x 1.7 x 1.5 cm.\n\nLeft kidney: Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. Lower-pole calculus measuring 6 mm. No evidence of renal cyst.\n\nBilateral ureteric jets are present.\n\nBladder: Pre-void volume 318 mL and post-void residual 24 mL. Wall thickness 3 mm. No evidence of focal bladder wall lesion.\n\nProstate: Mild prostatomegaly, with volume 36 mL.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 493,
+            "prompt_tokens": 2284,
+            "total_tokens": 2777,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1920,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 7.906970999203622
+        }
+      ],
+      "seconds": 7.907724805176258,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "History: Chronic renal impairment.\nHistory: Chronic renal insufficiency.\nStudy: Renal tract ultrasound.\nKidney / right / length: 10.8 cm.\nKidney / left / length: 10.2 cm.\nKidney / right / cortical thickness: 14 mm.\nKidney / left / cortical thickness: 12 mm.\nKidney / right / pelvicaliectasis: No.\nKidney / left / pelvicaliectasis: Mild; left renal pelvis 9 mm AP.\nKidney / right / calculus: None seen.\nKidney / left / calculus: Present; 6 mm lower-pole calculus.\nKidney / right / renal cyst: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / left / renal cyst: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or renal calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis, with the left renal pelvis measuring 9 mm AP. A 6 mm lower-pole calculus is present. No evidence of renal cyst.\n\n**Bladder:** Pre-void volume 318 mL; post-void residual 24 mL. Bladder wall measures 3 mm. No evidence of a focal bladder wall lesion. Bilateral ureteric jets are present.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n1. Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n2. Simple right upper-pole renal cyst.\n3. Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 260,
+            "prompt_tokens": 1636,
+            "total_tokens": 1896,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1280,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.643187305890024
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.132394024170935,
+          "usage": {
+            "completion_tokens": 248,
+            "prompt_tokens": 3449,
+            "total_tokens": 3697,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 0,
+              "cached_tokens": 3446,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 8.776513241231441,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal selected.\nFour-chamber heart: Normal selected.\nRVOT: Not well seen selected; Fetal position.\nLVOT: Normal selected.\nKidneys: Abnormal selected; LEFT renal pelvis 6.2 mm.\nSpine: Normal selected.\nFace / upper lip: Not well seen selected; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nPlacenta anterior, clear of the internal os. Cervix: 3.6 cm, closed.\n\nBiometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nCranium / intracranial anatomy, four-chamber heart, LVOT and spine are normal.\n\nMild left fetal pyelectasis, with left renal pelvis measuring 6.2 mm.\n\nRVOT and face / upper lip are not well seen; RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- Incomplete assessment of the RVOT and face / upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 532,
+            "prompt_tokens": 2704,
+            "total_tokens": 3236,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 2304,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.235543898306787
+        }
+      ],
+      "seconds": 8.236159612424672,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 1,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nPlacenta: Anterior, clear of internal os\nCervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal\nFetal anatomy / renal pelvis / LEFT: 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; repeat imaging recommended\nComments / fetal kidney / LEFT: Mild LEFT fetal pyelectasis\nComments / RVOT and upper lip: Not adequately visualised due to fetal position",
+      "report": "**EXAMINATION:**\nObstetric ultrasound.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\nSingleton fetus at 21 weeks 3 days in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Placenta:** Anterior, clear of the internal os.\n\n**Cervix:** 3.6 cm, closed.\n\n**Biometry:**\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\n\n**Fetal anatomy:**\nCranium and intracranial anatomy: Normal.\nFour-chamber heart: Normal.\nRVOT: Not adequately visualised due to fetal position.\nLVOT: Normal.\nKidneys: Mild left fetal pyelectasis. Left renal pelvis measures 6.2 mm.\nSpine: Normal.\nFace / upper lip: Not adequately visualised due to fetal position; repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 271,
+            "prompt_tokens": 2056,
+            "total_tokens": 2327,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1664,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.900314403697848
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 5.092995377257466,
+          "usage": {
+            "completion_tokens": 273,
+            "prompt_tokens": 3460,
+            "total_tokens": 3733,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 298,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 10.0111831324175,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study: Renal tract ultrasound.\nHistory: Chronic renal impairment; Chronic renal insufficiency selected.\nRight kidney length: 10.8 cm.\nLeft kidney length: 10.2 cm.\nRight cortical thickness: 14 mm.\nLeft cortical thickness: 12 mm.\nRight pelvicaliectasis: No.\nLeft pelvicaliectasis: Mild; Left renal pelvis 9 mm AP.\nRight calculus: None seen.\nLeft calculus: Present; 6 mm lower-pole calculus on LEFT.\nRight renal cyst: Present; RIGHT upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nLeft renal cyst: None.\nRight ureteric jet: Present.\nLeft ureteric jet: Present.\nBladder pre-void volume: 318 mL.\nPost-void residual: 24 mL.\nBladder wall: 3 mm.\nProstate volume: 36 mL.\nNo focal bladder wall lesion.\nIncidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment / chronic renal insufficiency.\n\n**FINDINGS:**\nRight kidney: Length 10.8 cm; cortical thickness 14 mm. No evidence of pelvicaliectasis or calculus. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\nLeft kidney: Length 10.2 cm; cortical thickness 12 mm. Mild pelvicaliectasis, with the renal pelvis measuring 9 mm AP. A 6 mm lower-pole calculus is present. No evidence of renal cyst.\n\nBoth ureteric jets are present.\n\nBladder: Pre-void volume 318 mL and post-void residual 24 mL. Wall thickness 3 mm. No evidence of focal bladder wall lesion.\n\nProstate: Volume 36 mL, with incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Right upper-pole simple renal cyst.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 488,
+            "prompt_tokens": 2284,
+            "total_tokens": 2772,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 1920,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 8.528845596127212
+        }
+      ],
+      "seconds": 8.529612698592246,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "renal",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "History: Chronic renal impairment; chronic renal insufficiency selected.\nStudy: Renal tract ultrasound.\nKidney / right / length: 10.8 cm.\nKidney / left / length: 10.2 cm.\nKidney / right / cortical thickness: 14 mm.\nKidney / left / cortical thickness: 12 mm.\nKidney / right / pelvicaliectasis: No.\nKidney / left / pelvicaliectasis: Mild; left renal pelvis 9 mm AP.\nKidney / right / calculus: None seen.\nKidney / left / calculus: Present; 6 mm lower-pole calculus.\nKidney / right / renal cyst: Present; upper-pole simple cyst 2.1 \u00d7 1.7 \u00d7 1.5 cm.\nKidney / left / renal cyst: None.\nUreteric jet / right: Present.\nUreteric jet / left: Present.\nBladder / pre-void volume: 318 mL.\nBladder / post-void residual: 24 mL.\nBladder / wall: 3 mm.\nProstate / volume: 36 mL.\nComments / bladder: No focal bladder wall lesion.\nComments / prostate: Incidental mild prostatomegaly.",
+      "report": "**EXAMINATION:**\nRenal tract ultrasound.\n\n**CLINICAL DETAILS:**\nChronic renal impairment; chronic renal insufficiency.\n\n**FINDINGS:**\n**Right kidney:** Length 10.8 cm. Cortical thickness 14 mm. No pelvicaliectasis. No calculus seen. Upper-pole simple cyst measuring 2.1 \u00d7 1.7 \u00d7 1.5 cm.\n\n**Left kidney:** Length 10.2 cm. Cortical thickness 12 mm. Mild pelvicaliectasis; left renal pelvis 9 mm AP. A 6 mm lower-pole calculus is present. No renal cyst.\n\n**Bladder:** Pre-void volume 318 mL. Post-void residual 24 mL. Wall thickness 3 mm. No focal bladder wall lesion. Bilateral ureteric jets are present.\n\n**Prostate:** Volume 36 mL. Incidental mild prostatomegaly.\n\n**IMPRESSION:**\n- Mild left pelvicaliectasis and a 6 mm left lower-pole renal calculus.\n- Mild prostatomegaly.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 259,
+            "prompt_tokens": 1636,
+            "total_tokens": 1895,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 4.535588823258877
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.472673438489437,
+          "usage": {
+            "completion_tokens": 229,
+            "prompt_tokens": 3448,
+            "total_tokens": 3677,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 286,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.009423930197954,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_one_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study title: Second Trimester Sonographer Worksheet.\nGestational age: 21 weeks 3 days.\nNumber of fetuses: Singleton.\nPresentation: Cephalic.\nFHR: 148 bpm.\nPlacenta: Anterior, clear of internal os.\nCervix: 3.6 cm, closed.\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\nCranium / intracranial anatomy: Normal selected.\nFour-chamber heart: Normal selected.\nRVOT: Not well seen selected; Fetal position.\nLVOT: Normal selected.\nKidneys: Abnormal selected; LEFT renal pelvis 6.2 mm.\nSpine: Normal selected.\nFace / upper lip: Not well seen selected; Repeat imaging recommended.\nComments: Mild LEFT fetal pyelectasis. RVOT and upper lip not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nSecond trimester obstetric ultrasound.\n\n**CLINICAL DETAILS:**\nGestational age: 21 weeks 3 days.\n\n**FINDINGS:**\nSingleton fetus in cephalic presentation. Fetal heart rate: 148 bpm.\n\nPlacenta is anterior, clear of the internal os. Cervix measures 3.6 cm and is closed.\n\nFetal biometry: BPD 52 mm (55th centile); HC 190 mm (48th centile); AC 166 mm (57th centile); FL 35 mm (42nd centile). Estimated fetal weight: 432 g (51st centile).\n\nCranium / intracranial anatomy, four-chamber heart, LVOT and spine are normal.\n\nMild left fetal pyelectasis, with the left renal pelvis measuring 6.2 mm.\n\nRVOT and face / upper lip are not well seen. RVOT and upper lip are not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis, with renal pelvis measuring 6.2 mm.\n- Incomplete assessment of the RVOT and face / upper lip due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 537,
+            "prompt_tokens": 2704,
+            "total_tokens": 3241,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 2304,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 10.470726345665753
+        }
+      ],
+      "seconds": 10.471371323801577,
+      "first_text_seconds": null
+    },
+    {
+      "task": "worksheet_two_step",
+      "case_id": "obstetric",
+      "model": "gpt-6.1-sol",
+      "repeat": 2,
+      "source_notes": "Study / gestational age: 21 weeks 3 days\nStudy / number of fetuses: Singleton\nStudy / presentation: Cephalic\nStudy / FHR: 148 bpm\nStudy / placenta: Anterior, clear of internal os\nStudy / cervix: 3.6 cm, closed\nBiometry / BPD: 52 mm; centile 55th\nBiometry / HC: 190 mm; centile 48th\nBiometry / AC: 166 mm; centile 57th\nBiometry / FL: 35 mm; centile 42nd\nBiometry / estimated fetal weight: 432 g; centile 51st\nFetal anatomy / cranium / intracranial anatomy: Normal\nFetal anatomy / four-chamber heart: Normal\nFetal anatomy / RVOT: Not well seen; comment: Fetal position\nFetal anatomy / LVOT: Normal\nFetal anatomy / kidneys: Abnormal; comment: LEFT renal pelvis 6.2 mm\nFetal anatomy / spine: Normal\nFetal anatomy / face / upper lip: Not well seen; comment: Repeat imaging recommended\nComments / fetal kidney / LEFT: Mild LEFT fetal pyelectasis.\nComments / RVOT and upper lip: Not adequately visualised due to fetal position.",
+      "report": "**EXAMINATION:**\nObstetric ultrasound at 21 weeks 3 days.\n\n**CLINICAL DETAILS:**\nNot provided on worksheet.\n\n**FINDINGS:**\n**Pregnancy:** Singleton fetus in cephalic presentation. Fetal heart rate 148 bpm.\n\n**Placenta and cervix:** Anterior placenta, clear of the internal os. Cervix 3.6 cm, closed.\n\n**Fetal biometry:**\nBPD: 52 mm; centile 55th.\nHC: 190 mm; centile 48th.\nAC: 166 mm; centile 57th.\nFL: 35 mm; centile 42nd.\nEstimated fetal weight: 432 g; centile 51st.\n\n**Fetal anatomy:**\nCranium and intracranial anatomy normal. Four-chamber heart and LVOT normal. RVOT not adequately visualised due to fetal position.\n\nMild left fetal pyelectasis, with the left renal pelvis measuring 6.2 mm.\n\nSpine normal. Face/upper lip not adequately visualised due to fetal position. Repeat imaging recommended.\n\n**IMPRESSION:**\n- Mild left fetal pyelectasis.\n- Incomplete fetal anatomical assessment: RVOT and upper lip not adequately visualised due to fetal position. Repeat imaging recommended.",
+      "api_calls": [
+        {
+          "model": "gpt-6.1-sol",
+          "stream": false,
+          "usage": {
+            "completion_tokens": 275,
+            "prompt_tokens": 2056,
+            "total_tokens": 2331,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": null,
+              "cached_tokens": 0,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          },
+          "service_tier": "default",
+          "seconds": 5.021519396454096
+        },
+        {
+          "model": "gpt-6.1-sol",
+          "stream": true,
+          "service_tier": "default",
+          "seconds": 4.753799082711339,
+          "usage": {
+            "completion_tokens": 273,
+            "prompt_tokens": 3464,
+            "total_tokens": 3737,
+            "completion_tokens_details": {
+              "accepted_prediction_tokens": 0,
+              "audio_tokens": 0,
+              "reasoning_tokens": 0,
+              "rejected_prediction_tokens": 0,
+              "text_tokens": null
+            },
+            "prompt_tokens_details": {
+              "audio_tokens": 0,
+              "cache_write_tokens": 302,
+              "cached_tokens": 3159,
+              "image_tokens": null,
+              "text_tokens": null
+            }
+          }
+        }
+      ],
+      "seconds": 9.784471510909498,
+      "first_text_seconds": null
+    }
+  ],
+  "summary": {
+    "availability:gpt-6.1-sol": {
+      "n": 1,
+      "completed": 1,
+      "median_seconds": 2.683603711426258,
+      "max_seconds": 2.683603711426258,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "report:gpt-6.1-sol": {
+      "n": 18,
+      "completed": 18,
+      "median_seconds": 5.262594174593687,
+      "max_seconds": 7.938790852203965,
+      "median_first_text_seconds": 1.1849084179848433,
+      "gate_passes": 11
+    },
+    "impression:gpt-6.1-sol": {
+      "n": 9,
+      "completed": 9,
+      "median_seconds": 1.7015142776072025,
+      "max_seconds": 2.4715875890105963,
+      "median_first_text_seconds": 1.3109630588442087,
+      "gate_passes": 2
+    },
+    "worksheet_one_step:gpt-6.1-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 8.251033382955939,
+      "max_seconds": 10.471371323801577,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    },
+    "worksheet_two_step:gpt-6.1-sol": {
+      "n": 6,
+      "completed": 6,
+      "median_seconds": 9.529188864398748,
+      "max_seconds": 10.28406048938632,
+      "median_first_text_seconds": null,
+      "gate_passes": 0
+    }
+  },
+  "worksheet_phase": "complete"
+}
