@@ -2,6 +2,15 @@ name: Synthetic model speed comparison
 
 on:
   workflow_dispatch:
+    inputs:
+      reports:
+        description: Include report and impression benchmarks
+        type: boolean
+        default: false
+      candidate_only:
+        description: Retest Sol 6.1 only against saved benchmarks
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -38,8 +47,14 @@ jobs:
           sleep 5
           ssh-keyscan -H "$INSTANCE_HOST" >> ~/.ssh/known_hosts
       - name: Compare synthetic cases without changing server settings
+        env:
+          INCLUDE_REPORTS: ${{ inputs.reports }}
+          CANDIDATE_ONLY: ${{ inputs.candidate_only }}
         run: |
           set -euo pipefail
+          BENCHMARK_ARGS=""
+          if [ "$INCLUDE_REPORTS" = "true" ]; then BENCHMARK_ARGS="$BENCHMARK_ARGS --reports"; fi
+          if [ "$CANDIDATE_ONLY" = "true" ]; then BENCHMARK_ARGS="$BENCHMARK_ARGS --candidate-only"; fi
           REMOTE_DIR="/tmp/radspeed-model-speed-$GITHUB_RUN_ID"
           echo "REMOTE_DIR=$REMOTE_DIR" >> "$GITHUB_ENV"
           ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" "mkdir -p '$REMOTE_DIR'"
@@ -47,7 +62,7 @@ jobs:
           ssh -i ~/.ssh/radspeed-aws "ubuntu@$INSTANCE_HOST" \
             "set -eu; APP=\$(sudo docker ps --filter label=com.docker.compose.service=app --format '{{.ID}}'); \
              test -n \"\$APP\"; sudo docker cp '$REMOTE_DIR/benchmark.py' \"\$APP:/tmp/model-speed.py\"; \
-             sudo docker exec \"\$APP\" python /tmp/model-speed.py --output /tmp/model-speed-results.json"
+             sudo docker exec \"\$APP\" python /tmp/model-speed.py --output /tmp/model-speed-results.json $BENCHMARK_ARGS"
       - name: Retrieve synthetic results
         if: always() && env.REMOTE_DIR != ''
         run: |

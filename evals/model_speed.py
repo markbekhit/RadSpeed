@@ -44,6 +44,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--reports", action="store_true", help="Also repeat report and impression comparisons")
+    parser.add_argument("--candidate-only", action="store_true", help="Retest Sol 6.1 against saved baseline results")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 5:
         parser.error("Use 1 to 5 repeats")
@@ -63,7 +64,7 @@ def main():
     if baseline != "gpt-6-sol":
         raise RuntimeError("Production baseline has changed; review before benchmarking")
     candidate = "gpt-6.1-sol"
-    models = [baseline, candidate]
+    models = [candidate] if args.candidate_only else [baseline, candidate]
     original_effort = model_compat.reasoning_effort_for_model
     # Process-local compatibility only. Keep live workers and saved settings intact.
     model_compat.reasoning_effort_for_model = lambda model: (
@@ -107,7 +108,9 @@ def main():
         "baseline": baseline, "candidate": candidate,
         "reasoning_effort": "low", "service_tier": "default",
         "repeats": args.repeats, "include_reports": args.reports,
-        "method": "Serial paired AB/BA calls; same prompts, templates, processing tier and server",
+        "candidate_only": args.candidate_only,
+        "method": ("Serial candidate retest; existing prompts, templates, processing tier and server"
+                   if args.candidate_only else "Serial paired AB/BA calls; same prompts, templates, processing tier and server"),
         "scope": "Synthetic cases only; timings exclude audio transcription, browser and clipboard",
         "production_settings_changed": False,
         "rows": rows,
