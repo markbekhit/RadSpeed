@@ -1,7 +1,8 @@
 """Paired live timings on synthetic cases; never changes production settings.
 
 Run explicitly, outside CI quality gates. Outputs contain only synthetic data.
-Worksheet comparisons run by default. Add --reports to repeat text comparisons.
+Sol 6.1 report and worksheet comparisons run by default against saved results.
+Use --paired to repeat Sol 6 too; --worksheets-only skips text comparisons.
 """
 from __future__ import annotations
 
@@ -43,8 +44,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--reports", action="store_true", help="Also repeat report and impression comparisons")
-    parser.add_argument("--candidate-only", action="store_true", help="Retest Sol 6.1 against saved baseline results")
+    parser.add_argument("--reports", dest="reports", action="store_true", default=True)
+    parser.add_argument("--worksheets-only", dest="reports", action="store_false")
+    parser.add_argument("--candidate-only", dest="candidate_only", action="store_true", default=True)
+    parser.add_argument("--paired", dest="candidate_only", action="store_false", help="Repeat both models")
     args = parser.parse_args()
     if not 1 <= args.repeats <= 5:
         parser.error("Use 1 to 5 repeats")
