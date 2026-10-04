@@ -130,7 +130,15 @@
       let ok = false;
       try { ok = document.execCommand("copy"); } catch (_) {}
       document.body.removeChild(ta);
-      setStatus(ok ? "Report line copied to clipboard." : "Copy failed — select and copy manually.", ok ? "" : "error");
+      $("btn-copy").focus({ preventScroll: true });
+      if (!ok) {
+        const range = document.createRange();
+        range.selectNodeContents($("report-line"));
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      setStatus(ok ? "Report line copied to clipboard." : "Automatic copy is unavailable. The report line is selected. Press Ctrl+C or ⌘C. On a phone, touch and hold the report line, then choose Copy.", ok ? "" : "error");
     }
   }
 

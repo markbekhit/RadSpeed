@@ -53,6 +53,7 @@
     } else {
       emptyLede.textContent = 'Try a study name, a body region or an abbreviation such as CTPA, DVT or MRCP.';
     }
+    return scored.length;
   };
 
   const apply = () => {
@@ -68,17 +69,18 @@
       g.hidden = !g.querySelector('.template-card:not([hidden])');
     });
     const noMatch = shown === 0;
+    let closestCount = 0;
     empty.hidden = !noMatch;
     if (noMatch) {
       emptyQuery.textContent = query || 'this modality';
-      renderClosest(toks);
+      closestCount = renderClosest(toks);
     }
     const label = filters.find((f) => f.dataset.modality === modality);
     const scope = modality === 'all' ? '' : ` in ${label.textContent}`;
     if (!toks.length && modality === 'all') {
       status.textContent = `${total} templates across ${groups.length} modality groups.`;
     } else if (noMatch) {
-      status.textContent = `No match${scope}. Closest templates are listed below.`;
+      status.textContent = `No match${scope}. ${closestCount ? 'Closest templates are listed below.' : 'Try a study name or clear the search.'}`;
     } else {
       status.textContent = `${shown} of ${total} templates${scope}${toks.length ? ` match “${query}”` : ''}.`;
     }
@@ -100,6 +102,15 @@
 
   filters.forEach((f) => {
     f.setAttribute('role', 'button');
+    f.addEventListener('keydown', (event) => {
+      if (event.key === ' ') event.preventDefault();
+    });
+    f.addEventListener('keyup', (event) => {
+      if (event.key === ' ') {
+        event.preventDefault();
+        f.click();
+      }
+    });
     f.addEventListener('click', (event) => {
       event.preventDefault();
       setModality(f.dataset.modality);
