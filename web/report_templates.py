@@ -578,6 +578,54 @@ LIBRARY: dict[str, dict] = {
         ],
     },
     "HRCT_Thorax": {
+        "page_title": "HRCT Chest (Thorax)",
+        "meta_description": (
+            "HRCT chest report template with a copyable blank format. Document scan "
+            "scope, disease distribution, fibrosis, airways and interval change."
+        ),
+        "lead": (
+            "Copy a blank HRCT chest report into your reporting system. Record the "
+            "series acquired, describe the distribution and CT features, then complete "
+            "the impression from your findings."
+        ),
+        "scope_note": (
+            "For HRCT assessment of interstitial lung disease, bronchiectasis or "
+            "small-airways disease. Describe expiratory or prone findings only when "
+            "those series were acquired. A UIP pattern is not, by itself, a diagnosis "
+            "of idiopathic pulmonary fibrosis."
+        ),
+        "report_format_heading": "Copyable HRCT chest report format",
+        "report_format_reference": {
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9851481/",
+            "label": "2022 ATS/ERS/JRS/ALAT IPF and PPF guideline",
+        },
+        "report_format": [
+            "EXAM: HRCT CHEST",
+            "CLINICAL DETAILS: [Indication, relevant history and exposures]",
+            "COMPARISON: [Prior study and date, or no comparison available]",
+            "TECHNIQUE: [Coverage, slice thickness, contrast status and limitations]",
+            "SERIES ACQUIRED: [Inspiratory; expiratory or prone only if performed]",
+            "",
+            "FINDINGS:",
+            "Distribution: [Lobar extent; peripheral, central or diffuse; symmetry]",
+            "Parenchymal pattern: [Reticulation, ground-glass, consolidation or nodules]",
+            "Fibrosis: [Honeycombing, traction bronchiectasis/bronchiolectasis and architectural distortion]",
+            "Airways: [Bronchiectasis, wall thickening and mucus plugging where present]",
+            "Expiratory series, if acquired: [Air trapping and its distribution]",
+            "Prone series, if acquired: [Persistence or resolution of dependent opacities]",
+            "Pleura and mediastinum: [Pleural findings and lymph nodes]",
+            "Other imaged structures: [Heart, vessels, bones and upper abdomen within scan limits]",
+            "Interval change: [Change in distribution, extent or features against the stated comparison]",
+            "",
+            "IMPRESSION:",
+            "1. [Dominant findings, distribution and extent]",
+            "2. [CT pattern assessment where applicable; interpret with the clinical context]",
+            "3. [Interval change, important limitation or additional finding]",
+        ],
+        "impression_note": (
+            "Illustrative and synthetic — not a real case. This example describes a "
+            "UIP pattern, not a stand-alone clinical diagnosis of IPF."
+        ),
         "indications": "Suspected interstitial lung disease, bronchiectasis or small-airways disease.",
         "sections": [
             "Distribution and pattern of parenchymal disease",

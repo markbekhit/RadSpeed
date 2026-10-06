@@ -299,6 +299,23 @@ class ReportTemplateLibraryTests(unittest.TestCase):
         self.assertIn("Limit normal statements to that scope", body)
         self.assertIn("ACR breast ultrasound reporting guidance", body)
 
+    def test_hrct_blank_format_has_scan_scope_and_no_preset_diagnosis(self):
+        entry = rt.get_entry("hrct-thorax")
+        scaffold = "\n".join(entry["report_format"])
+        for prompt in ["SERIES ACQUIRED:", "Distribution:", "Fibrosis:",
+                       "Expiratory series, if acquired:", "Prone series, if acquired:",
+                       "Interval change:", "IMPRESSION:"]:
+            self.assertIn(prompt, scaffold)
+        for preset in ["No pleural effusion.", "Pattern is consistent", "Normal", "IPF"]:
+            self.assertNotIn(preset, scaffold)
+        body = self.client.get("/report-templates/hrct-thorax").text
+        self.assertIn("Copyable HRCT chest report format", body)
+        self.assertIn("HRCT Chest (Thorax) Report Template", body)
+        self.assertIn("only when those series were acquired", body)
+        self.assertIn("not a stand-alone clinical diagnosis of IPF", body)
+        self.assertIn('href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9851481/"', body)
+        self.assertIn('rel="canonical" href="https://radspeed.com.au/report-templates/hrct-thorax"', body)
+
 
 if __name__ == "__main__":
     unittest.main()
