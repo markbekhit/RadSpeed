@@ -23,7 +23,7 @@ from openai import OpenAI
 from llm.text_client import get_text_client
 
 from config.config import config
-from llm.format import _build_style_preamble
+from llm.format import KNEE_IMPRESSION_NEGATIVE_RULE, _build_style_preamble
 from llm.model_compat import completion_options
 
 logger = logging.getLogger(__name__)
@@ -386,6 +386,9 @@ absent free fluid, and normal kidneys are ALL omitted — they do not
 answer any clinical question and a normal-anatomy phrase like
 "otherwise unremarkable" covers them implicitly.
 """
+
+
+_IMPRESSION_SYSTEM_PROMPT += KNEE_IMPRESSION_NEGATIVE_RULE
 
 
 def _build_guideline_block(matched: List[tuple[str, str]]) -> str:

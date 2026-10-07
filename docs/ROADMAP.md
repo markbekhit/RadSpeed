@@ -176,6 +176,10 @@ deployment and partner sign-on, not new code.
   (`RADSPEED_IMPRESSIONS_HOURLY_LIMIT`, default 20/hr).
 - **`POST /api/impressions/stream`** — public SSE endpoint backing the page.
 - **`llm/impressions.py`** — purpose-built impression-only system prompt.
+- Knee impressions close with one supported pertinent negative: “Intact
+  cruciate, collateral ligaments and menisci.” The full-report and
+  impression-only paths exclude injured, uncertain and unassessed structures
+  from that statement and name the remaining intact structures.
 
 ### Clinical governance (Phase 1, just shipped)
 

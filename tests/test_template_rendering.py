@@ -254,6 +254,16 @@ class StructuredReportRenderingTests(unittest.TestCase):
                 self.assertIn("definite tear", prompt)
                 self.assertIn("root injury", prompt)
                 self.assertIn("parameniscal cyst", prompt)
+                self.assertIn(fmt.KNEE_IMPRESSION_NEGATIVE_RULE, prompt)
+                self.assertIn("Intact cruciate, collateral ligaments and menisci.", prompt)
+                self.assertIn("Intact PCL, collateral ligaments and menisci.", prompt)
+                self.assertIn("Intact cruciate ligaments, LCL and menisci.", prompt)
+                self.assertIn("sprains and partial", prompt)
+                self.assertIn("Do not infer intact structures", prompt)
+                self.assertIn("Do not apply this knee rule to other studies", prompt)
+        template = fmt._get_template_content("MRI_Knee.txt")
+        self.assertIn("Intact cruciate, collateral ligaments and menisci.", template)
+        self.assertIn("unassessed structures", template)
 
     def test_three_impression_bullets_are_numbered_for_reliable_paste(self):
         report = (

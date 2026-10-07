@@ -277,6 +277,25 @@ def _get_template_content(template_name: str) -> Optional[str]:
     return None
 
 
+KNEE_IMPRESSION_NEGATIVE_RULE = """\
+\nKNEE IMPRESSION — preferred pertinent negative (overrides generic normal-anatomy omission):
+After the significant positive findings, combine the supported intact knee
+structures into one closing point, not separate normal-anatomy bullets.
+When all are intact, use: "Intact cruciate, collateral ligaments and menisci."
+Adjust the sentence when an injury is already described. Exclude every injured
+or uncertain structure from the intact statement, including sprains and partial
+tears even when fibres remain continuous. Name the remaining structures precisely.
+Examples, only when the remaining structures are documented as intact:
+- Medial meniscal tear: "Intact cruciate and collateral ligaments and lateral meniscus."
+- ACL tear: "Intact PCL, collateral ligaments and menisci."
+- MCL sprain: "Intact cruciate ligaments, LCL and menisci."
+Do not repeat the injury in this negative point. Do not infer intact structures
+from silence or include structures that are not assessed. If none are confirmed
+intact, omit the catch-all. Preserve an explicit radiologist instruction that
+changes or omits this closing statement. Do not apply this knee rule to other studies.
+"""
+
+
 _REPORT_SYSTEM_PROMPT = """\
 This is a system prompt:
 
@@ -429,6 +448,7 @@ def _report_system_message(
     """Build the shared system message for streamed and non-streamed reports."""
     return (
         _REPORT_SYSTEM_PROMPT
+        + KNEE_IMPRESSION_NEGATIVE_RULE
         + _build_style_preamble(style)
         + _source_prompt(source_kind)
         + _spellings_lexicon_block(template_content)
