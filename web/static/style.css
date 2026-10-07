@@ -170,8 +170,10 @@ body.desktop-host.desktop-overlay main > #desktop-overlay-actions {
 body.desktop-host.desktop-overlay main > #transcription-card {
   display: block;
   order: 1;
-  flex: 1 1 auto;
-  min-height: 64px;
+  flex: 0 0 auto;
+  /* Two lines at the default 300px window height; grow with taller windows. */
+  height: max(48px, calc(100vh - 252px));
+  min-height: 48px;
   padding: 0;
   margin: 8px 0 0;
   border: 0;
@@ -182,7 +184,7 @@ body.desktop-host.desktop-overlay #transcription-card > :not(#transcription) {
 }
 body.desktop-host.desktop-overlay #transcription {
   height: 100%;
-  min-height: 64px;
+  min-height: 48px;
   resize: none;
   padding: 6px 8px;
   font-size: 12px;

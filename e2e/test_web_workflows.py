@@ -342,6 +342,8 @@ def test_desktop_overlay_survives_query_free_sign_in(page: Page, base_url: str, 
             expect(page.locator(selector)).to_be_in_viewport()
         assert page.evaluate("document.documentElement.scrollWidth") <= width
         assert page.evaluate("document.documentElement.scrollHeight") <= height
+        # Two lines at the default size, then grow with the window height.
+        assert page.locator("#transcription").bounding_box()["height"] == max(48, height - 252)
 
     page.locator("#btn-desktop-settings").click()
     page.locator("#btn-desktop-expand").click()
@@ -400,6 +402,44 @@ def test_compact_transcript_tail_and_voice_refinement(page: Page, base_url: str)
         "el => el.scrollTop + el.clientHeight >= el.scrollHeight - 2"
     )
     expect(page.locator("#btn-overlay-refine")).to_be_disabled()
+    page.evaluate(r"""() => {
+      window.waveformReads = 0;
+      window.AudioContext = class {
+        createMediaStreamSource() { return {connect() {}}; }
+        createAnalyser() {
+          return {
+            frequencyBinCount: 128,
+            getByteTimeDomainData(data) {
+              window.waveformReads++;
+              data.forEach((_, i) => { data[i] = i % 2 ? 180 : 76; });
+            },
+          };
+        }
+        close() { return Promise.resolve(); }
+      };
+      window.waveIsFlat = () => {
+        const canvas = document.getElementById('waveform');
+        const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let y = 0; y < canvas.height; y++) {
+          if (Math.abs(y - canvas.height / 2) <= 2) continue;
+          for (let x = 0; x < canvas.width; x++) {
+            if (pixels[(y * canvas.width + x) * 4] > 100) return false;
+          }
+        }
+        return true;
+      };
+      startWaveform({});
+    }""")
+    assert page.evaluate("waveIsFlat()")
+    assert page.evaluate("window.waveformReads") == 0
+    page.locator("#btn-record").click()
+    page.wait_for_function("window.waveformReads > 0 && !waveIsFlat()")
+    page.locator("#btn-record").click()
+    page.wait_for_function("waveIsFlat()")
+    assert page.locator("#transcription").evaluate(
+        "el => el.scrollTop + el.clientHeight >= el.scrollHeight - 2"
+    )
+    page.evaluate("stopWaveform()")
     page.evaluate(r"""() => {
       state.isRecording = false;
       state.isPaused = false;

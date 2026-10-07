@@ -346,6 +346,9 @@ practice rather than a tinkerer.
   transcript to the compact controller. Its default size is 520 by 300 with
   a 420 by 280 minimum. Native report lists use a smaller hanging indent and
   no literal leading space after the list marker.
+  The compact transcript shows two lines at the default window size and grows
+  when the window is made taller.
+  Pausing dictation keeps the voice line flat until recording resumes.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

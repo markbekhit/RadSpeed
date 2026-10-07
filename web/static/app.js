@@ -370,7 +370,13 @@ function startWaveform(stream) {
 
   function draw() {
     state.animFrameId = requestAnimationFrame(draw);
-    state.analyser.getByteTimeDomainData(dataArr);
+    if (state.isPaused) {
+      // Keep the paused display flat. The microphone can still be live while
+      // the recorder is paused, but its audio must not move the voice line.
+      dataArr.fill(128);
+    } else {
+      state.analyser.getByteTimeDomainData(dataArr);
+    }
 
     // ── VAD + Silence detection ───────────────────────────────────────────────────────
     if (state.isRecording && !state.isPaused && !state.isSegmentTranscribing) {
