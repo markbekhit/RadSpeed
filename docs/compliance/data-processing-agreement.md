@@ -65,7 +65,7 @@ RadSpeed maintains the measures in its Security Statement, including:
 - Immutable signed reports with versioned amendments and mandatory reasons.
 - Encrypted storage at rest in Sydney; secrets held outside the code
   repository; no long-lived cloud credentials in the deployment pipeline.
-- Automated tests (386 unit, 66 browser, clinical evaluation set) run on
+- Automated tests (387 unit, 98 browser, clinical evaluation set) run on
   every deployment; deployments are immutable images.
 
 ## 5. Personnel

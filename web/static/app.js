@@ -4,6 +4,7 @@
 // State
 // ---------------------------------------------------------------------------
 const state = {
+  uiMode: "idle",
   mediaRecorder: null,
   stream: null,          // kept open between segments so mic stays active
   audioChunks: [],
@@ -208,6 +209,7 @@ async function dismissStyleSuggest() {
 }
 
 function setUI(mode) {
+  state.uiMode = mode;
   // mode: idle | recording | paused | processing | transcribed | formatting | done
   const rec = $("btn-record");
   rec.disabled = !["idle", "transcribed", "done", "recording", "paused"].includes(mode);
@@ -223,6 +225,8 @@ function setUI(mode) {
   $("btn-copy").disabled        = mode !== "done";
   const overlayCopy = $("btn-overlay-copy");
   if (overlayCopy) overlayCopy.disabled = mode !== "done";
+  syncDesktopRefine(mode);
+  scrollDesktopTranscript();
   const btnCopyFromComparison = $("btn-copy-from-comparison");
   if (btnCopyFromComparison) btnCopyFromComparison.disabled = mode !== "done";
   $("btn-edit-toggle").disabled = mode !== "done";
@@ -265,6 +269,26 @@ function desktopInvoke(command, args = {}) {
   return invoke(command, args).then(() => true);
 }
 
+function scrollDesktopTranscript() {
+  const transcript = $("transcription");
+  if (document.body.classList.contains("desktop-overlay") && transcript
+      && document.activeElement !== transcript) {
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+}
+
+function syncDesktopRefine(mode = state.uiMode) {
+  const button = $("btn-overlay-refine");
+  if (!button) return;
+  button.textContent = fbState.isRecording ? "■ Stop refine" : "🎤 Refine";
+  button.disabled = fbState.isProcessing || (!fbState.isRecording
+    && (mode !== "done" || state.isRecording || !$("report-raw")?.value.trim()));
+  const busy = fbState.isRecording || fbState.isProcessing;
+  $("btn-overlay-copy").disabled = busy || mode !== "done";
+  $("btn-overlay-next").disabled = busy;
+  if (busy) $("btn-record").disabled = true;
+}
+
 async function setDesktopCompactMode(compact) {
   document.body.classList.toggle("desktop-overlay", compact);
   try {
@@ -273,6 +297,7 @@ async function setDesktopCompactMode(compact) {
     console.warn("desktop window resize failed:", err);
   }
   window.setTimeout(initCanvasResize, 120);
+  scrollDesktopTranscript();
 }
 
 function initDesktopOverlay() {
@@ -292,6 +317,10 @@ function initDesktopOverlay() {
   });
   $("btn-overlay-copy")?.addEventListener("click", () => $("btn-copy")?.click());
   $("btn-overlay-next")?.addEventListener("click", () => $("btn-next-case")?.click());
+  $("btn-overlay-refine")?.addEventListener("click", () => {
+    if (fbState.isRecording) stopFeedback();
+    else startFeedback();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -549,6 +578,7 @@ function resumeRecording() {
 }
 
 async function startRecording() {
+  if (fbState.isRecording || fbState.isProcessing) return;
   if (state.isRecording) return; // Stop button ends recording
   state.isPaused = false;
   // Once voice is added, use strict dictation QA for the mixed source. This can
@@ -911,6 +941,7 @@ function _updateStreamingDisplay() {
   _suppressStreamingSelChange = true;
   tx.value = newValue;
   tx.selectionStart = tx.selectionEnd = anchorPos;
+  scrollDesktopTranscript();
   state.streamingAnchorPos = anchorPos;
   state.streamingAnchorEnd = anchorPos;
   // Release the suppress flag after the browser has dispatched any
@@ -1176,6 +1207,7 @@ async function submitAudioSegment(chunks, isFinal) {
       if (newText) {
         const existing = $("transcription").value.trim();
         $("transcription").value = existing ? existing + " " + newText : newText;
+        scrollDesktopTranscript();
       }
       if (state.isRecording) {
         setStatus("Recording… pause briefly to see live transcription.", "active");
@@ -2238,7 +2270,7 @@ function _cleanClipboardChunk(text) {
     .replace(/\r\n?/g, "\n")
     .replace(/\u00a0/g, " ")
     .split("\n")
-    .map((line) => line.replace(/[ \t]+$/g, ""))
+    .map((line) => line.trim())
     .join("\n")
     .replace(/^\n+|\n+$/g, "")
     .replace(/\n{3,}/g, "\n\n");
@@ -2595,6 +2627,10 @@ async function copyReport(options = {}) {
 // Next Case — atomically reset the UI so a radiologist can burn through a list
 // ---------------------------------------------------------------------------
 function nextCase({ keepRadiologist = true, force = false } = {}) {
+  if (fbState.isRecording || fbState.isProcessing) {
+    setStatus("Finish report refinement before starting the next case.", "error");
+    return;
+  }
   // Guard against destroying an unsaved report. Alt+N is a single keystroke and
   // fires even while typing in the report field, so confirm when there is a
   // non-empty report that has been neither copied nor signed off.
@@ -3293,6 +3329,7 @@ function initCanvasResize() {
 // ---------------------------------------------------------------------------
 const fbState = {
   isRecording: false,
+  isProcessing: false,
   mediaRecorder: null,
   stream: null,
   chunks: [],
@@ -3312,31 +3349,47 @@ function _resetFeedbackUI() {
   $("btn-refine-stop").disabled = false;
   fbState.selectedText = "";
   fbState.isRecording = false;
+  fbState.isProcessing = false;
   // Re-evaluate Refine button based on current report state
   const hasReport = !!$("report-raw").value.trim();
   $("btn-refine").disabled = !hasReport;
+  setUI(_inferUIMode());
 }
 
 async function startFeedback() {
-  if (state.isRecording || fbState.isRecording) return;
+  if (state.isRecording || fbState.isRecording || fbState.isProcessing) return;
+  fbState.isProcessing = true;
+  syncDesktopRefine();
 
   fbState.selectedText = _captureReportSelection();
 
   try {
     fbState.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (err) {
+    _resetFeedbackUI();
     setStatus(`Microphone error: ${err.message}`, "error");
     return;
   }
 
-  fbState.chunks = [];
-  fbState.mediaRecorder = new MediaRecorder(fbState.stream);
-  fbState.mediaRecorder.ondataavailable = (e) => {
-    if (e.data.size > 0) fbState.chunks.push(e.data);
-  };
-  fbState.mediaRecorder.onstop = _onFeedbackStop;
-  fbState.mediaRecorder.start();
+  try {
+    fbState.chunks = [];
+    fbState.mediaRecorder = new MediaRecorder(fbState.stream);
+    fbState.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) fbState.chunks.push(e.data);
+    };
+    fbState.mediaRecorder.onstop = _onFeedbackStop;
+    fbState.mediaRecorder.start();
+  } catch (err) {
+    fbState.stream?.getTracks().forEach((track) => track.stop());
+    fbState.stream = null;
+    _resetFeedbackUI();
+    setStatus(`Could not start refinement: ${err.message}`, "error");
+    return;
+  }
   fbState.isRecording = true;
+  fbState.isProcessing = false;
+  syncDesktopRefine();
+  setStatus("Listening for refinement. Press Stop refine when finished.", "active");
 
   // Show feedback bar, hide Refine button
   $("btn-refine").disabled = true;
@@ -3350,6 +3403,9 @@ function stopFeedback() {
   if (!fbState.isRecording || !fbState.mediaRecorder) return;
   $("feedback-status").textContent = "Processing…";
   $("btn-refine-stop").disabled = true;
+  fbState.isProcessing = true;
+  syncDesktopRefine();
+  setStatus("Applying refinement…", "active");
   fbState.mediaRecorder.stop();
 }
 

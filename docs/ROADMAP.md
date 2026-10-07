@@ -224,7 +224,7 @@ deployment and partner sign-on, not new code.
 
 ### Automated quality coverage
 
-- **386 Python tests + 66 Chromium E2E workflows** run before deployment and on
+- **387 Python tests + 98 Chromium E2E workflows** run before deployment and on
   pull requests. Coverage includes
   silent-failure diagnostics, HL7 file-drop hardening, template selection,
   all bundled template rendering, patient/style prompt construction,
@@ -342,6 +342,10 @@ practice rather than a tinkerer.
   allows resizing from its edges, with a 420 by 200 minimum control area.
   Version 0.2.35 adds a direct Reporting preferences action, including the
   grade and liver-segment numeral choice.
+  Version 0.2.36 adds Refine / Stop refine and an editable tail of the live
+  transcript to the compact controller. Its default size is 520 by 300 with
+  a 420 by 280 minimum. Native report lists use a smaller hanging indent and
+  no literal leading space after the list marker.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

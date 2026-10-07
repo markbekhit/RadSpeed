@@ -25,6 +25,8 @@ class DesktopOverlayTests(unittest.TestCase):
             "btn-record",
             "btn-stop",
             "btn-overlay-copy",
+            "btn-overlay-refine",
+            "transcription-card",
             "btn-overlay-next",
             "btn-desktop-expand",
             "btn-desktop-settings",
@@ -35,7 +37,7 @@ class DesktopOverlayTests(unittest.TestCase):
     def test_desktop_launches_compact_and_keeps_settings_separate(self):
         source = (ROOT / "desktop/src-tauri/src/lib.rs").read_text()
         self.assertIn('app_url.set_query(Some("desktop=overlay"))', source)
-        self.assertIn(".inner_size(520.0, 200.0)", source)
+        self.assertIn(".inner_size(520.0, 300.0)", source)
         self.assertIn(".always_on_top(true)", source)
         self.assertIn('get_webview_window("settings")', source)
 
@@ -49,7 +51,7 @@ class DesktopOverlayTests(unittest.TestCase):
         )[0]
         self.assertNotIn("set_resizable(false)", command)
         self.assertIn(".resizable(true)", builder)
-        self.assertIn(".min_inner_size(420.0, 200.0)", builder)
+        self.assertIn(".min_inner_size(420.0, 280.0)", builder)
         self.assertIn('.initialization_script("window.__RADSPEED_DESKTOP_OVERLAY__ = true;")', builder)
 
     def test_remote_window_can_only_use_scoped_desktop_commands(self):

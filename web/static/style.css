@@ -37,7 +37,7 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 #btn-desktop-collapse { display: none; }
 
 body.desktop-host.desktop-overlay {
-  min-height: 100%;
+  height: 100vh;
   overflow: hidden;
   background: #07111d;
 }
@@ -95,7 +95,9 @@ body.desktop-host.desktop-overlay #desktop-overlay-head {
 .desktop-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 body.desktop-host.desktop-overlay main {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 42px);
   width: 100%;
   max-width: none;
   margin: 0;
@@ -164,6 +166,31 @@ body.desktop-host.desktop-overlay main > #desktop-overlay-actions {
   gap: 7px;
   margin-top: 8px;
 }
+
+body.desktop-host.desktop-overlay main > #transcription-card {
+  display: block;
+  order: 1;
+  flex: 1 1 auto;
+  min-height: 64px;
+  padding: 0;
+  margin: 8px 0 0;
+  border: 0;
+  background: transparent;
+}
+body.desktop-host.desktop-overlay #transcription-card > :not(#transcription) {
+  display: none;
+}
+body.desktop-host.desktop-overlay #transcription {
+  height: 100%;
+  min-height: 64px;
+  resize: none;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+body.desktop-host.desktop-overlay #recording-card,
+body.desktop-host.desktop-overlay #status,
+body.desktop-host.desktop-overlay #desktop-overlay-actions { flex-shrink: 0; }
 
 body.desktop-host.desktop-overlay #desktop-overlay-actions .btn {
   padding: 6px 10px;

@@ -191,7 +191,7 @@ fn parse_rtf_lines(text: &str) -> (Vec<ReportRtfLine>, Vec<ReportListRun>) {
             active_run = None;
             lines.push(ReportRtfLine {
                 original: line.to_string(),
-                content: line.to_string(),
+                content: line.trim_start().to_string(),
                 list: None,
             });
         }
@@ -328,7 +328,7 @@ fn push_rtf_list_tables(rtf: &mut String, runs: &[ReportListRun]) {
             ReportListKind::Ordered => {
                 let _ = write!(
                     rtf,
-                    r"\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat{}\levelspace0\levelindent0{{\leveltext\leveltemplateid{template_id}\'02\'00.;}}{{\levelnumbers\'01;}}\fi-360\li720\lin720\tx720",
+                    r"\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat{}\levelspace0\levelindent0{{\leveltext\leveltemplateid{template_id}\'02\'00.;}}{{\levelnumbers\'01;}}\fi-240\li240\lin240\tx240",
                     run.start
                 );
             }
@@ -338,7 +338,7 @@ fn push_rtf_list_tables(rtf: &mut String, runs: &[ReportListRun]) {
                 );
                 let _ = write!(
                     rtf,
-                    r"{template_id}\'01\u8226 ?;}}{{\levelnumbers;}}\fi-360\li720\lin720\tx720"
+                    r"{template_id}\'01\u8226 ?;}}{{\levelnumbers;}}\fi-240\li240\lin240\tx240"
                 );
             }
         }
@@ -390,7 +390,7 @@ fn report_rtf(text: &str, bold_lines: &[String], bold_prefixes: &[String]) -> Ve
             let list_number = run_index + 1;
             let _ = write!(
                 rtf,
-                r"\ls{list_number}\ilvl0\fi-360\li720\lin720\tx720{{\listtext\pard\plain\f0\fs20 "
+                r"\ls{list_number}\ilvl0\fi-240\li240\lin240\tx240{{\listtext\pard\plain\f0\fs20 "
             );
             match kind {
                 ReportListKind::Ordered => {
@@ -398,7 +398,7 @@ fn report_rtf(text: &str, bold_lines: &[String], bold_prefixes: &[String]) -> Ve
                 }
                 ReportListKind::Bullet => rtf.push_str(r"\u8226?\tab"),
             }
-            rtf.push_str("} ");
+            rtf.push('}');
         }
         let trimmed = line.original.trim();
         let is_bold = !trimmed.is_empty() && bold.contains(trimmed);
@@ -544,7 +544,7 @@ mod tests {
         assert!(value.contains(r"\b FINDINGS:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \b Menisci\b0"));
         assert!(value.contains(r"\b Medial meniscus:\b0  Tear."));
         assert!(value.contains(r"\par \pard\plain\sa0\sb0\f0\fs20 \par \pard\plain\sa0\sb0\f0\fs20 \b IMPRESSION:\b0 \par \pard\plain\sa0\sb0\f0\fs20 \ls1\ilvl0"));
-        assert!(value.contains(r"{\listtext\pard\plain\f0\fs20 1.\tab} Tear."));
+        assert!(value.contains(r"{\listtext\pard\plain\f0\fs20 1.\tab}Tear."));
         assert!(value.ends_with("}\0"));
     }
 
@@ -553,6 +553,19 @@ mod tests {
         let value = String::from_utf8(report_rtf("A \\ {test} café", &[], &[])).unwrap();
 
         assert!(value.contains(r"A \\ \{test\} caf\u233?"));
+    }
+
+    #[test]
+    fn report_rtf_removes_leading_whitespace_from_impression_lines() {
+        let value = String::from_utf8(report_rtf(
+            "IMPRESSION:\n  First finding.\n\tSecond finding.\n-   Third finding.",
+            &[],
+            &[],
+        )).unwrap();
+        assert!(value.contains(r"\fs20 First finding."));
+        assert!(value.contains(r"\fs20 Second finding."));
+        assert!(value.contains(r"\u8226?\tab}Third finding."));
+        assert!(!value.contains(r"\tab} Third finding."));
     }
 
     #[test]
@@ -571,9 +584,9 @@ mod tests {
         assert!(value.contains(r"\leveltext\leveltemplateid2001\'01\u8226 ?;"));
         assert!(value.contains(r"{\listoverride\listid1000\listoverridecount0\ls1}"));
         assert!(value.contains(r"{\listoverride\listid1001\listoverridecount0\ls2}"));
-        assert!(value.contains(r"\ls1\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 1.\tab} First finding."));
-        assert!(value.contains(r"\ls1\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 2.\tab} Second finding."));
-        assert!(value.contains(r"\ls2\ilvl0\fi-360\li720\lin720\tx720{\listtext\pard\plain\f0\fs20 \u8226?\tab} First note."));
+        assert!(value.contains(r"\ls1\ilvl0\fi-240\li240\lin240\tx240{\listtext\pard\plain\f0\fs20 1.\tab}First finding."));
+        assert!(value.contains(r"\ls1\ilvl0\fi-240\li240\lin240\tx240{\listtext\pard\plain\f0\fs20 2.\tab}Second finding."));
+        assert!(value.contains(r"\ls2\ilvl0\fi-240\li240\lin240\tx240{\listtext\pard\plain\f0\fs20 \u8226?\tab}First note."));
         assert!(!value.contains("1. First finding."));
         assert!(!value.contains("- First note."));
     }

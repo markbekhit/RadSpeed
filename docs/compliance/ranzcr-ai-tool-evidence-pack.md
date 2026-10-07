@@ -48,7 +48,7 @@ training and evaluation. This choice is off by default.
 | Component | Developer | Training data | RadSpeed's validation |
 |---|---|---|---|
 | Speech to text | Deepgram Nova-3 Medical, a general-purpose medical model | Deepgram's proprietary corpus; not the practice's data (opt-out enforced) | Radiology keyterm prompting; per-template spelling lists; radiologist-level accuracy review during pilot |
-| Language model, current single-radiologist production | GPT-6 Sol | Provider's general training; RadSpeed content is not supplied for provider training | Clinical evaluation set of high-risk synthetic cases (laterality, side-specific pathology, negatives) run on every release; 386 unit tests including template rendering and fact preservation |
+| Language model, current single-radiologist production | GPT-6 Sol | Provider's general training; RadSpeed content is not supplied for provider training | Clinical evaluation set of high-risk synthetic cases (laterality, side-specific pathology, negatives) run on every release; 387 unit tests including template rendering and fact preservation |
 | Language model, Australian practice profile | Anthropic Claude Sonnet 5 via Amazon Bedrock | Anthropic's general training; not the practice's data | The same release evaluation and review controls |
 | Deterministic QA | RadSpeed | Rules only, no training | Unit tests per rule |
 | Optional RadSpeed-owned internal model | RadSpeed | Only opt-in, de-identified transcript, draft and correction pairs retained for up to 365 days | Must have separate training, validation and test sets, documented performance and clinical-governance approval before use in a live report path |
@@ -91,7 +91,7 @@ takes precedence.
 
 ## 6. Software updates and monitoring (R3.23, R3.24)
 
-- RadSpeed releases are immutable images that pass 386 unit tests, 66
+- RadSpeed releases are immutable images that pass 387 unit tests, 98
   browser tests and the clinical evaluation set before deployment. Release
   notes are provided to the practice for any change affecting data handling,
   model provider or clinical output.

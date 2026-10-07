@@ -141,7 +141,7 @@ fn cmd_set_compact_mode(app: AppHandle, compact: bool) {
     };
     if compact {
         let _ = window.set_resizable(true);
-        let _ = window.set_size(Size::Logical(LogicalSize::new(520.0, 200.0)));
+        let _ = window.set_size(Size::Logical(LogicalSize::new(520.0, 300.0)));
         let _ = window.set_always_on_top(true);
         position_app_overlay(&window);
     } else {
@@ -288,8 +288,8 @@ pub fn run() {
                 tauri::WebviewUrl::External(app_url),
             )
             .title("RadSpeed")
-            .inner_size(520.0, 200.0)
-            .min_inner_size(420.0, 200.0)
+            .inner_size(520.0, 300.0)
+            .min_inner_size(420.0, 280.0)
             .resizable(true)
             // Runs on every navigation, including the query-free OAuth return.
             .initialization_script("window.__RADSPEED_DESKTOP_OVERLAY__ = true;")

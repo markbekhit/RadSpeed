@@ -290,7 +290,7 @@ def test_ct_cap_compare_mode_generates_both_layouts_then_uses_one(page: Page, ba
 
 def test_desktop_overlay_keeps_reporting_controls_compact(page: Page, base_url: str):
     errors = _console_errors(page)
-    page.set_viewport_size({"width": 520, "height": 200})
+    page.set_viewport_size({"width": 520, "height": 300})
     page.goto(f"{base_url}/app?desktop=overlay")
 
     expect(page.locator("body")).to_have_class(re.compile("desktop-overlay"))
@@ -301,7 +301,7 @@ def test_desktop_overlay_keeps_reporting_controls_compact(page: Page, base_url: 
     expect(page.locator("#btn-overlay-next")).to_be_visible()
     expect(page.locator("body > header")).to_be_hidden()
     assert page.evaluate("document.documentElement.scrollWidth") <= 520
-    assert page.evaluate("document.documentElement.scrollHeight") <= 200
+    assert page.evaluate("document.documentElement.scrollHeight") <= 300
 
     page.evaluate('setUI("recording")')
     expect(page.locator("#btn-record")).to_contain_text("Pause")
@@ -331,14 +331,14 @@ def test_desktop_overlay_survives_query_free_sign_in(page: Page, base_url: str, 
             core: {invoke: async (command, args) => window.desktopCalls.push({command, args})}
         };
     """ + signal_script)
-    page.set_viewport_size({"width": 420, "height": 200})
+    page.set_viewport_size({"width": 420, "height": 280})
     page.goto(f"{base_url}/app")
 
     expect(page.locator("body")).to_have_class(re.compile("desktop-overlay"))
     expect(page.locator("body > header")).to_be_hidden()
-    for width, height in ((420, 200), (520, 200), (700, 300)):
+    for width, height in ((420, 280), (520, 300), (700, 400)):
         page.set_viewport_size({"width": width, "height": height})
-        for selector in ("#btn-record", "#btn-stop", "#btn-overlay-copy", "#btn-overlay-next"):
+        for selector in ("#btn-record", "#btn-stop", "#btn-overlay-copy", "#btn-overlay-next", "#btn-overlay-refine", "#transcription"):
             expect(page.locator(selector)).to_be_in_viewport()
         assert page.evaluate("document.documentElement.scrollWidth") <= width
         assert page.evaluate("document.documentElement.scrollHeight") <= height
@@ -363,6 +363,63 @@ def test_browser_workstation_without_desktop_signal_stays_full_size(page: Page, 
     expect(page.locator("body")).not_to_have_class(re.compile("desktop-host"))
     expect(page.locator("body > header")).to_be_visible()
     expect(page.locator("#desktop-overlay-head")).to_be_hidden()
+
+
+def test_compact_transcript_tail_and_voice_refinement(page: Page, base_url: str):
+    errors = _console_errors(page)
+    page.set_viewport_size({"width": 420, "height": 280})
+    page.goto(f"{base_url}/app?desktop=overlay")
+    page.route("**/transcribe", lambda route: route.fulfill(
+        json={"transcription": "Use a shorter impression."}
+    ))
+    page.route("**/format/feedback", lambda route: route.fulfill(
+        json={"report": "**IMPRESSION:**\nNo acute abnormality."}
+    ))
+    page.evaluate(r"""() => {
+      Object.defineProperty(navigator, 'mediaDevices', {
+        configurable: true,
+        value: {getUserMedia: async () => ({getTracks: () => [{stop() {}}]})},
+      });
+      window.MediaRecorder = class {
+        start() {}
+        stop() {
+          this.ondataavailable({data: new Blob([new Uint8Array(13000)])});
+          this.onstop();
+        }
+      };
+      state.streamingBefore = '';
+      state.streamingAfter = '';
+      state.confirmedText = Array.from({length: 30}, (_, i) => `Synthetic line ${i}`).join('\n');
+      _updateStreamingDisplay();
+      state.isRecording = true;
+      state.isPaused = true;
+      setUI('paused');
+    }""")
+    expect(page.locator("#transcription")).to_have_value(re.compile("Synthetic line 29$"))
+    assert page.locator("#transcription").evaluate(
+        "el => el.scrollTop + el.clientHeight >= el.scrollHeight - 2"
+    )
+    expect(page.locator("#btn-overlay-refine")).to_be_disabled()
+    page.evaluate(r"""() => {
+      state.isRecording = false;
+      state.isPaused = false;
+      setReport('**IMPRESSION:**\n- No acute abnormality.');
+      setUI('done');
+    }""")
+    page.locator("#btn-overlay-refine").click()
+    expect(page.locator("#btn-overlay-refine")).to_have_text("■ Stop refine")
+    expect(page.locator("#btn-record")).to_be_disabled()
+    expect(page.locator("#btn-overlay-next")).to_be_disabled()
+    with page.expect_request("**/format/feedback") as feedback_request:
+        page.locator("#btn-overlay-refine").click()
+    assert feedback_request.value.post_data_json["feedback"] == "Use a shorter impression."
+    expect(page.locator("#status")).to_contain_text("Report updated")
+    expect(page.locator("#btn-overlay-refine")).to_have_text("🎤 Refine")
+    expect(page.locator("#btn-overlay-refine")).to_be_enabled()
+    expect(page.locator("#btn-overlay-copy")).to_be_enabled()
+    expect(page.locator("#btn-record")).to_be_enabled()
+    expect(page.locator("#btn-overlay-next")).to_be_enabled()
+    assert errors == []
 
 
 def test_authenticated_impression_action_preserves_the_report(page: Page, base_url: str):
@@ -927,6 +984,9 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
     page: Page, base_url: str
 ):
     page.goto(f"{base_url}/app")
+    assert page.evaluate("""() => _clipboardPlainText(
+      '<p><strong>IMPRESSION:</strong></p><p>  First finding.<br>\u00a0 Second finding.</p>', ''
+    )""") == "IMPRESSION:\nFirst finding.\nSecond finding."
     page.evaluate(
         """() => {
           setReport(
