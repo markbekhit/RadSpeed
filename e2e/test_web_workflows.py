@@ -956,13 +956,27 @@ def test_copy_keeps_section_heading_attached_to_its_text(page: Page, base_url: s
     )
     clipboard = page.evaluate("window.__sectionClipboard")
     assert clipboard["text/plain"] == (
-        "EXAM:\nMRI lumbar spine\n\n"
         "TECHNIQUE:\nRoutine non-contrast protocol.\n\n"
         "FINDINGS:\nNo acute abnormality.\n\n"
         "IMPRESSION:\n- No acute abnormality."
     )
-    assert "<strong>EXAM:</strong><br>MRI lumbar spine<br><br>" in clipboard["text/html"]
+    assert "EXAM" not in clipboard["text/html"]
+    assert "MRI lumbar spine" not in clipboard["text/html"]
     assert "<strong>TECHNIQUE:</strong><br>Routine non-contrast protocol.<br><br>" in clipboard["text/html"]
+    expect(page.locator("#report-rendered")).to_contain_text("MRI lumbar spine")
+    expect(page.locator("#report-raw")).to_have_value(re.compile("EXAM"))
+    for paste_format in ("plain", "markdown"):
+        page.evaluate("""(format) => {
+          document.body.dataset.pasteFormat = format;
+          navigator.clipboard.writeText = async text => { window.__plainCopy = text; };
+        }""", paste_format)
+        page.locator("#btn-copy").click()
+        copied = page.evaluate("window.__plainCopy")
+        assert "EXAM" not in copied and "MRI lumbar spine" not in copied
+        assert "TECHNIQUE" in copied and "IMPRESSION" in copied
+    for exam in ("EXAM:\nMRI knee", "**EXAM:** MRI knee", "### Examination:\nMRI knee"):
+        assert page.evaluate("text => _reportWithoutExam(text)", exam + "\n\n**FINDINGS:**\nNo fracture.") == "**FINDINGS:**\nNo fracture."
+    assert page.evaluate("text => _reportWithoutExam(text)", "**FINDINGS:**\nNo fracture.\n\n**IMPRESSION:**\n- No fracture.") == "**FINDINGS:**\nNo fracture.\n\n**IMPRESSION:**\n- No fracture."
 
 
 def test_copy_preserves_knee_group_headings_without_gaps_between_findings(
@@ -1030,6 +1044,7 @@ def test_desktop_copy_uses_native_powerscribe_rtf_with_bold_headings(
     page.evaluate(
         """() => {
           setReport(
+            "**EXAM:** MRI knee\\n\\n" +
             "FINDINGS:\\n\\n" +
             "**Menisci**\\n\\n" +
             "**Medial meniscus:** Oblique undersurface tear.\\n\\n" +

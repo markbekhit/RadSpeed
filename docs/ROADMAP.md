@@ -353,6 +353,8 @@ practice rather than a tinkerer.
   The compact transcript shows two lines at the default window size and grows
   when the window is made taller.
   Pausing dictation keeps the voice line flat until recording resumes.
+  All report Copy actions omit the EXAM section from every clipboard format,
+  including native Windows rich text. The displayed and saved report keep it.
 - **Remaining external dependency:** commercial Authenticode / EV certificate
   for a verified Windows publisher identity and removal of the SmartScreen
   “Unknown publisher” warning. Tauri update signing is already configured but

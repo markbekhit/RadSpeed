@@ -2528,12 +2528,38 @@ function _reportFromComparisonOrFindings(markdown) {
   return { markdown: String(markdown || "").trim(), startsAt: "full report" };
 }
 
+function _reportWithoutExam(markdown) {
+  const headings = new Set([
+    "exam", "examination", "technique", "history", "clinical history",
+    "clinical details", "clinical information", "clinical indication",
+    "clinical question", "indication", "procedure", "comparison", "comparisons", "prior", "priors",
+    "prior imaging", "findings", "impression", "conclusion", "opinion",
+    "recommendation", "recommendations",
+  ]);
+  let inExam = false;
+  return String(markdown || "").replace(/\r\n?/g, "\n").split("\n")
+    .filter((line) => {
+      // Accept heading-only and inline titles, including Markdown headings.
+      const label = line.trim().replace(/^#{1,6}\s*/, "").replace(/\*\*|__/g, "");
+      if (/^(?:exam|examination)\s*(?::|$)/i.test(label)) {
+        inExam = true;
+        return false;
+      }
+      const heading = _normaliseReportHeading(line);
+      const inlineHeading = label.match(/^([^:]+):/);
+      if (headings.has(heading) || (inlineHeading && headings.has(inlineHeading[1].trim().toLowerCase()))) {
+        inExam = false;
+      }
+      return !inExam;
+    }).join("\n").trim();
+}
+
 async function copyReport(options = {}) {
   const fullMarkdown = $("report-raw").value;
   const selection = options.fromComparison
     ? _reportFromComparisonOrFindings(fullMarkdown)
     : { markdown: fullMarkdown, startsAt: "full report" };
-  const markdown = selection.markdown;
+  const markdown = _reportWithoutExam(selection.markdown);
   if (!markdown.trim()) return;
   const fmt = _pasteFormat();
   // Always render fresh from the raw markdown source. In Edit mode the visible
@@ -2541,7 +2567,8 @@ async function copyReport(options = {}) {
   // its innerText/innerHTML here would silently copy the *pre-edit* report and
   // drop the radiologist's corrections.
   const html = renderMarkdown(markdown);
-  $("report-rendered").innerHTML = html;
+  // Copy scope must not remove sections from the visible or saved report.
+  $("report-rendered").innerHTML = renderMarkdown(fullMarkdown);
   const plain = _clipboardPlainText(html, markdown);
   const richHtml = _clipboardRichHtml(plain, html);
 
