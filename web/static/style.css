@@ -186,9 +186,9 @@ body.desktop-host.desktop-overlay #transcription {
   height: 100%;
   min-height: 48px;
   resize: none;
-  padding: 6px 8px;
+  padding: 5px 8px;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 18px;
 }
 body.desktop-host.desktop-overlay #recording-card,
 body.desktop-host.desktop-overlay #status,
