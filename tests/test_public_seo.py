@@ -38,6 +38,7 @@ class PublicSEOTests(unittest.TestCase):
             "/ti-rads-calculator",
             "/fleischner-calculator",
             "/adrenal-washout-calculator",
+            "/volume-doubling-time-calculator",
             "/report-templates",
         ):
             get_response = self.client.get(path)
@@ -81,6 +82,7 @@ class PublicSEOTests(unittest.TestCase):
         self.assertIn('href="/ti-rads-calculator"', response.text)
         self.assertIn('href="/fleischner-calculator"', response.text)
         self.assertIn('href="/adrenal-washout-calculator"', response.text)
+        self.assertIn('href="/volume-doubling-time-calculator"', response.text)
         self.assertIn('href="/report-templates"', response.text)
 
     def test_public_pages_have_large_social_preview_metadata(self):

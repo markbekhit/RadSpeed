@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lung Nodule Volume Doubling Time Calculator · RadSpeed</title>
+  <meta name="description" content="Free lung nodule volume doubling time (VDT) calculator. Compare two CT studies and read growth against the NLCSP and BTS thresholds." />
+  <link rel="canonical" href="https://radspeed.com.au/volume-doubling-time-calculator" />
+  <meta property="og:title" content="Lung Nodule Volume Doubling Time Calculator · RadSpeed" />
+  <meta property="og:description" content="Compare a pulmonary nodule across two CT studies, get the volume doubling time and the NLCSP and BTS growth reading, and copy a report line. Free, no sign-up." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://radspeed.com.au/volume-doubling-time-calculator" />
+  <meta property="og:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="RadSpeed radiology reporting workflow preview" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://radspeed.com.au/static/radspeed-share.png" />
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v={{ static_version }}" />
+  <link rel="stylesheet" href="/static/style.css?v={{ static_version }}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "MedicalWebPage",
+        "name": "Lung Nodule Volume Doubling Time Calculator",
+        "url": "https://radspeed.com.au/volume-doubling-time-calculator",
+        "description": "Free pulmonary nodule volume doubling time calculator that compares two CT studies by volume or mean diameter and reads the result against the Australian NLCSP growth definitions and the BTS 2015 thresholds, with a paste-ready structured report line.",
+        "medicalAudience": "https://schema.org/Clinician",
+        "about": { "@type": "MedicalCondition", "name": "Pulmonary nodule" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is the volume doubling time of a lung nodule calculated?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Volume doubling time (VDT) uses the modified Schwartz formula: VDT = interval in days × ln 2 ÷ ln(current volume ÷ prior volume). For example, a nodule that grows from 120 mm³ to 180 mm³ over 182 days has a VDT of about 311 days. VDT is only defined when the volume has increased."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What VDT counts as growth in the Australian lung cancer screening program?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In the NLCSP Nodule Management Protocol, a volume increase of more than 25% with a VDT under 600 days is growing. An increase of more than 25% with a VDT over 600 days is slowly growing only when it holds across more than one scan interval; otherwise it counts as stable. A change within ±25% is stable, and a fall of 25% or more is decreased. When volumetry is not possible, the protocol uses a mean-diameter change of more than 1.5 mm."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What do the BTS 400-day and 600-day thresholds mean?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The British Thoracic Society 2015 guideline treats a volume increase of 25% or more as significant. A VDT under 400 days supports further investigation, 400 to 600 days supports yearly surveillance or biopsy by patient preference, and over 600 days supports discharge or ongoing CT surveillance."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I calculate VDT from diameters instead of volumes?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, the calculator treats the nodule as a sphere, but any diameter error is cubed. A 1 mm change on a 6 mm nodule is a volume change of almost 60%. Use automated volumetry on both studies wherever possible."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .fx-hero { text-align: center; padding: 24px 16px 8px; }
+    .fx-hero h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 8px;
+      background: linear-gradient(90deg, var(--accent), var(--mint));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .fx-hero p {
+      color: var(--muted); font-size: 14px; margin: 0 auto; max-width: 640px; line-height: 1.5;
+    }
+    .fx-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; }
+    @media (max-width: 860px) { .fx-grid { grid-template-columns: 1fr; } }
+    .fx-field { margin-bottom: 14px; }
+    .fx-field > label {
+      display: block; font-size: 11px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px;
+    }
+    .fx-field select, .fx-field input[type="text"], .fx-field input[type="number"] {
+      width: 100%; font-size: 14px;
+    }
+    .fx-inline { display: flex; gap: 12px; }
+    .fx-inline .fx-field { flex: 1; }
+    .fx-result-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px;
+    }
+    .fx-band { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: var(--accent); }
+    .fx-summary { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .fx-metrics { display: flex; gap: 10px; margin-bottom: 12px; }
+    .fx-metric {
+      flex: 1; text-align: center; padding: 10px 8px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--bg);
+    }
+    .fx-metric .fx-metric-val { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+    .fx-metric .fx-metric-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .fx-metric .fx-metric-note { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .fx-metric.pass .fx-metric-val { color: var(--mint); }
+    .fx-recommendation {
+      font-size: 15px; color: var(--text); line-height: 1.55; padding: 12px 14px;
+      border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-bottom: 12px;
+    }
+    .fx-report-title {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;
+    }
+    .fx-report-title h3 {
+      font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--muted); margin: 0;
+    }
+    #report-line {
+      white-space: pre-wrap; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.55; min-height: 84px;
+    }
+    .fx-note { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 10px; }
+    .fx-cta { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 13px; }
+    .fx-cta a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .fx-cta a:hover { text-decoration: underline; }
+    .fx-explainer h2 { font-size: 15px; margin: 0 0 8px; }
+    .fx-explainer p, .fx-explainer li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .fx-explainer table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+    .fx-explainer th, .fx-explainer td {
+      text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top;
+    }
+    .fx-explainer th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fx-formula { font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 8px 0; line-height: 1.7; }
+    .fx-readings { display: grid; gap: 8px; margin-bottom: 12px; }
+    .fx-reading { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+    .fx-reading-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .fx-reading-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .fx-warnings { font-size: 12px; color: var(--amber, var(--muted)); line-height: 1.5; margin: 0 0 12px; padding-left: 18px; }
+    .fx-warnings:empty { display: none; }
+    .fx-explainer a { color: var(--accent); }
+    #status:empty { display: none; }
+    .fx-or { font-size: 11px; color: var(--muted); margin: -6px 0 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="product-brand">RadSpeed</div>
+    <div class="subtitle">Free Volume Doubling Time Calculator</div>
+  </div>
+  <div class="ml-auto" style="display:flex;align-items:center;gap:10px;">
+    <a href="/fleischner-calculator" class="btn btn-ghost btn-sm" title="Fleischner 2017 calculator">Fleischner</a>
+    <a href="/ti-rads-calculator" class="btn btn-ghost btn-sm" title="ACR TI-RADS calculator">TI-RADS</a>
+    <a href="/app" class="btn btn-ghost btn-sm" title="Full dictation app">Sign in &rarr;</a>
+  </div>
+</header>
+
+<main>
+  <div class="fx-hero">
+    <h1>Lung nodule volume doubling time calculator</h1>
+    <p>
+      Compare a pulmonary nodule across two CT studies. Enter the prior and current volume (or mean
+      diameter) and the scan interval to get the volume change and the volume doubling time (VDT),
+      read against the Australian NLCSP growth definitions and the BTS 400- and 600-day thresholds,
+      with a report line you can paste into your CT report.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="fx-grid">
+      <div>
+        <div class="fx-field">
+          <label for="method">Measurement</label>
+          <select id="method">
+            <option value="volume" selected>Volume (mm³) — preferred</option>
+            <option value="diameter">Mean diameter (mm)</option>
+          </select>
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="prior" id="prior-label">Prior volume (mm³)</label>
+            <input type="number" id="prior" min="0" step="any" inputmode="decimal" value="120" placeholder="e.g. 120" />
+          </div>
+          <div class="fx-field">
+            <label for="current" id="current-label">Current volume (mm³)</label>
+            <input type="number" id="current" min="0" step="any" inputmode="decimal" value="180" placeholder="e.g. 180" />
+          </div>
+        </div>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="prior_date">Prior scan date</label>
+            <input type="date" id="prior_date" />
+          </div>
+          <div class="fx-field">
+            <label for="current_date">Current scan date</label>
+            <input type="date" id="current_date" />
+          </div>
+        </div>
+        <p class="fx-or">or enter the interval directly — scan dates stay in your browser</p>
+        <div class="fx-inline">
+          <div class="fx-field">
+            <label for="interval_days">Interval (days)</label>
+            <input type="number" id="interval_days" min="1" step="1" inputmode="numeric" value="182" placeholder="e.g. 182" />
+          </div>
+          <div class="fx-field">
+            <label for="location">Location (optional)</label>
+            <input type="text" id="location" autocomplete="off" placeholder="e.g. right upper lobe" />
+          </div>
+        </div>
+        <p class="fx-note">
+          Use the same volumetry software and reconstruction on both studies, and compare with the
+          earliest available CT so slow growth is not missed. For a part-solid nodule, track the
+          solid component.
+        </p>
+      </div>
+
+      <div>
+        <div aria-live="polite">
+          <div class="fx-result-head">
+            <span class="fx-band" id="headline">—</span>
+          </div>
+          <div class="fx-summary" id="summary"></div>
+        </div>
+
+        <div class="fx-metrics">
+          <div class="fx-metric">
+            <div class="fx-metric-val" id="change-val">—</div>
+            <div class="fx-metric-lbl">Volume change</div>
+            <div class="fx-metric-note" id="change-note">±25% is measurement error</div>
+          </div>
+          <div class="fx-metric">
+            <div class="fx-metric-val" id="vdt-val">—</div>
+            <div class="fx-metric-lbl">Doubling time</div>
+            <div class="fx-metric-note" id="vdt-note">days</div>
+          </div>
+        </div>
+
+        <div class="fx-readings">
+          <div class="fx-reading">
+            <div class="fx-reading-lbl">Australian NLCSP definition</div>
+            <div class="fx-reading-text" id="nlcsp-text"></div>
+          </div>
+          <div class="fx-reading">
+            <div class="fx-reading-lbl">BTS 2015 guideline (solid nodules)</div>
+            <div class="fx-reading-text" id="bts-text"></div>
+          </div>
+        </div>
+        <ul class="fx-warnings" id="warnings"></ul>
+
+        <div class="fx-report-title">
+          <h3>Report line</h3>
+          <button id="btn-copy" class="btn btn-ghost btn-sm" type="button" aria-label="Copy report line"><span aria-hidden="true">&#128203;</span> Copy</button>
+        </div>
+        <div id="report-line"></div>
+        <div id="status" class="impressions-status" role="status" aria-live="polite" style="font-size:12px;color:var(--muted);min-height:16px;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card fx-explainer">
+    <h2>How volume doubling time works</h2>
+    <p>
+      Volume doubling time is the number of days a nodule would take to double in volume if it kept
+      growing at the rate measured between two studies. It uses the modified Schwartz exponential
+      growth model. A shorter VDT means faster growth.
+    </p>
+    <div class="fx-formula">
+      VDT = interval (days) × ln 2 ÷ ln(current volume ÷ prior volume)<br />
+      From mean diameters: VDT = interval × ln 2 ÷ (3 × ln(current ÷ prior diameter))
+    </div>
+    <p>
+      VDT is only defined when the volume has increased. The diameter form treats the nodule as a
+      sphere and cubes any measurement error, so a 1 mm change on a 6 mm nodule is a volume change of
+      almost 60%. Use automated volumetry on both studies wherever possible.
+    </p>
+
+    <h2 style="margin-top:14px;">How the two frameworks read the result</h2>
+    <table>
+      <thead>
+        <tr><th>Framework</th><th>Result</th><th>Reading</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>NLCSP, volumetry</td><td>Increase over 25%, VDT under 600 days</td><td>Growing</td></tr>
+        <tr><td>NLCSP, volumetry</td><td>Increase over 25%, VDT over 600 days</td><td>Slowly growing if seen across more than one interval; otherwise stable</td></tr>
+        <tr><td>NLCSP, volumetry</td><td>Change within ±25%</td><td>Stable</td></tr>
+        <tr><td>NLCSP, volumetry</td><td>Decrease of 25% or more</td><td>Decreased</td></tr>
+        <tr><td>NLCSP, mean diameter</td><td>Increase over 1.5 mm</td><td>Growing within 24 months; slowly growing over more than 24 months</td></tr>
+        <tr><td>NLCSP, mean diameter</td><td>Change within ±1.5 mm</td><td>Stable (a fall of 1.5 mm or more is decreased)</td></tr>
+        <tr><td>BTS 2015</td><td>VDT under 400 days</td><td>Offer further investigation</td></tr>
+        <tr><td>BTS 2015</td><td>VDT 400–600 days</td><td>Yearly surveillance or biopsy, by patient preference</td></tr>
+        <tr><td>BTS 2015</td><td>VDT over 600 days</td><td>Consider discharge or ongoing CT surveillance</td></tr>
+      </tbody>
+    </table>
+    <p>
+      The NLCSP definitions apply to low-dose CT in the Australian National Lung Cancer Screening
+      Program, where they feed the category and interval set by the Nodule Management Protocol.
+      This calculator does not assign an NLCSP category or a PanCan risk; use the official protocol
+      and the risk calculator it links to for that. For an incidental nodule
+      outside screening, the <a href="/fleischner-calculator">Fleischner 2017 calculator</a> gives
+      the follow-up interval.
+    </p>
+
+    <h2 style="margin-top:14px;">Worked example</h2>
+    <p>
+      A solid nodule measures 120 mm³ on the prior CT and 180 mm³ on a CT 182 days later. The
+      volume ratio is 1.5, so the volume change is +50% and the VDT is 182 × 0.693 ÷ 0.405 ≈ 311
+      days. That is growing under the NLCSP definition and under 400 days on the BTS thresholds.
+      With mean diameters instead, a nodule that goes from 6.0 mm to 7.0 mm over a year gives a
+      volume change of about +59% and a VDT of about 547 days, but the 1.0 mm diameter change is
+      still stable under the NLCSP diameter rule. That gap is why volumetry is preferred.
+    </p>
+
+    <h2 style="margin-top:14px;">Common questions</h2>
+    <p><strong>How is the volume doubling time of a lung nodule calculated?</strong><br />
+      Volume doubling time (VDT) uses the modified Schwartz formula: VDT = interval in days × ln 2 ÷
+      ln(current volume ÷ prior volume). For example, a nodule that grows from 120 mm³ to 180 mm³
+      over 182 days has a VDT of about 311 days. VDT is only defined when the volume has
+      increased.</p>
+    <p><strong>What VDT counts as growth in the Australian lung cancer screening program?</strong><br />
+      In the NLCSP Nodule Management Protocol, a volume increase of more than 25% with a VDT under
+      600 days is growing. An increase of more than 25% with a VDT over 600 days is slowly growing
+      only when it holds across more than one scan interval; otherwise it counts as stable. A change
+      within ±25% is stable, and a fall of 25% or more is decreased. When volumetry is not possible,
+      the protocol uses a mean-diameter change of more than 1.5 mm.</p>
+    <p><strong>What do the BTS 400-day and 600-day thresholds mean?</strong><br />
+      The British Thoracic Society 2015 guideline treats a volume increase of 25% or more as
+      significant. A VDT under 400 days supports further investigation, 400 to 600 days supports
+      yearly surveillance or biopsy by patient preference, and over 600 days supports discharge or
+      ongoing CT surveillance.</p>
+    <p><strong>Can I calculate VDT from diameters instead of volumes?</strong><br />
+      Yes, the calculator treats the nodule as a sphere, but any diameter error is cubed. A 1 mm
+      change on a 6 mm nodule is a volume change of almost 60%. Use automated volumetry on both
+      studies wherever possible.</p>
+
+    <p>
+      Sources: Australian Government Department of Health, Disability and Ageing.
+      <a href="https://www.health.gov.au/resources/publications/nlcsp-nodule-management-protocol" rel="noopener">National
+      Lung Cancer Screening Program Nodule Management Protocol</a> (2025), explanatory note 6.
+      Callister MEJ, Baldwin DR, Akram AR, et al. British Thoracic Society guidelines for the
+      investigation and management of pulmonary nodules. <em>Thorax</em> 2015;70(Suppl 2):ii1–ii54.
+      RadSpeed is not affiliated with the NLCSP or the BTS. Confirm against the current documents.
+    </p>
+  </div>
+
+  <div class="fx-cta">
+    Want the growth sentence dictated straight into your report, in your own style?
+    <a href="/radiology-reporting-software">See the RadSpeed reporting workflow &rarr;</a>
+    &middot; <a href="/impressions">Draft an impression free</a>
+    &middot; <a href="/report-templates/ct-chest">CT chest report template</a>
+    &middot; <a href="/fleischner-calculator">Fleischner calculator</a>
+  </div>
+</main>
+
+<footer>
+  RadSpeed volume doubling time calculator &middot; Decision support, not a medical device &middot;
+  Reproduces the published volume doubling time formula and the NLCSP and BTS growth thresholds.
+  It does not assign a screening category or a malignancy risk. Always apply clinical judgement
+  and confirm the result before reporting. No patient data is stored.
+</footer>
+
+<script src="/static/nodule-growth.js?v={{ static_version }}"></script>
+</body>
+</html>

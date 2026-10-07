@@ -130,6 +130,7 @@ from web.fracture_workbench import resolve_workbench_image
 from web import retention
 from web import adrenal
 from web import fleischner
+from web import nodule_growth
 from web import report_templates as report_library
 from web import tirads
 from web.qa import run_qa_checks
@@ -148,6 +149,7 @@ _PUBLIC_HEAD_PATHS = {
     "/ti-rads-calculator",
     "/fleischner-calculator",
     "/adrenal-washout-calculator",
+    "/volume-doubling-time-calculator",
     "/report-templates",
     "/robots.txt",
     "/sitemap.xml",
@@ -253,6 +255,7 @@ class PrivacyHeadersMiddleware:
         "/", "/login", "/health", "/favicon.ico", "/robots.txt", "/sitemap.xml",
         "/llms.txt", "/privacy", "/terms", "/radiology-reporting-software", "/powerscribe-companion",
         "/ti-rads-calculator", "/fleischner-calculator", "/adrenal-washout-calculator",
+        "/volume-doubling-time-calculator",
     }
 
     def __init__(self, app):
@@ -658,6 +661,7 @@ def sitemap():
   <url><loc>https://radspeed.com.au/ti-rads-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/fleischner-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/adrenal-washout-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://radspeed.com.au/volume-doubling-time-calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/report-templates</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://radspeed.com.au/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://radspeed.com.au/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
@@ -687,6 +691,7 @@ def llms_txt():
 - [TI-RADS calculator](https://radspeed.com.au/ti-rads-calculator): Free ACR TI-RADS 2017 thyroid nodule score with FNA and follow-up thresholds, a prior-study growth check against the ACR enlargement rule, and a paste-ready report line. Decision support, not a diagnostic device.
 - [Fleischner calculator](https://radspeed.com.au/fleischner-calculator): Free Fleischner Society 2017 incidental pulmonary nodule follow-up recommendation for solid and subsolid nodules. Averages the long and short axis into the guideline mean diameter with whole-millimetre rounding, compares the prior study against the 2 mm diameter and 25% volume growth thresholds, and returns a paste-ready report line. Decision support, not a diagnostic device.
 - [Adrenal washout calculator](https://radspeed.com.au/adrenal-washout-calculator): Free adrenal CT washout calculator for an incidental adrenal nodule — computes absolute and relative percentage washout from the unenhanced, portal-venous and delayed attenuation, with a paste-ready report line. Decision support, not a diagnostic device.
+- [Volume doubling time calculator](https://radspeed.com.au/volume-doubling-time-calculator): Free lung nodule volume doubling time calculator — compares two CT studies by volume (or mean diameter), returns the percentage volume change and VDT, and reads the result against the Australian NLCSP growth definitions and the BTS 2015 400- and 600-day thresholds, with a paste-ready report line. Decision support, not a diagnostic device.
 - [Report templates](https://radspeed.com.au/report-templates): Free library of structured report templates for CT, MRI, ultrasound, X-ray and nuclear medicine, with synthetic sample impressions.
 
 ## Important limits
@@ -1064,6 +1069,38 @@ def api_adrenal_washout(req: AdrenalRequest):
 
 
 # ---------------------------------------------------------------------------
+# Public nodule volume doubling time calculator — free, no auth, deterministic
+# (no model call, no patient data stored). Arithmetic lives in
+# web/nodule_growth.py.
+# ---------------------------------------------------------------------------
+
+class NoduleGrowthRequest(BaseModel):
+    prior: float
+    current: float
+    interval_days: float
+    method: str = "volume"
+
+
+@app.post("/api/nodule-growth/vdt")
+def api_nodule_growth_vdt(req: NoduleGrowthRequest):
+    """Return the volume change, doubling time, framework readings and a report line.
+
+    Pure arithmetic on two measurements and an interval — no external model
+    call and nothing is persisted, so no rate limiting is needed. Scan dates
+    and the nodule location stay in the browser; only numbers are sent.
+    """
+    try:
+        return nodule_growth.assess(
+            prior=req.prior,
+            current=req.current,
+            interval_days=req.interval_days,
+            method=req.method,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
 # WebSocket auth helpers
 # ---------------------------------------------------------------------------
 
@@ -1321,6 +1358,15 @@ def adrenal_washout_calculator_page(request: Request):
     return _jinja.TemplateResponse(
         request,
         "adrenal_washout_calculator.html",
+        {"request": request, "static_version": _STATIC_VERSION},
+    )
+
+
+@app.get("/volume-doubling-time-calculator", include_in_schema=False)
+def volume_doubling_time_calculator_page(request: Request):
+    return _jinja.TemplateResponse(
+        request,
+        "volume_doubling_time_calculator.html",
         {"request": request, "static_version": _STATIC_VERSION},
     )
 

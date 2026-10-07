@@ -4,7 +4,7 @@ import pytest
 from playwright.sync_api import expect
 
 
-@pytest.mark.parametrize("route", ["ti-rads-calculator", "fleischner-calculator", "adrenal-washout-calculator"])
+@pytest.mark.parametrize("route", ["ti-rads-calculator", "fleischner-calculator", "adrenal-washout-calculator", "volume-doubling-time-calculator"])
 @pytest.mark.parametrize("width", [390, 1440])
 @pytest.mark.parametrize("mode", ["modern", "legacy", "denied", "throws"])
 def test_copy_paths(page, base_url, route, width, mode):
