@@ -1,6 +1,6 @@
 # RadSpeed Privacy Policy
 
-**Version 1.1, 2 October 2026**
+**Version 1.2, 10 October 2026**
 **Operator:** Clarity Insights Imaging Pty Ltd (ABN 92 696 493 740) ("RadSpeed", "we")
 **Contact:** Dr Mark Bekhit, hello@radspeed.com.au
 
@@ -34,6 +34,12 @@ is health information and sensitive information under the Act.
 **From website visitors:** standard server logs (IP address, browser, pages
 requested). The free Impressions tool processes the findings text you paste
 and does not store it. Do not paste patient identifiers into public tools.
+
+Cloudflare Web Analytics and Google Analytics measure visits and traffic sources
+on public marketing pages, report-template pages and legal pages. Google Analytics
+uses cookies. These services do not run in the clinical app or free Impressions
+tool. We do not send patient information, dictation, report text or form entries
+to these services.
 
 We do not collect payment card details directly; we invoice practices directly.
 
