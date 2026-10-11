@@ -5,6 +5,7 @@
 
 (() => {
   const $ = (id) => document.getElementById(id);
+  let latestRequest = 0;
 
   function setStatus(msg, kind) {
     const el = $("status");
@@ -58,6 +59,7 @@
   }
 
   function clear(msg) {
+    $("btn-copy").disabled = true;
     $("category").textContent = "—";
     $("summary").textContent = msg || "";
     $("apw-val").textContent = "—";
@@ -78,11 +80,14 @@
   }
 
   async function recommend() {
+    const requestId = ++latestRequest;
+    clear();
+    setStatus("Updating result. Copy is unavailable until the result is ready.");
     const enhanced = numOrNull("enhanced_hu");
     const delayed = numOrNull("delayed_hu");
     if (enhanced === null || delayed === null) {
       clear("Enter the portal-venous and delayed attenuation to see the washout.");
-      setStatus("");
+      setStatus("Enter the portal-venous and delayed attenuation to see the washout.");
       return;
     }
     const payload = {
@@ -104,17 +109,22 @@
           const j = await resp.json();
           if (j.detail) detail = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail);
         } catch (_) {}
-        clear("");
         throw new Error(detail);
       }
-      render(await resp.json());
+      const result = await resp.json();
+      if (requestId !== latestRequest) return;
+      render(result);
+      $("btn-copy").disabled = false;
       setStatus("");
     } catch (err) {
+      if (requestId !== latestRequest) return;
+      clear();
       setStatus("Error: " + (err.message || err), "error");
     }
   }
 
   async function copyReport() {
+    if ($("btn-copy").disabled) return;
     const text = ($("report-line").textContent || "").trim();
     if (!text) return;
     try {

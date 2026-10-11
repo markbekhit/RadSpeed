@@ -11,6 +11,15 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   let latestRequest = 0;
+  function clear() {
+    $("btn-copy").disabled = true;
+    for (const id of ["recommendation", "report-line", "measurement-note", "nodule-summary", "change-tag", "change-summary", "change-note"]) {
+      $(id).textContent = "";
+    }
+    $("size-band").textContent = "—";
+    $("interval-change").style.display = "none";
+    $("interval-change").removeAttribute("data-status");
+  }
   const num = (id) => {
     const raw = $(id).value.trim();
     if (!raw) return null;
@@ -80,6 +89,8 @@
 
   async function recommend() {
     const requestId = ++latestRequest;
+    clear();
+    setStatus("Updating result. Copy is unavailable until the result is ready.");
     syncFields();
     const type = $("nodule_type").value;
     const longAxis = num("long_axis_mm");
@@ -115,7 +126,7 @@
       $("interval-change").style.display = "none";
       $("nodule-summary").textContent =
         "Enter both axes, or the mean nodule diameter, to see the recommendation.";
-      setStatus("");
+      setStatus("Enter both axes, or the mean nodule diameter, to see the recommendation.");
       return;
     }
     try {
@@ -137,14 +148,17 @@
       // response represents the form that the radiologist can now see.
       if (requestId !== latestRequest) return;
       render(result);
+      $("btn-copy").disabled = false;
       setStatus("");
     } catch (err) {
       if (requestId !== latestRequest) return;
+      clear();
       setStatus("Error: " + (err.message || err), "error");
     }
   }
 
   async function copyReport() {
+    if ($("btn-copy").disabled) return;
     const text = ($("report-line").textContent || "").trim();
     if (!text) return;
     try {

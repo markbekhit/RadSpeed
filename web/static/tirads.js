@@ -5,6 +5,19 @@
 
 (() => {
   const $ = (id) => document.getElementById(id);
+  let latestRequest = 0;
+
+  function clear() {
+    $("btn-copy").disabled = true;
+    $("level").textContent = "—";
+    $("level").className = "tirads-level";
+    for (const id of ["risk-badge", "points", "thresholds", "management", "growth", "report-line"]) {
+      $(id).textContent = "";
+    }
+    $("growth").hidden = true;
+    $("notes").replaceChildren();
+    $("notes").hidden = true;
+  }
 
   function collectFoci() {
     return Array.from(document.querySelectorAll(".foci"))
@@ -67,6 +80,9 @@
   }
 
   async function score() {
+    const requestId = ++latestRequest;
+    clear();
+    setStatus("Updating result. Copy is unavailable until the result is ready.");
     const dims = collectDims(".dim");
     let priorDims = collectDims(".prior-dim");
     let hint = "";
@@ -99,14 +115,20 @@
         } catch (_) {}
         throw new Error(detail);
       }
-      render(await resp.json());
+      const result = await resp.json();
+      if (requestId !== latestRequest) return;
+      render(result);
+      $("btn-copy").disabled = false;
       setStatus(hint);
     } catch (err) {
+      if (requestId !== latestRequest) return;
+      clear();
       setStatus("Error: " + (err.message || err), "error");
     }
   }
 
   async function copyReport() {
+    if ($("btn-copy").disabled) return;
     const text = ($("report-line").textContent || "").trim();
     if (!text) return;
     try {
